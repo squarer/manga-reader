@@ -6,14 +6,14 @@
 
 ## 技術棧
 
-| 類型 | 技術 |
-|------|------|
-| 框架 | Next.js 16 (App Router) |
-| 前端 | React 19, TypeScript |
+| 類型 | 技術                                 |
+| ---- | ------------------------------------ |
+| 框架 | Next.js 16 (App Router)              |
+| 前端 | React 19, TypeScript                 |
 | 樣式 | Tailwind CSS 4, shadcn/ui (new-york) |
-| 圖標 | Lucide React |
-| 爬蟲 | cheerio, axios |
-| 解密 | lz-string |
+| 圖標 | Lucide React                         |
+| 爬蟲 | cheerio, axios                       |
+| 解密 | lz-string                            |
 
 ## 專案結構
 
@@ -58,6 +58,13 @@ npm run lint
 
 # 新增 shadcn 元件
 npx shadcn@latest add <component>
+
+# 切換 shadcn 主題（會覆蓋 globals.css）
+npx shadcn@latest init -f -b <base-color>
+# base-color: neutral | gray | zinc | stone | slate
+
+# 套用 tinte.dev 主題（如 Claude 主題）
+npx shadcn@latest add https://www.tinte.dev/r/claude
 ```
 
 ## 核心型別
@@ -69,12 +76,12 @@ npx shadcn@latest add <component>
 
 ## API 路由
 
-| 路由 | 用途 |
-|------|------|
-| `/api/manga` | 漫畫列表、搜尋 |
-| `/api/manga/[id]` | 漫畫詳情 |
-| `/api/chapter/[bid]/[cid]` | 章節圖片 |
-| `/api/image` | 圖片代理（繞過防盜鏈） |
+| 路由                       | 用途                   |
+| -------------------------- | ---------------------- |
+| `/api/manga`               | 漫畫列表、搜尋         |
+| `/api/manga/[id]`          | 漫畫詳情               |
+| `/api/chapter/[bid]/[cid]` | 章節圖片               |
+| `/api/image`               | 圖片代理（繞過防盜鏈） |
 
 ## 注意事項
 
