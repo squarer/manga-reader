@@ -1,41 +1,46 @@
 'use client';
 
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import MangaCard from '@/components/MangaCard';
+import MangaFilter, {
+  type FilterState,
+  DEFAULT_FILTER_STATE,
+} from '@/components/MangaFilter';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
-
-const CATEGORIES = [
-  { id: 'japan', name: '日本漫畫' },
-  { id: 'hongkong', name: '港台漫畫' },
-  { id: 'other', name: '歐美漫畫' },
-  { id: 'korea', name: '韓國漫畫' },
-];
 
 /** 交錯進場延遲基數（毫秒） */
 const STAGGER_DELAY = 50;
 
-export default function Home() {
+/**
+ * 首頁內容元件
+ * 使用 useSearchParams 需要 Suspense 包裹
+ */
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const keywordFromUrl = searchParams.get('keyword') || '';
+
   const [mangas, setMangas] = useState<MangaListItem[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [category, setCategory] = useState('japan');
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [page, setPage] = useState(1);
-  const [keyword, setKeyword] = useState('');
-  const [searchInput, setSearchInput] = useState('');
 
-  // 分類滑動指示器
-  const categoryRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
-
-  // 載入漫畫資料
-  const fetchMangas = async (pageNum: number, append = false) => {
+  /**
+   * 載入漫畫資料
+   */
+  const fetchMangas = async (
+    pageNum: number,
+    append = false,
+    keyword?: string,
+    currentFilters?: FilterState
+  ) => {
     if (append) {
       setLoadingMore(true);
     } else {
@@ -48,9 +53,39 @@ export default function Home() {
       });
 
       if (keyword) {
+        // 搜尋模式
         params.set('keyword', keyword);
       } else {
-        params.set('category', category);
+        // 篩選模式
+        const f = currentFilters || filters;
+
+        // 劇情分類（多選）
+        if (f.genres.length > 0) {
+          params.set('genre', f.genres.join(','));
+        }
+
+        // 年份
+        if (f.year) {
+          params.set('year', f.year === '更早' ? '2019' : f.year);
+        }
+
+        // 進度映射：UI 值 -> API 值
+        const statusMap: Record<string, string> = {
+          ongoing: 'lianzai',
+          completed: 'wanjie',
+        };
+        if (f.status !== 'all' && statusMap[f.status]) {
+          params.set('status', statusMap[f.status]);
+        }
+
+        // 排序映射：UI 值 -> API 值
+        const sortMap: Record<string, string> = {
+          latest: 'update',  // 最新發布
+          update: 'update',  // 最新更新
+          popular: 'view',   // 人氣最旺
+          rating: 'rate',    // 評分最高
+        };
+        params.set('sort', sortMap[f.sort] || 'update');
       }
 
       const res = await fetch(`/api/manga?${params}`);
@@ -70,124 +105,64 @@ export default function Home() {
     }
   };
 
-  // 初始載入或切換分類/搜尋時
+  // 初始載入或切換篩選/搜尋時
   useEffect(() => {
     setPage(1);
-    fetchMangas(1, false);
-  }, [category, keyword]);
+    fetchMangas(1, false, keywordFromUrl, filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, keywordFromUrl]);
 
-  // 載入更多
+  /**
+   * 處理篩選變更
+   */
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  /**
+   * 載入更多
+   */
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchMangas(nextPage, true);
+    fetchMangas(nextPage, true, keywordFromUrl, filters);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setKeyword(searchInput);
-  };
-
+  /**
+   * 清除搜尋
+   */
   const clearSearch = () => {
-    setKeyword('');
-    setSearchInput('');
+    router.push('/');
   };
-
-  // 更新滑動指示器位置
-  useLayoutEffect(() => {
-    const currentIndex = CATEGORIES.findIndex((cat) => cat.id === category);
-    const currentButton = categoryRefs.current[currentIndex];
-
-    if (currentButton) {
-      const containerRect = currentButton.parentElement?.getBoundingClientRect();
-      const buttonRect = currentButton.getBoundingClientRect();
-
-      if (containerRect) {
-        setIndicatorStyle({
-          left: buttonRect.left - containerRect.left,
-          width: buttonRect.width,
-        });
-      }
-    }
-  }, [category]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto max-w-7xl px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">Manga Reader</h1>
-
-            {/* Search & Theme Toggle */}
-            <div className="flex items-center gap-2">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <Input
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="搜尋漫畫..."
-                  className="w-48 sm:w-64"
-                />
-                <Button type="submit">搜尋</Button>
-              </form>
-              <ThemeToggle />
-            </div>
-          </div>
-
-          {/* Categories with sliding indicator */}
-          {!keyword && (
-            <div className="relative mt-4 flex gap-2 overflow-x-auto pb-1">
-              {/* 滑動指示器 */}
-              <div
-                className="absolute bottom-0 h-0.5 rounded-full bg-primary transition-all duration-300 ease-out"
-                style={{
-                  left: indicatorStyle.left,
-                  width: indicatorStyle.width,
-                }}
-              />
-
-              {CATEGORIES.map((cat, index) => (
-                <Button
-                  key={cat.id}
-                  ref={(el) => { categoryRefs.current[index] = el; }}
-                  onClick={() => {
-                    setCategory(cat.id);
-                    setPage(1);
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  className={`whitespace-nowrap rounded-full transition-all duration-200 ${
-                    category === cat.id
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  {cat.name}
-                </Button>
-              ))}
-            </div>
-          )}
-
-          {/* Search indicator */}
-          {keyword && (
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-muted-foreground">搜尋結果：{keyword}</span>
-              <Button variant="link" size="sm" onClick={clearSearch}>
-                清除搜尋
-              </Button>
-            </div>
-          )}
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8">
+        {/* 搜尋結果提示 */}
+        {keywordFromUrl && (
+          <div className="mb-6 flex items-center gap-2 rounded-lg border border-border bg-card p-4">
+            <span className="text-muted-foreground">
+              搜尋結果：<span className="font-medium text-foreground">{keywordFromUrl}</span>
+            </span>
+            <Button variant="link" size="sm" onClick={clearSearch}>
+              清除搜尋
+            </Button>
+          </div>
+        )}
+
+        {/* 篩選器（非搜尋模式時顯示） */}
+        {!keywordFromUrl && (
+          <div className="mb-6">
+            <MangaFilter filters={filters} onChange={handleFilterChange} />
+          </div>
+        )}
+
         {/* 我的收藏 */}
-        {!keyword && <FavoritesSection />}
+        {!keywordFromUrl && <FavoritesSection />}
 
         {/* 最近閱讀 */}
-        {!keyword && <HistorySection />}
+        {!keywordFromUrl && <HistorySection />}
 
         {loading ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -234,5 +209,32 @@ export default function Home() {
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * 首頁
+ * 漫畫列表、搜尋、分類篩選
+ */
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background">
+          <div className="mx-auto max-w-7xl px-4 py-8">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }
