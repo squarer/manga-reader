@@ -294,46 +294,57 @@ function NavbarContent() {
                   onSubmit={handleSearchSubmit}
                   className="relative flex items-center"
                 >
-                  {isSearchExpanded ? (
-                    <div className="flex items-center gap-1">
-                      <Input
-                        ref={searchInputRef}
-                        type="text"
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                        onBlur={handleSearchBlur}
-                        placeholder="搜尋漫畫..."
-                        className={cn(
-                          "h-8 w-40 rounded-full transition-all duration-300",
-                          "bg-muted/50 border-transparent",
-                          "focus:bg-background focus:w-48 focus:border-primary/30"
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-full"
-                        onClick={() => {
-                          setIsSearchExpanded(false);
-                          setSearchValue("");
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
+                  {/* 搜尋按鈕 */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-8 w-8 rounded-full transition-all duration-300",
+                      isSearchExpanded && "opacity-0 scale-75 pointer-events-none absolute"
+                    )}
+                    onClick={() => setIsSearchExpanded(true)}
+                    title="搜尋"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+
+                  {/* 展開的搜尋框 */}
+                  <div
+                    className={cn(
+                      "flex items-center gap-1 overflow-hidden transition-all duration-300 ease-out",
+                      isSearchExpanded
+                        ? "w-52 opacity-100"
+                        : "w-0 opacity-0 pointer-events-none"
+                    )}
+                  >
+                    <Input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
+                      onBlur={handleSearchBlur}
+                      placeholder="搜尋漫畫..."
+                      className={cn(
+                        "h-8 w-40 rounded-full transition-all duration-200",
+                        "bg-muted border-transparent",
+                        "focus-visible:ring-0 focus-visible:border-transparent",
+                        "focus:w-44"
+                      )}
+                    />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => setIsSearchExpanded(true)}
-                      title="搜尋"
+                      className="h-8 w-8 flex-shrink-0 rounded-full"
+                      onClick={() => {
+                        setIsSearchExpanded(false);
+                        setSearchValue("");
+                      }}
                     >
-                      <Search className="h-4 w-4" />
+                      <X className="h-4 w-4" />
                     </Button>
-                  )}
+                  </div>
                 </form>
               </div>
 
