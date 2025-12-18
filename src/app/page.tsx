@@ -1,11 +1,17 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MangaCard from '@/components/MangaCard';
-import MangaFilter, {
+import {
   type FilterState,
-  DEFAULT_FILTER_STATE,
+  type GenreKey,
+  type RegionKey,
+  type StatusKey,
+  type SortKey,
+  type YearOption,
+  GENRE_OPTIONS,
+  YEAR_OPTIONS,
 } from '@/components/MangaFilter';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
@@ -15,6 +21,26 @@ import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 
 /** 交錯進場延遲基數（毫秒） */
 const STAGGER_DELAY = 50;
+
+/**
+ * 從 URL 參數解析 FilterState
+ */
+function parseFiltersFromParams(searchParams: URLSearchParams): FilterState {
+  const region = searchParams.get('region') as RegionKey | null;
+  const genreParam = searchParams.get('genre');
+  const genres = genreParam
+    ? (genreParam.split(',').filter((g) => g in GENRE_OPTIONS) as GenreKey[])
+    : [];
+  const yearParam = searchParams.get('year');
+  const year =
+    yearParam && YEAR_OPTIONS.includes(yearParam as YearOption)
+      ? (yearParam as YearOption)
+      : null;
+  const status = (searchParams.get('status') as StatusKey) || 'all';
+  const sort = (searchParams.get('sort') as SortKey) || 'update';
+
+  return { region, genres, year, status, sort };
+}
 
 /**
  * 首頁內容元件
@@ -29,8 +55,13 @@ function HomeContent() {
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [page, setPage] = useState(1);
+
+  // 從 URL 解析 filter 狀態
+  const filters = useMemo(
+    () => parseFiltersFromParams(searchParams),
+    [searchParams]
+  );
 
   /**
    * 載入漫畫資料
@@ -85,10 +116,10 @@ function HomeContent() {
 
         // 排序映射：UI 值 -> API 值
         const sortMap: Record<string, string> = {
-          latest: 'update',  // 最新發布
-          update: 'update',  // 最新更新
-          popular: 'view',   // 人氣最旺
-          rating: 'rate',    // 評分最高
+          latest: 'update', // 最新發布
+          update: 'update', // 最新更新
+          popular: 'view', // 人氣最旺
+          rating: 'rate', // 評分最高
         };
         params.set('sort', sortMap[f.sort] || 'update');
       }
@@ -118,13 +149,6 @@ function HomeContent() {
   }, [filters, keywordFromUrl]);
 
   /**
-   * 處理篩選變更
-   */
-  const handleFilterChange = (newFilters: FilterState) => {
-    setFilters(newFilters);
-  };
-
-  /**
    * 載入更多
    */
   const loadMore = () => {
@@ -148,18 +172,14 @@ function HomeContent() {
         {keywordFromUrl && (
           <div className="mb-6 flex items-center gap-2 rounded-lg border border-border bg-card p-4">
             <span className="text-muted-foreground">
-              搜尋結果：<span className="font-medium text-foreground">{keywordFromUrl}</span>
+              搜尋結果：
+              <span className="font-medium text-foreground">
+                {keywordFromUrl}
+              </span>
             </span>
             <Button variant="link" size="sm" onClick={clearSearch}>
               清除搜尋
             </Button>
-          </div>
-        )}
-
-        {/* 篩選器（非搜尋模式時顯示） */}
-        {!keywordFromUrl && (
-          <div className="mb-6">
-            <MangaFilter filters={filters} onChange={handleFilterChange} />
           </div>
         )}
 
