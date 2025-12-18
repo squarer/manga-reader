@@ -21,7 +21,7 @@ interface MangaCardProps {
 export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState('perspective(1000px) rotateX(0deg) rotateY(0deg)');
-  const [glowPosition, setGlowPosition] = useState({ x: 50, y: 50 });
+  const [shineStyle, setShineStyle] = useState({ backgroundPosition: '0% 0%', opacity: 0 });
   const [isHovering, setIsHovering] = useState(false);
 
   const coverUrl = manga.cover
@@ -43,10 +43,13 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
 
     setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`);
 
-    // 光暈位置
-    const glowX = (x / rect.width) * 100;
-    const glowY = (y / rect.height) * 100;
-    setGlowPosition({ x: glowX, y: glowY });
+    // 計算反光位置（根據滑鼠位置移動）
+    const shineX = (x / rect.width) * 100;
+    const shineY = (y / rect.height) * 100;
+    setShineStyle({
+      backgroundPosition: `${shineX}% ${shineY}%`,
+      opacity: 1,
+    });
   }, []);
 
   const handleMouseEnter = useCallback(() => {
@@ -56,7 +59,7 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
   const handleMouseLeave = useCallback(() => {
     setIsHovering(false);
     setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)');
-    setGlowPosition({ x: 50, y: 50 });
+    setShineStyle({ backgroundPosition: '50% 50%', opacity: 0 });
   }, []);
 
   return (
@@ -83,22 +86,14 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
         <Card className="overflow-hidden border-0 bg-transparent">
           <CardContent className="p-0">
             <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
-              {/* 光暈效果 */}
+              {/* 3D 傾斜反光效果 - 類似光澤掃過 */}
               <div
-                className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-200"
                 style={{
-                  background: `radial-gradient(circle at ${glowPosition.x}% ${glowPosition.y}%, rgba(255,255,255,0.25) 0%, transparent 60%)`,
-                }}
-              />
-
-              {/* 邊緣光暈 */}
-              <div
-                className="pointer-events-none absolute -inset-px z-20 rounded-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                style={{
-                  background: `linear-gradient(135deg, rgba(255,200,100,0.4) 0%, transparent 50%, rgba(255,150,50,0.3) 100%)`,
-                  mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                  maskComposite: 'exclude',
-                  padding: '2px',
+                  background: 'radial-gradient(circle at var(--shine-x, 50%) var(--shine-y, 50%), rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 20%, transparent 50%)',
+                  backgroundSize: '150% 150%',
+                  backgroundPosition: shineStyle.backgroundPosition,
+                  opacity: shineStyle.opacity,
                 }}
               />
 
