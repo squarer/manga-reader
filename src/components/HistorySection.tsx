@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/animate-ui/components/buttons/button';
+import { Button } from '@/components/ui/button';
 import { useHistory } from '@/lib/hooks/useHistory';
 
 export default function HistorySection() {
