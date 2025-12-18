@@ -127,7 +127,7 @@ interface SinglePageReaderProps {
 /**
  * 單頁閱讀模式
  *
- * 點擊左右區域切換頁面，點擊中間顯示工具列
+ * 左鍵下一頁、右鍵上一頁、中間點擊顯示工具列
  */
 function SinglePageReader({
   data,
@@ -136,6 +136,7 @@ function SinglePageReader({
   onPageChange,
   onTap,
 }: SinglePageReaderProps) {
+  /** 左鍵點擊 - 下一頁或顯示工具列 */
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       const rect = e.currentTarget.getBoundingClientRect();
@@ -143,39 +144,47 @@ function SinglePageReader({
       const width = rect.width;
       const zone = x / width;
 
-      if (zone < 0.3) {
-        // 左側區域 - 上一頁
-        if (currentPage > 0) {
-          onPageChange(currentPage - 1);
-        }
-      } else if (zone > 0.7) {
-        // 右側區域 - 下一頁
-        if (currentPage < data.total - 1) {
-          onPageChange(currentPage + 1);
-        }
-      } else {
-        // 中間區域 - 顯示工具列
+      // 中間區域 (30%-70%) - 顯示工具列
+      if (zone >= 0.3 && zone <= 0.7) {
         onTap();
+        return;
+      }
+
+      // 其他區域 - 下一頁
+      if (currentPage < data.total - 1) {
+        onPageChange(currentPage + 1);
       }
     },
     [currentPage, data.total, onPageChange, onTap]
+  );
+
+  /** 右鍵點擊 - 上一頁 */
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (currentPage > 0) {
+        onPageChange(currentPage - 1);
+      }
+    },
+    [currentPage, onPageChange]
   );
 
   return (
     <div
       className="flex min-h-screen cursor-pointer items-center justify-center py-16"
       onClick={handleClick}
+      onContextMenu={handleContextMenu}
     >
       <div
-        className="relative flex max-w-4xl items-center justify-center"
-        style={{ width: `${imageWidth}%` }}
+        className="relative flex items-center justify-center"
+        style={{ width: `${imageWidth}%`, maxWidth: '100vw' }}
       >
         <Image
           src={`/api/image?url=${encodeURIComponent(data.images[currentPage])}`}
           alt={`Page ${currentPage + 1}`}
           width={1200}
           height={1800}
-          className="h-auto max-h-[90vh] w-auto"
+          className="h-auto w-full max-w-full"
           unoptimized
           priority
         />
@@ -213,7 +222,13 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
 
         if (json.success) {
           setData(json.data);
-          setCurrentPage(0);
+
+          // 從 URL 讀取初始頁碼
+          const urlParams = new URLSearchParams(window.location.search);
+          const pageParam = urlParams.get('page');
+          const initialPage = pageParam ? Math.max(0, parseInt(pageParam, 10) - 1) : 0;
+          const validPage = Math.min(initialPage, json.data.total - 1);
+          setCurrentPage(validPage);
 
           addHistory({
             mangaId: json.data.bid,
@@ -242,6 +257,14 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
         setCurrentPage(page);
         if (settings.viewMode === 'single') {
           window.scrollTo({ top: 0, behavior: 'instant' });
+          // 更新 URL 以反映當前頁碼
+          const url = new URL(window.location.href);
+          if (page === 0) {
+            url.searchParams.delete('page');
+          } else {
+            url.searchParams.set('page', String(page + 1));
+          }
+          window.history.replaceState({}, '', url.toString());
         }
       }
     },
