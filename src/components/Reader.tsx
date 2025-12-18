@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/animate-ui/components/buttons/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useHistory } from '@/lib/hooks/useHistory';
 

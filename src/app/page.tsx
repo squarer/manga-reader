@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react';
 import MangaCard from '@/components/MangaCard';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/animate-ui/components/buttons/button';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@/components/animate-ui/components/animate/tabs';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
@@ -108,21 +113,22 @@ export default function Home() {
 
           {/* Categories */}
           {!keyword && (
-            <div className="mt-4 flex gap-2 overflow-x-auto">
-              {CATEGORIES.map((cat) => (
-                <Button
-                  key={cat.id}
-                  onClick={() => {
-                    setCategory(cat.id);
-                    setPage(1);
-                  }}
-                  variant={category === cat.id ? 'default' : 'secondary'}
-                  size="sm"
-                  className="whitespace-nowrap rounded-full"
-                >
-                  {cat.name}
-                </Button>
-              ))}
+            <div className="mt-4">
+              <Tabs
+                value={category}
+                onValueChange={(value) => {
+                  setCategory(value);
+                  setPage(1);
+                }}
+              >
+                <TabsList>
+                  {CATEGORIES.map((cat) => (
+                    <TabsTrigger key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
           )}
 
