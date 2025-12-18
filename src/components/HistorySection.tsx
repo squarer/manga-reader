@@ -5,7 +5,11 @@ import Image from 'next/image';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import TiltCard from '@/components/TiltCard';
 import { useHistory } from '@/lib/hooks/useHistory';
+
+/** 交錯動畫延遲（毫秒） */
+const STAGGER_DELAY = 30;
 
 export default function HistorySection() {
   const { history, isLoaded, clearHistory } = useHistory();
@@ -25,34 +29,36 @@ export default function HistorySection() {
 
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex gap-4 pb-4">
-          {history.slice(0, 10).map((item) => (
+          {history.slice(0, 10).map((item, index) => (
             <Link
               key={`${item.mangaId}-${item.chapterId}`}
               href={`/read/${item.mangaId}/${item.chapterId}`}
               className="group flex-shrink-0"
             >
-              <Card className="overflow-hidden border-0 bg-transparent">
-                <CardContent className="p-0">
-                  <div className="relative h-32 w-24 overflow-hidden rounded-lg bg-muted">
-                    <Image
-                      src={`/api/image?url=${encodeURIComponent(item.mangaCover)}`}
-                      alt={item.mangaName}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-2">
-                      <p className="truncate text-xs text-muted-foreground">
-                        {item.chapterName}
-                      </p>
+              <TiltCard animationDelay={index * STAGGER_DELAY} className="h-32 w-24">
+                <Card className="h-full overflow-hidden border-0 bg-transparent">
+                  <CardContent className="h-full p-0">
+                    <div className="relative h-full w-full overflow-hidden rounded-lg bg-muted">
+                      <Image
+                        src={`/api/image?url=${encodeURIComponent(item.mangaCover)}`}
+                        alt={item.mangaName}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                        unoptimized
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-2">
+                        <p className="truncate text-xs text-white/80">
+                          {item.chapterName}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <p className="mt-1 w-24 truncate text-xs text-muted-foreground group-hover:text-primary">
-                    {item.mangaName}
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </TiltCard>
+              <p className="mt-1 w-24 truncate text-xs text-muted-foreground group-hover:text-primary">
+                {item.mangaName}
+              </p>
             </Link>
           ))}
         </div>
