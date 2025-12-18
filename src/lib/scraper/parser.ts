@@ -101,14 +101,56 @@ export function parseMangaList(html: string): {
   }
 
   // 解析分頁資訊
+  let currentPage = 1;
+  let totalPages = 1;
+  let totalItems = items.length;
+
+  // 方法 1：按鈕式分頁（.pager 包含數字連結）
+  const $pager = $('.pager');
+  if ($pager.length) {
+    // 找當前頁
+    const $current = $pager.find('.current, span:not(:has(*))').first();
+    if ($current.length) {
+      const currentText = $current.text().trim();
+      const currentNum = parseInt(currentText, 10);
+      if (!isNaN(currentNum)) {
+        currentPage = currentNum;
+      }
+    }
+
+    // 找總頁數（從所有數字連結中取最大值）
+    const pageNumbers: number[] = [];
+    $pager.find('a').each((_, el) => {
+      const text = $(el).text().trim();
+      const num = parseInt(text, 10);
+      if (!isNaN(num)) {
+        pageNumbers.push(num);
+      }
+    });
+    if (pageNumbers.length > 0) {
+      totalPages = Math.max(...pageNumbers);
+    }
+
+    // 找總項目數
+    const totalText = $pager.text();
+    const totalMatch = totalText.match(/共有?\s*(\d+)\s*部|共\s*(\d+)\s*部/);
+    if (totalMatch) {
+      totalItems = parseInt(totalMatch[1] || totalMatch[2], 10);
+    }
+  }
+
+  // 方法 2：文字式分頁（如 "第 1 / 10 頁"）
   const pageText = $('.pager, .page-box').text();
   const pageMatch = pageText.match(/第\s*(\d+)\s*\/\s*(\d+)\s*頁|(\d+)\s*\/\s*(\d+)/);
-  const totalMatch = pageText.match(/共有\s*(\d+)\s*部|共\s*(\d+)\s*部/);
+  if (pageMatch) {
+    currentPage = parseInt(pageMatch[1] || pageMatch[3], 10);
+    totalPages = parseInt(pageMatch[2] || pageMatch[4], 10);
+  }
 
   const pagination: PaginationInfo = {
-    current: pageMatch ? parseInt(pageMatch[1] || pageMatch[3], 10) : 1,
-    total: pageMatch ? parseInt(pageMatch[2] || pageMatch[4], 10) : 1,
-    totalItems: totalMatch ? parseInt(totalMatch[1] || totalMatch[2], 10) : items.length,
+    current: currentPage,
+    total: totalPages,
+    totalItems,
   };
 
   return { items, pagination };
@@ -203,6 +245,37 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
 }
 
 /**
+ * 自然排序比較函數（處理章節名稱中的數字）
+ */
+function naturalSort(a: string, b: string): number {
+  const regex = /(\d+)|(\D+)/g;
+  const aParts = a.match(regex) || [];
+  const bParts = b.match(regex) || [];
+
+  for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+    const aPart = aParts[i] || '';
+    const bPart = bParts[i] || '';
+
+    // 兩者都是數字
+    const aNum = parseInt(aPart, 10);
+    const bNum = parseInt(bPart, 10);
+
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      if (aNum !== bNum) {
+        return aNum - bNum;
+      }
+    } else {
+      // 字串比較
+      if (aPart !== bPart) {
+        return aPart.localeCompare(bPart);
+      }
+    }
+  }
+
+  return 0;
+}
+
+/**
  * 解析章節列表
  */
 function parseChapterList($: ReturnType<typeof cheerio.load>): ChapterGroup[] {
@@ -210,7 +283,7 @@ function parseChapterList($: ReturnType<typeof cheerio.load>): ChapterGroup[] {
   const seenChapterIds = new Set<number>();
 
   // manhuagui 的章節分組在 .chapter 區塊內，用 h4 標記分組名稱
-  // 結構: .chapter > h4(分組名) + .chapter-list#chapter-list-X(章節列表)
+  // 結構: .chapter > h4(分組名) + div.chapter-page(分頁按鈕) + .chapter-list#chapter-list-X(章節列表)
   const chapterContainer = $('.chapter');
 
   if (chapterContainer.length) {
@@ -219,28 +292,34 @@ function parseChapterList($: ReturnType<typeof cheerio.load>): ChapterGroup[] {
       const $h4 = $(h4El);
       const title = $h4.find('span').text().trim() || $h4.text().trim() || '章節';
 
-      // 找到緊接在 h4 後面的 .chapter-list
-      const $chapterList = $h4.next('.chapter-list');
+      // 找到 h4 後面的 .chapter-list（可能中間有其他元素，如 .chapter-page）
+      const $chapterList = $h4.nextAll('.chapter-list').first();
       const chapters: ChapterInfo[] = [];
 
-      $chapterList.find('li a').each((_, chapterEl) => {
-        const $chapter = $(chapterEl);
-        const href = $chapter.attr('href') || '';
-        const cidMatch = href.match(/\/(\d+)\.html/);
+      // 遍歷所有 ul 內的章節連結
+      $chapterList.find('ul').each((_, ulEl) => {
+        $(ulEl).find('li a').each((_, chapterEl) => {
+          const $chapter = $(chapterEl);
+          const href = $chapter.attr('href') || '';
+          const cidMatch = href.match(/\/(\d+)\.html/);
 
-        if (cidMatch) {
-          const chapterId = parseInt(cidMatch[1], 10);
-          // 避免重複
-          if (!seenChapterIds.has(chapterId)) {
-            seenChapterIds.add(chapterId);
-            chapters.push({
-              id: chapterId,
-              name: $chapter.attr('title') || $chapter.find('span').first().text().trim() || $chapter.text().trim(),
-              url: href,
-            });
+          if (cidMatch) {
+            const chapterId = parseInt(cidMatch[1], 10);
+            // 避免重複
+            if (!seenChapterIds.has(chapterId)) {
+              seenChapterIds.add(chapterId);
+              chapters.push({
+                id: chapterId,
+                name: $chapter.attr('title') || $chapter.find('span').first().text().trim() || $chapter.text().trim(),
+                url: href,
+              });
+            }
           }
-        }
+        });
       });
+
+      // 自然排序章節（降序：從大到小）
+      chapters.sort((a, b) => naturalSort(b.name, a.name));
 
       if (chapters.length > 0) {
         groups.push({ title, chapters });
