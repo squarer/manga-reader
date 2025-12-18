@@ -351,7 +351,12 @@ export default function MangaDetailPage({
             <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-muted-foreground md:justify-start">
               <span className="flex items-center gap-1.5">
                 <span className="text-muted-foreground/60">作者</span>
-                {manga.author}
+                <Link
+                  href={`/?keyword=${encodeURIComponent(manga.author)}`}
+                  className="text-primary hover:underline"
+                >
+                  {manga.author}
+                </Link>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="text-muted-foreground/60">狀態</span>
@@ -371,21 +376,15 @@ export default function MangaDetailPage({
               )}
             </div>
 
-            {/* 評分（模擬） */}
-            <div className="mt-3 flex items-center justify-center gap-1 md:justify-start">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={cn(
-                    'h-4 w-4',
-                    star <= 4
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-muted-foreground/30'
-                  )}
-                />
-              ))}
-              <span className="ml-2 text-sm text-muted-foreground">4.0</span>
-            </div>
+            {/* 評分 (10 分制) */}
+            {manga.score && (
+              <div className="mt-3 flex items-center justify-center gap-1.5 md:justify-start">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-sm font-medium text-yellow-400">
+                  {manga.score}
+                </span>
+              </div>
+            )}
 
             {/* 分類標籤 */}
             {manga.genres.length > 0 && (
