@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useLayoutEffect, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -52,10 +52,6 @@ function NavbarContent() {
   // 手機版選單狀態
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // 滑動指示器狀態
-  const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
-
   /**
    * 判斷導航項目是否為當前頁面
    */
@@ -67,34 +63,6 @@ function NavbarContent() {
     // 其他頁面：檢查路徑前綴
     return pathname.startsWith(item.href);
   };
-
-  /**
-   * 更新滑動指示器位置
-   */
-  useLayoutEffect(() => {
-    const checkActive = (item: NavItem): boolean => {
-      if (item.href === "/") {
-        return pathname === "/";
-      }
-      return pathname.startsWith(item.href);
-    };
-
-    const activeIndex = NAV_ITEMS.findIndex(checkActive);
-    const activeLink = navRefs.current[activeIndex];
-
-    if (activeLink) {
-      const containerRect =
-        activeLink.parentElement?.getBoundingClientRect();
-      const linkRect = activeLink.getBoundingClientRect();
-
-      if (containerRect) {
-        setIndicatorStyle({
-          left: linkRect.left - containerRect.left,
-          width: linkRect.width,
-        });
-      }
-    }
-  }, [pathname]);
 
   /**
    * 搜尋框展開時自動聚焦
@@ -135,47 +103,39 @@ function NavbarContent() {
   };
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50",
-        "border-b border-border/50",
-        "bg-background/80 backdrop-blur-xl",
-        "supports-[backdrop-filter]:bg-background/60",
-        // 底部微光效果
-        "after:absolute after:inset-x-0 after:bottom-0 after:h-px",
-        "after:bg-gradient-to-r after:from-transparent after:via-primary/20 after:to-transparent"
-      )}
-    >
-      <nav className="mx-auto max-w-7xl px-4">
-        <div className="flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 pt-4">
+      <div className="mx-auto max-w-7xl px-4">
+        <nav
+          className={cn(
+            "inline-flex items-center gap-1",
+            "rounded-full px-2 py-1.5",
+            "border border-border/50",
+            "bg-background/80 backdrop-blur-xl",
+            "supports-[backdrop-filter]:bg-background/60",
+            "shadow-lg shadow-black/5"
+          )}
+        >
+          <div className="flex items-center">
           {/* Logo */}
           <Link
             href="/"
             className={cn(
-              "flex items-center gap-2",
-              "text-xl font-bold text-foreground",
-              "transition-colors duration-200 hover:text-primary"
+              "flex items-center gap-2 px-3 py-1.5",
+              "rounded-full",
+              "text-lg font-bold text-foreground",
+              "transition-colors duration-200 hover:text-primary hover:bg-accent"
             )}
           >
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="hidden sm:inline">Manga Reader</span>
+            <BookOpen className="h-5 w-5 text-primary" />
+            <span className="hidden sm:inline">Manga</span>
           </Link>
 
-          {/* 桌面版導航 */}
-          <div className="relative hidden items-center gap-1 md:flex">
-            {/* 滑動指示器 */}
-            <div
-              className={cn(
-                "absolute bottom-0 h-0.5 rounded-full bg-primary",
-                "transition-all duration-300 ease-out"
-              )}
-              style={{
-                left: indicatorStyle.left,
-                width: indicatorStyle.width,
-              }}
-            />
+          {/* 分隔線 */}
+          <div className="hidden h-6 w-px bg-border/50 md:block" />
 
-            {NAV_ITEMS.map((item, index) => {
+          {/* 桌面版導航 */}
+          <div className="relative hidden items-center md:flex">
+            {NAV_ITEMS.map((item) => {
               const isActive = isActiveNavItem(item);
               const Icon = item.icon;
 
@@ -183,15 +143,12 @@ function NavbarContent() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  ref={(el) => {
-                    navRefs.current[index] = el;
-                  }}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2",
-                    "rounded-lg text-sm font-medium",
+                    "flex items-center gap-1.5 px-3 py-1.5",
+                    "rounded-full text-sm font-medium",
                     "transition-all duration-200",
                     isActive
-                      ? "text-primary"
+                      ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
@@ -202,19 +159,19 @@ function NavbarContent() {
             })}
           </div>
 
-          {/* 右側操作區 */}
-          <div className="flex items-center gap-2">
+          {/* 分隔線 */}
+          <div className="hidden h-6 w-px bg-border/50 md:block" />
+
+          {/* 操作區 */}
+          <div className="flex items-center">
             {/* 桌面版搜尋框 */}
             <div className="hidden items-center md:flex">
               <form
                 onSubmit={handleSearchSubmit}
-                className={cn(
-                  "relative flex items-center",
-                  "transition-all duration-300 ease-out"
-                )}
+                className="relative flex items-center"
               >
                 {isSearchExpanded ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Input
                       ref={searchInputRef}
                       type="text"
@@ -223,15 +180,16 @@ function NavbarContent() {
                       onBlur={handleSearchBlur}
                       placeholder="搜尋漫畫..."
                       className={cn(
-                        "w-48 transition-all duration-300",
-                        "bg-muted/50 border-muted-foreground/20",
-                        "focus:bg-background focus:w-64"
+                        "h-8 w-40 rounded-full transition-all duration-300",
+                        "bg-muted/50 border-transparent",
+                        "focus:bg-background focus:w-48 focus:border-primary/30"
                       )}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 rounded-full"
                       onClick={() => {
                         setIsSearchExpanded(false);
                         setSearchValue("");
@@ -245,10 +203,11 @@ function NavbarContent() {
                     type="button"
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8 rounded-full"
                     onClick={() => setIsSearchExpanded(true)}
                     title="搜尋"
                   >
-                    <Search className="h-5 w-5" />
+                    <Search className="h-4 w-4" />
                   </Button>
                 )}
               </form>
@@ -261,68 +220,74 @@ function NavbarContent() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="h-8 w-8 rounded-full md:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               title={isMobileMenuOpen ? "關閉選單" : "開啟選單"}
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4" />
               )}
             </Button>
           </div>
         </div>
 
-        {/* 手機版選單 */}
+        </nav>
+
+        {/* 手機版選單 - 獨立於浮動導航欄 */}
         <div
           className={cn(
-            "overflow-hidden transition-all duration-300 ease-out md:hidden",
-            isMobileMenuOpen ? "max-h-96 pb-4" : "max-h-0"
+            "mt-2 overflow-hidden transition-all duration-300 ease-out md:hidden",
+            "rounded-2xl",
+            "border border-border/50",
+            "bg-background/95 backdrop-blur-xl",
+            "shadow-lg shadow-black/5",
+            isMobileMenuOpen ? "max-h-96 p-4" : "max-h-0 p-0 border-transparent"
           )}
         >
-          {/* 手機版搜尋框 */}
-          <form onSubmit={handleSearchSubmit} className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="搜尋漫畫..."
-                className="pl-10 bg-muted/50"
-              />
-            </div>
-          </form>
+        {/* 手機版搜尋框 */}
+        <form onSubmit={handleSearchSubmit} className="mb-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="搜尋漫畫..."
+              className="h-10 rounded-full pl-10 bg-muted/50 border-transparent"
+            />
+          </div>
+        </form>
 
-          {/* 手機版導航連結 */}
-          <div className="space-y-1">
-            {NAV_ITEMS.map((item) => {
-              const isActive = isActiveNavItem(item);
-              const Icon = item.icon;
+        {/* 手機版導航連結 */}
+        <div className="space-y-1">
+          {NAV_ITEMS.map((item) => {
+            const isActive = isActiveNavItem(item);
+            const Icon = item.icon;
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={closeMobileMenu}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3",
-                    "rounded-lg text-base font-medium",
-                    "transition-all duration-200",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  {item.label}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={closeMobileMenu}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5",
+                  "rounded-full text-sm font-medium",
+                  "transition-all duration-200",
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
                 </Link>
-              );
-            })}
+            );
+          })}
           </div>
         </div>
-      </nav>
+      </div>
     </header>
   );
 }
@@ -333,36 +298,32 @@ function NavbarContent() {
  */
 function NavbarFallback() {
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50",
-        "border-b border-border/50",
-        "bg-background/80 backdrop-blur-xl",
-        "supports-[backdrop-filter]:bg-background/60",
-        "after:absolute after:inset-x-0 after:bottom-0 after:h-px",
-        "after:bg-gradient-to-r after:from-transparent after:via-primary/20 after:to-transparent"
-      )}
-    >
-      <nav className="mx-auto max-w-7xl px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
+    <header className="sticky top-0 z-50 pt-4">
+      <div className="mx-auto max-w-7xl px-4">
+        <nav
+          className={cn(
+            "inline-flex items-center gap-1",
+            "rounded-full px-2 py-1.5",
+            "border border-border/50",
+            "bg-background/80 backdrop-blur-xl",
+            "supports-[backdrop-filter]:bg-background/60",
+            "shadow-lg shadow-black/5"
+          )}
+        >
           <Link
             href="/"
             className={cn(
-              "flex items-center gap-2",
-              "text-xl font-bold text-foreground"
+              "flex items-center gap-2 px-3 py-1.5",
+              "rounded-full",
+              "text-lg font-bold text-foreground"
             )}
           >
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="hidden sm:inline">Manga Reader</span>
+            <BookOpen className="h-5 w-5 text-primary" />
+            <span className="hidden sm:inline">Manga</span>
           </Link>
-
-          {/* 右側操作區 */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-          </div>
-        </div>
-      </nav>
+          <ThemeToggle />
+        </nav>
+      </div>
     </header>
   );
 }
