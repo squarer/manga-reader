@@ -52,9 +52,9 @@ function ChapterGroupDisplay({
 
   return (
     <div className="mt-6">
-      <h3 className="mb-3 text-lg font-medium text-gray-300">
+      <h3 className="mb-3 text-lg font-medium text-foreground">
         {group.title}
-        <span className="ml-2 text-sm text-gray-500">
+        <span className="ml-2 text-sm text-muted-foreground">
           ({group.chapters.length} 章)
         </span>
       </h3>
@@ -63,18 +63,16 @@ function ChapterGroupDisplay({
       {needTabs && (
         <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
           {tabs.map((tab, i) => (
-            <button
+            <Button
               key={i}
               onClick={() => setActiveTab(i)}
-              className={`flex-shrink-0 rounded px-4 py-2 text-sm transition-colors ${
-                activeTab === i
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              variant={activeTab === i ? 'default' : 'outline'}
+              size="sm"
+              className="flex-shrink-0"
             >
               <div>{tab.label}</div>
               <div className="text-xs opacity-75">({tab.count} 章)</div>
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -82,13 +80,9 @@ function ChapterGroupDisplay({
       {/* 章節列表 */}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
         {displayChapters.map((chapter) => (
-          <Link
-            key={chapter.id}
-            href={`/read/${mangaId}/${chapter.id}`}
-            className="rounded bg-gray-800 px-3 py-2 text-center text-sm hover:bg-gray-700"
-          >
-            {chapter.name}
-          </Link>
+          <Button key={chapter.id} asChild variant="secondary" size="sm">
+            <Link href={`/read/${mangaId}/${chapter.id}`}>{chapter.name}</Link>
+          </Button>
         ))}
       </div>
     </div>
