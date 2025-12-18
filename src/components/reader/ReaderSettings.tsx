@@ -40,7 +40,7 @@ export function SettingsPanel({ settings, onUpdate }: SettingsPanelProps) {
         <SheetHeader>
           <SheetTitle>閱讀設定</SheetTitle>
         </SheetHeader>
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-6 px-4">
           {/* 閱讀模式 */}
           <div className="space-y-3">
             <label className="text-sm font-medium">閱讀模式</label>
