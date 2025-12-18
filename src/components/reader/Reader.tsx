@@ -127,7 +127,7 @@ interface SinglePageReaderProps {
 /**
  * 單頁閱讀模式
  *
- * 左鍵下一頁、右鍵上一頁、中間點擊顯示工具列
+ * 左鍵換頁（左側上一頁、右側下一頁）、右鍵上一頁、中間點擊顯示工具列
  */
 function SinglePageReader({
   data,
@@ -136,7 +136,7 @@ function SinglePageReader({
   onPageChange,
   onTap,
 }: SinglePageReaderProps) {
-  /** 左鍵點擊 - 下一頁或顯示工具列 */
+  /** 左鍵點擊 - 換頁或顯示工具列 */
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       const rect = e.currentTarget.getBoundingClientRect();
@@ -144,13 +144,21 @@ function SinglePageReader({
       const width = rect.width;
       const zone = x / width;
 
-      // 中間區域 (30%-70%) - 顯示工具列
-      if (zone >= 0.3 && zone <= 0.7) {
+      // 中間區域 (40%-60%) - 顯示工具列（縮小範圍讓換頁更容易）
+      if (zone >= 0.4 && zone <= 0.6) {
         onTap();
         return;
       }
 
-      // 其他區域 - 下一頁
+      // 左側區域 (0%-40%) - 上一頁
+      if (zone < 0.4) {
+        if (currentPage > 0) {
+          onPageChange(currentPage - 1);
+        }
+        return;
+      }
+
+      // 右側區域 (60%-100%) - 下一頁
       if (currentPage < data.total - 1) {
         onPageChange(currentPage + 1);
       }
@@ -184,9 +192,10 @@ function SinglePageReader({
           alt={`Page ${currentPage + 1}`}
           width={1200}
           height={1800}
-          className="h-auto w-full max-w-full"
+          className="pointer-events-none h-auto w-full max-w-full select-none"
           unoptimized
           priority
+          draggable={false}
         />
       </div>
     </div>
