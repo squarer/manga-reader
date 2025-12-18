@@ -7,6 +7,17 @@ import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
+ * 地區選項
+ * key: API 參數, value: 顯示名稱
+ */
+const REGION_OPTIONS = {
+  japan: '日本漫畫',
+  hongkong: '港台漫畫',
+  korea: '韓國漫畫',
+  other: '歐美漫畫',
+} as const;
+
+/**
  * 劇情分類選項
  * key: URL 參數, value: 顯示名稱
  */
@@ -46,6 +57,9 @@ const SORT_OPTIONS = {
   rating: '評分最高',
 } as const;
 
+/** 地區型別 */
+export type RegionKey = keyof typeof REGION_OPTIONS;
+
 /** 劇情分類 key 型別 */
 export type GenreKey = keyof typeof GENRE_OPTIONS;
 
@@ -60,6 +74,8 @@ export type SortKey = keyof typeof SORT_OPTIONS;
 
 /** 篩選狀態 */
 export interface FilterState {
+  /** 地區（單選） */
+  region: RegionKey | null;
   /** 劇情分類（多選） */
   genres: GenreKey[];
   /** 年份（單選） */
@@ -72,6 +88,7 @@ export interface FilterState {
 
 /** 預設篩選狀態 */
 export const DEFAULT_FILTER_STATE: FilterState = {
+  region: null,
   genres: [],
   year: null,
   status: 'all',
@@ -140,6 +157,11 @@ function FilterTag({
 export default function MangaFilter({ filters, onChange }: MangaFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  /** 設定地區（單選） */
+  const setRegion = (region: RegionKey | null) => {
+    onChange({ ...filters, region: region === filters.region ? null : region });
+  };
+
   /** 切換劇情分類（多選） */
   const toggleGenre = (genre: GenreKey) => {
     const newGenres = filters.genres.includes(genre)
@@ -170,14 +192,16 @@ export default function MangaFilter({ filters, onChange }: MangaFilterProps) {
 
   /** 檢查是否有任何篩選啟用 */
   const hasActiveFilters =
-    filters.genres.length > 0
+    filters.region !== null
+    || filters.genres.length > 0
     || filters.year !== null
     || filters.status !== 'all'
     || filters.sort !== 'update';
 
   /** 取得已啟用篩選數量 */
   const activeFilterCount =
-    filters.genres.length
+    (filters.region ? 1 : 0)
+    + filters.genres.length
     + (filters.year ? 1 : 0)
     + (filters.status !== 'all' ? 1 : 0)
     + (filters.sort !== 'update' ? 1 : 0);
@@ -242,6 +266,18 @@ export default function MangaFilter({ filters, onChange }: MangaFilterProps) {
           isExpanded ? 'mt-4 max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 md:mt-0 md:max-h-none md:opacity-100'
         )}
       >
+        {/* 地區（單選） */}
+        <FilterSection title="地區">
+          {Object.entries(REGION_OPTIONS).map(([key, label]) => (
+            <FilterTag
+              key={key}
+              label={label}
+              isSelected={filters.region === key}
+              onClick={() => setRegion(key as RegionKey)}
+            />
+          ))}
+        </FilterSection>
+
         {/* 劇情分類（多選） */}
         <FilterSection title="劇情分類">
           {Object.entries(GENRE_OPTIONS).map(([key, label]) => (

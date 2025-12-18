@@ -59,6 +59,11 @@ function HomeContent() {
         // 篩選模式
         const f = currentFilters || filters;
 
+        // 地區
+        if (f.region) {
+          params.set('region', f.region);
+        }
+
         // 劇情分類（多選）
         if (f.genres.length > 0) {
           params.set('genre', f.genres.join(','));
