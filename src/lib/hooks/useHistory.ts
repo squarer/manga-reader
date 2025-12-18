@@ -14,50 +14,58 @@ export interface HistoryItem {
 const STORAGE_KEY = 'manga-reader-history';
 const MAX_HISTORY = 50;
 
+/**
+ * 從 localStorage 讀取歷史記錄
+ */
+function getStoredHistory(): HistoryItem[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return [];
+  }
+}
+
 export function useHistory() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 從 localStorage 載入歷史記錄
+  // 初始化：從 localStorage 載入（這是 hydration 同步，必須在 effect 中執行）
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setHistory(JSON.parse(stored));
-      } catch {
-        setHistory([]);
-      }
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 初始化 localStorage 的標準模式
+    setHistory(getStoredHistory());
     setIsLoaded(true);
   }, []);
 
-  // 儲存到 localStorage
+  // 同步到 localStorage
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
     }
   }, [history, isLoaded]);
 
-  // 添加閱讀記錄
+  /**
+   * 添加閱讀記錄
+   */
   const addHistory = useCallback((item: Omit<HistoryItem, 'timestamp'>) => {
     setHistory((prev) => {
-      // 移除同一漫畫的舊記錄
       const filtered = prev.filter((h) => h.mangaId !== item.mangaId);
-      // 添加新記錄到最前面
-      const newHistory = [
-        { ...item, timestamp: Date.now() },
-        ...filtered,
-      ].slice(0, MAX_HISTORY);
-      return newHistory;
+      return [{ ...item, timestamp: Date.now() }, ...filtered].slice(0, MAX_HISTORY);
     });
   }, []);
 
-  // 移除單個記錄
+  /**
+   * 移除單個記錄
+   */
   const removeHistory = useCallback((mangaId: number) => {
     setHistory((prev) => prev.filter((h) => h.mangaId !== mangaId));
   }, []);
 
-  // 清空所有記錄
+  /**
+   * 清空所有記錄
+   */
   const clearHistory = useCallback(() => {
     setHistory([]);
   }, []);

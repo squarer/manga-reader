@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useHistory } from '@/lib/hooks/useHistory';
 
 interface ReaderProps {
@@ -42,7 +44,6 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
           setData(json.data);
           setCurrentPage(0);
 
-          // 記錄閱讀歷史
           addHistory({
             mangaId: json.data.bid,
             mangaName: json.data.bname,
@@ -73,7 +74,6 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
     [data]
   );
 
-  // 鍵盤導航
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (viewMode !== 'single') return;
@@ -91,22 +91,30 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-xl">載入中...</div>
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 z-50 flex items-center justify-between bg-background/95 px-4 py-3 backdrop-blur">
+          <Skeleton className="h-5 w-16" />
+          <div className="text-center">
+            <Skeleton className="mx-auto h-4 w-32" />
+            <Skeleton className="mx-auto mt-1 h-3 w-24" />
+          </div>
+          <Skeleton className="h-8 w-16" />
+        </header>
+        <div className="mx-auto max-w-4xl space-y-4 p-4">
+          <Skeleton className="aspect-[2/3] w-full" />
+          <Skeleton className="aspect-[2/3] w-full" />
+        </div>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-        <div className="text-xl text-red-500">{error || '載入失敗'}</div>
-        <Link
-          href={`/manga/${mangaId}`}
-          className="rounded bg-blue-600 px-4 py-2 hover:bg-blue-700"
-        >
-          返回漫畫詳情
-        </Link>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+        <div className="text-xl text-destructive">{error || '載入失敗'}</div>
+        <Button asChild>
+          <Link href={`/manga/${mangaId}`}>返回漫畫詳情</Link>
+        </Button>
       </div>
     );
   }
@@ -114,30 +122,25 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   return (
     <div className="min-h-screen bg-black">
       {/* 頂部導航 */}
-      <header className="sticky top-0 z-50 flex items-center justify-between bg-gray-900/95 px-4 py-3 backdrop-blur">
-        <Link
-          href={`/manga/${mangaId}`}
-          className="text-gray-400 hover:text-white"
-        >
-          ← 返回
-        </Link>
+      <header className="sticky top-0 z-50 flex items-center justify-between bg-background/95 px-4 py-3 backdrop-blur">
+        <Button asChild variant="ghost" size="sm">
+          <Link href={`/manga/${mangaId}`}>← 返回</Link>
+        </Button>
         <div className="text-center">
           <h1 className="text-sm font-medium">{data.bname}</h1>
-          <p className="text-xs text-gray-400">{data.cname}</p>
+          <p className="text-xs text-muted-foreground">{data.cname}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewMode(viewMode === 'single' ? 'scroll' : 'single')}
-            className="rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
-          >
-            {viewMode === 'single' ? '滾動' : '單頁'}
-          </button>
-        </div>
+        <Button
+          onClick={() => setViewMode(viewMode === 'single' ? 'scroll' : 'single')}
+          variant="secondary"
+          size="sm"
+        >
+          {viewMode === 'single' ? '滾動' : '單頁'}
+        </Button>
       </header>
 
       {/* 閱讀區域 */}
       {viewMode === 'scroll' ? (
-        // 滾動模式
         <div className="mx-auto max-w-4xl">
           {data.images.map((url, index) => (
             <div key={index} className="relative w-full">
@@ -154,7 +157,6 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
           ))}
         </div>
       ) : (
-        // 單頁模式
         <div className="flex min-h-[calc(100vh-60px)] flex-col items-center justify-center">
           <div className="relative max-h-[85vh] max-w-full">
             <Image
@@ -168,49 +170,41 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
             />
           </div>
           <div className="mt-4 flex items-center gap-4">
-            <button
+            <Button
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 0}
-              className="rounded bg-gray-700 px-4 py-2 disabled:opacity-50"
+              variant="secondary"
             >
               上一頁
-            </button>
-            <span className="text-sm">
+            </Button>
+            <span className="text-sm text-muted-foreground">
               {currentPage + 1} / {data.total}
             </span>
-            <button
+            <Button
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === data.total - 1}
-              className="rounded bg-gray-700 px-4 py-2 disabled:opacity-50"
+              variant="secondary"
             >
               下一頁
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {/* 底部導航 */}
-      <footer className="sticky bottom-0 flex items-center justify-between bg-gray-900/95 px-4 py-3 backdrop-blur">
+      <footer className="sticky bottom-0 flex items-center justify-between bg-background/95 px-4 py-3 backdrop-blur">
         {data.prevCid ? (
-          <Link
-            href={`/read/${mangaId}/${data.prevCid}`}
-            className="rounded bg-gray-700 px-4 py-2 hover:bg-gray-600"
-          >
-            上一章
-          </Link>
+          <Button asChild variant="secondary">
+            <Link href={`/read/${mangaId}/${data.prevCid}`}>上一章</Link>
+          </Button>
         ) : (
           <div />
         )}
-        <span className="text-sm text-gray-400">
-          共 {data.total} 頁
-        </span>
+        <span className="text-sm text-muted-foreground">共 {data.total} 頁</span>
         {data.nextCid ? (
-          <Link
-            href={`/read/${mangaId}/${data.nextCid}`}
-            className="rounded bg-gray-700 px-4 py-2 hover:bg-gray-600"
-          >
-            下一章
-          </Link>
+          <Button asChild variant="secondary">
+            <Link href={`/read/${mangaId}/${data.nextCid}`}>下一章</Link>
+          </Button>
         ) : (
           <div />
         )}

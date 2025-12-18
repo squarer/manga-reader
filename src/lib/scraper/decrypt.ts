@@ -167,7 +167,7 @@ function extractFieldsManually(decrypted: string): ImageData | null {
     .filter(Boolean);
 
   // 解析 sl 參數
-  let sl = { e: 0, m: '' };
+  const sl = { e: 0, m: '' };
   if (slMatch) {
     const eMatch = slMatch[1].match(/e['":\s]+(\d+)/);
     const mMatch = slMatch[1].match(/m['":\s]+['"]([^'"]+)['"]/);

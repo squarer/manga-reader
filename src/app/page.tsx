@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import MangaCard from '@/components/MangaCard';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 
 const CATEGORIES = [
@@ -12,6 +15,9 @@ const CATEGORIES = [
   { id: 'other', name: '歐美漫畫' },
   { id: 'korea', name: '韓國漫畫' },
 ];
+
+/** 交錯進場延遲基數（毫秒） */
+const STAGGER_DELAY = 50;
 
 export default function Home() {
   const [mangas, setMangas] = useState<MangaListItem[]>([]);
@@ -22,6 +28,10 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
+
+  // 分類滑動指示器
+  const categoryRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   // 載入漫畫資料
   const fetchMangas = async (pageNum: number, append = false) => {
@@ -82,47 +92,75 @@ export default function Home() {
     setSearchInput('');
   };
 
+  // 更新滑動指示器位置
+  useLayoutEffect(() => {
+    const currentIndex = CATEGORIES.findIndex((cat) => cat.id === category);
+    const currentButton = categoryRefs.current[currentIndex];
+
+    if (currentButton) {
+      const containerRect = currentButton.parentElement?.getBoundingClientRect();
+      const buttonRect = currentButton.getBoundingClientRect();
+
+      if (containerRect) {
+        setIndicatorStyle({
+          left: buttonRect.left - containerRect.left,
+          width: buttonRect.width,
+        });
+      }
+    }
+  }, [category]);
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gray-800 bg-gray-900/95 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-blue-400">Manga Reader</h1>
+            <h1 className="text-2xl font-bold text-primary">Manga Reader</h1>
 
             {/* Search */}
             <form onSubmit={handleSearch} className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="搜尋漫畫..."
-                className="rounded-lg bg-gray-800 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-48 sm:w-64"
               />
-              <button
-                type="submit"
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm hover:bg-blue-700"
-              >
-                搜尋
-              </button>
+              <Button type="submit">搜尋</Button>
             </form>
           </div>
 
-          {/* Categories */}
+          {/* Categories with sliding indicator */}
           {!keyword && (
-            <div className="mt-4 flex gap-2 overflow-x-auto">
-              {CATEGORIES.map((cat) => (
-                <button
+            <div className="relative mt-4 flex gap-2 overflow-x-auto pb-1">
+              {/* 滑動指示器 */}
+              <div
+                className="absolute bottom-0 h-0.5 rounded-full bg-primary transition-all duration-300 ease-out"
+                style={{
+                  left: indicatorStyle.left,
+                  width: indicatorStyle.width,
+                }}
+              />
+
+              {CATEGORIES.map((cat, index) => (
+                <Button
                   key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
+                  ref={(el) => { categoryRefs.current[index] = el; }}
+                  onClick={() => {
+                    setCategory(cat.id);
+                    setPage(1);
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className={`whitespace-nowrap rounded-full transition-all duration-200 ${
                     category === cat.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                 >
                   {cat.name}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -130,13 +168,10 @@ export default function Home() {
           {/* Search indicator */}
           {keyword && (
             <div className="mt-4 flex items-center gap-2">
-              <span className="text-gray-400">搜尋結果：{keyword}</span>
-              <button
-                onClick={clearSearch}
-                className="text-sm text-blue-400 hover:underline"
-              >
+              <span className="text-muted-foreground">搜尋結果：{keyword}</span>
+              <Button variant="link" size="sm" onClick={clearSearch}>
                 清除搜尋
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -151,33 +186,42 @@ export default function Home() {
         {!keyword && <HistorySection />}
 
         {loading ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="text-xl text-gray-400">載入中...</div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ))}
           </div>
         ) : mangas.length === 0 ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="text-xl text-gray-400">沒有找到漫畫</div>
+            <div className="text-xl text-muted-foreground">沒有找到漫畫</div>
           </div>
         ) : (
           <>
-            {/* Manga Grid */}
+            {/* Manga Grid with staggered entrance */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-              {mangas.map((manga) => (
-                <MangaCard key={manga.id} manga={manga} />
+              {mangas.map((manga, index) => (
+                <MangaCard
+                  key={manga.id}
+                  manga={manga}
+                  animationDelay={index * STAGGER_DELAY}
+                />
               ))}
             </div>
 
             {/* Load More */}
             {pagination && page < pagination.total && (
               <div className="mt-8 flex flex-col items-center gap-2">
-                <button
+                <Button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="rounded-lg bg-blue-600 px-8 py-3 font-medium transition-colors hover:bg-blue-700 disabled:opacity-50"
+                  className="px-8 py-3 font-medium"
                 >
                   {loadingMore ? '載入中...' : '載入更多'}
-                </button>
-                <span className="text-sm text-gray-500">
+                </Button>
+                <span className="text-sm text-muted-foreground">
                   已顯示 {mangas.length} / {pagination.totalItems} 部漫畫
                 </span>
               </div>

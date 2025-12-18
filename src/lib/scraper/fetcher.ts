@@ -3,7 +3,7 @@
  * 處理對 manhuagui.com 的請求
  */
 
-import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 
 const BASE_URL = 'https://www.manhuagui.com';
 

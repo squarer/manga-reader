@@ -14,8 +14,8 @@ export default function ReadPage({
 
   if (isNaN(mangaId) || isNaN(chapterId)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-900">
-        <div className="text-xl text-red-500">Invalid ID</div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-xl text-destructive">Invalid ID</div>
       </div>
     );
   }
