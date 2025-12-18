@@ -12,6 +12,7 @@ import {
   X,
   BookOpen,
   SlidersHorizontal,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import {
   getActiveFilterCount,
 } from "@/components/MangaFilter";
 import { cn } from "@/lib/utils";
+import { useHistory } from "@/lib/hooks/useHistory";
 
 /**
  * 導航項目定義
@@ -118,6 +120,12 @@ function NavbarContent() {
 
   // 篩選 Popover 狀態
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // 歷史 Popover 狀態
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // 閱讀歷史
+  const { history, isLoaded: isHistoryLoaded } = useHistory();
 
   // 從 URL 解析 filter 狀態
   const filters = parseFiltersFromParams(searchParams);
@@ -348,6 +356,91 @@ function NavbarContent() {
                 </form>
               </div>
 
+              {/* 閱讀歷史 */}
+              <Popover open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "relative h-8 w-8 rounded-full",
+                      isHistoryLoaded && history.length > 0 && "text-primary"
+                    )}
+                    title="閱讀歷史"
+                  >
+                    <Clock className="h-4 w-4" />
+                    {isHistoryLoaded && history.length > 0 && (
+                      <Badge
+                        variant="default"
+                        className="absolute -right-1 -top-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center"
+                      >
+                        {history.length > 9 ? "9+" : history.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-72 p-0"
+                  align="end"
+                  sideOffset={8}
+                >
+                  <div className="p-3 border-b">
+                    <h3 className="font-medium text-sm">最近閱讀</h3>
+                  </div>
+                  {isHistoryLoaded && history.length > 0 ? (
+                    <>
+                      <div className="max-h-80 overflow-y-auto">
+                        {history.slice(0, 10).map((item) => (
+                          <Link
+                            key={`${item.mangaId}-${item.chapterId}`}
+                            href={`/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`}
+                            className="flex items-center gap-3 px-3 py-2 hover:bg-accent transition-colors"
+                            onClick={() => setIsHistoryOpen(false)}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">
+                                {item.mangaName}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {item.chapterName}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="p-2 border-t">
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => setIsHistoryOpen(false)}
+                        >
+                          <Link href="/history">查看全部</Link>
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-6 text-center text-sm text-muted-foreground">
+                      尚無閱讀記錄
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+
+              {/* 我的收藏 */}
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                title="我的收藏"
+              >
+                <Link href="/favorites">
+                  <Heart className="h-4 w-4" />
+                </Link>
+              </Button>
+
               {/* 主題切換 */}
               <ThemeToggle />
 
@@ -421,6 +514,48 @@ function NavbarContent() {
                 </Link>
               );
             })}
+
+            {/* 分隔線 */}
+            <div className="my-2 h-px bg-border/50" />
+
+            {/* 閱讀歷史 */}
+            <Link
+              href="/history"
+              onClick={closeMobileMenu}
+              className={cn(
+                "flex items-center gap-3 px-4 py-2.5",
+                "rounded-full text-sm font-medium",
+                "transition-all duration-200",
+                pathname === "/history"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              )}
+            >
+              <Clock className="h-4 w-4" />
+              閱讀歷史
+              {isHistoryLoaded && history.length > 0 && (
+                <Badge variant="secondary" className="ml-auto">
+                  {history.length}
+                </Badge>
+              )}
+            </Link>
+
+            {/* 我的收藏 */}
+            <Link
+              href="/favorites"
+              onClick={closeMobileMenu}
+              className={cn(
+                "flex items-center gap-3 px-4 py-2.5",
+                "rounded-full text-sm font-medium",
+                "transition-all duration-200",
+                pathname === "/favorites"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              )}
+            >
+              <Heart className="h-4 w-4" />
+              我的收藏
+            </Link>
           </div>
         </div>
       </div>
