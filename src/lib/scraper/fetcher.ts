@@ -7,10 +7,19 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
 const BASE_URL = 'https://www.manhuagui.com';
 
+// 代理配置（從環境變數讀取）
+const proxyConfig = process.env.PROXY_HOST && process.env.PROXY_PORT
+  ? {
+      host: process.env.PROXY_HOST,
+      port: parseInt(process.env.PROXY_PORT, 10),
+    }
+  : undefined;
+
 // 建立 axios 實例
 const client: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 15000,
+  proxy: proxyConfig,
   headers: {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
