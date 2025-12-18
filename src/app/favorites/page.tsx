@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Navbar } from '@/components/Navbar';
 import TiltCard from '@/components/TiltCard';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 
@@ -16,7 +15,6 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-6 flex items-center gap-3">
