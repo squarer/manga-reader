@@ -299,10 +299,10 @@ export default function MangaDetailPage({
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Hero 區域 */}
-      <div className="relative min-h-[60vh] overflow-hidden">
+      {/* Hero 區域 - 負 margin 讓背景延伸到 navbar 後方 */}
+      <div className="relative -mt-20 min-h-[60vh] overflow-hidden pt-20">
         {/* 背景封面（模糊） */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 -top-20">
           <Image
             src={coverUrl}
             alt=""
