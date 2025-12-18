@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { ArrowUp, ArrowDown, Minus, Eye, Trophy, Crown, Medal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import type { RankItem } from '@/lib/scraper/types';
 import { RankTrend } from '@/lib/scraper/types';
 
@@ -385,7 +384,6 @@ export default function RankPage() {
                 排行榜
               </h1>
             </div>
-            <ThemeToggle />
           </div>
 
           {/* 榜單類型切換 */}
