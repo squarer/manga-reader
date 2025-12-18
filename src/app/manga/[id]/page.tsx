@@ -3,8 +3,93 @@
 import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { MangaInfo } from '@/lib/scraper/types';
+import type { MangaInfo, ChapterGroup } from '@/lib/scraper/types';
 import { useFavorites } from '@/lib/hooks/useFavorites';
+
+/**
+ * 章節分組顯示元件（支援分 tab）
+ */
+function ChapterGroupDisplay({
+  group,
+  mangaId,
+}: {
+  group: ChapterGroup;
+  mangaId: string;
+}) {
+  const [activeTab, setActiveTab] = useState(0);
+  const THRESHOLD = 100; // 超過 100 章節就分 tab
+  const TAB_COUNT = 5; // 分成 5 個 tab
+
+  // 判斷是否需要分 tab
+  const needTabs = group.chapters.length > THRESHOLD;
+  const chapterPerTab = Math.ceil(group.chapters.length / TAB_COUNT);
+
+  // 計算當前 tab 要顯示的章節
+  const displayChapters = needTabs
+    ? group.chapters.slice(
+        activeTab * chapterPerTab,
+        (activeTab + 1) * chapterPerTab
+      )
+    : group.chapters;
+
+  // 生成 tab 標籤
+  const tabs = needTabs
+    ? Array.from({ length: TAB_COUNT }, (_, i) => {
+        const start = i * chapterPerTab;
+        const end = Math.min((i + 1) * chapterPerTab, group.chapters.length);
+        const startChapter = group.chapters[start];
+        const endChapter = group.chapters[end - 1];
+        return {
+          label: `${startChapter.name} - ${endChapter.name}`,
+          count: end - start,
+        };
+      })
+    : [];
+
+  return (
+    <div className="mt-6">
+      <h3 className="mb-3 text-lg font-medium text-gray-300">
+        {group.title}
+        <span className="ml-2 text-sm text-gray-500">
+          ({group.chapters.length} 章)
+        </span>
+      </h3>
+
+      {/* Tab 切換 */}
+      {needTabs && (
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
+          {tabs.map((tab, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveTab(i)}
+              className={`flex-shrink-0 rounded px-4 py-2 text-sm transition-colors ${
+                activeTab === i
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              <div>{tab.label}</div>
+              <div className="text-xs opacity-75">({tab.count} 章)</div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 章節列表 */}
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+        {displayChapters.map((chapter) => (
+          <Link
+            key={chapter.id}
+            href={`/read/${mangaId}/${chapter.id}`}
+            className="rounded bg-gray-800 px-3 py-2 text-center text-sm hover:bg-gray-700"
+          >
+            {chapter.name}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function MangaDetailPage({
   params,
@@ -161,22 +246,11 @@ export default function MangaDetailPage({
             <p className="mt-4 text-gray-500">沒有章節</p>
           ) : (
             manga.chapters.map((group, groupIndex) => (
-              <div key={groupIndex} className="mt-6">
-                <h3 className="mb-3 text-lg font-medium text-gray-300">
-                  {group.title}
-                </h3>
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-                  {group.chapters.map((chapter) => (
-                    <Link
-                      key={chapter.id}
-                      href={`/read/${id}/${chapter.id}`}
-                      className="rounded bg-gray-800 px-3 py-2 text-center text-sm hover:bg-gray-700"
-                    >
-                      {chapter.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              <ChapterGroupDisplay
+                key={groupIndex}
+                group={group}
+                mangaId={id}
+              />
             ))
           )}
         </div>
