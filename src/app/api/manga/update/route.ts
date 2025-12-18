@@ -9,7 +9,19 @@ import { withCache } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageParam = searchParams.get('page');
+  const page = pageParam ? parseInt(pageParam, 10) : 1;
+
+  // 驗證 page 參數必須是正整數
+  if (isNaN(page) || page < 1 || !Number.isInteger(page)) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Invalid page parameter. Must be a positive integer.',
+      },
+      { status: 400 }
+    );
+  }
 
   try {
     const cacheKey = request.url;

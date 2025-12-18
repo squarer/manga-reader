@@ -29,22 +29,51 @@ import {
 import type { FilterOptions } from '@/lib/scraper';
 import { withCache } from '@/lib/cache';
 
+/** 有效的地區值 */
+const VALID_REGIONS = Object.values(RegionType);
+
+/** 有效的劇情分類值 */
+const VALID_GENRES = Object.values(GenreType);
+
+/** 有效的連載狀態值 */
+const VALID_STATUSES = Object.values(MangaStatus).filter((v) => v !== '');
+
+/** 有效的排序方式值 */
+const VALID_SORTS = Object.values(SortType).filter((v) => v !== '');
+
+/**
+ * 驗證參數是否為有效值
+ *
+ * @param value - 參數值
+ * @param validValues - 有效值陣列
+ * @returns 有效則回傳原值，無效則回傳 null
+ */
+function validateParam<T extends string>(
+  value: string | null,
+  validValues: T[]
+): T | null {
+  if (!value) return null;
+  return validValues.includes(value as T) ? (value as T) : null;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   // 搜尋參數
   const keyword = searchParams.get('keyword');
 
-  // 篩選參數
+  // 篩選參數（加入驗證）
   const category = searchParams.get('category');
-  const region = searchParams.get('region') as RegionType | null;
+  const region = validateParam(searchParams.get('region'), VALID_REGIONS);
   // genre 可能是逗號分隔的多值，只取第一個（網站不支援多類型組合）
   const genreParam = searchParams.get('genre');
-  const genre = genreParam ? (genreParam.split(',')[0] as GenreType) : null;
+  const genre = genreParam
+    ? validateParam(genreParam.split(',')[0], VALID_GENRES)
+    : null;
   const year = searchParams.get('year');
   const letter = searchParams.get('letter');
-  const status = searchParams.get('status') as MangaStatus | null;
-  const sort = searchParams.get('sort') as SortType | null;
+  const status = validateParam(searchParams.get('status'), VALID_STATUSES);
+  const sort = validateParam(searchParams.get('sort'), VALID_SORTS);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   try {
