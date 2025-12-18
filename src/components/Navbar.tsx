@@ -190,7 +190,7 @@ function NavbarContent() {
   );
 
   return (
-    <header className="sticky top-0 z-50 pt-4">
+    <header className="sticky top-0 z-[60] pt-4">
       <div className="mx-auto max-w-7xl px-4">
         <nav
           className={cn(
@@ -434,7 +434,7 @@ function NavbarContent() {
  */
 function NavbarFallback() {
   return (
-    <header className="sticky top-0 z-50 pt-4">
+    <header className="sticky top-0 z-[60] pt-4">
       <div className="mx-auto max-w-7xl px-4">
         <nav
           className={cn(
