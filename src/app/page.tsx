@@ -17,52 +17,69 @@ export default function Home() {
   const [mangas, setMangas] = useState<MangaListItem[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [category, setCategory] = useState('japan');
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
 
-  useEffect(() => {
-    async function fetchMangas() {
+  // 載入漫畫資料
+  const fetchMangas = async (pageNum: number, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
       setLoading(true);
-      try {
-        const params = new URLSearchParams({
-          page: page.toString(),
-        });
-
-        if (keyword) {
-          params.set('keyword', keyword);
-        } else {
-          params.set('category', category);
-        }
-
-        const res = await fetch(`/api/manga?${params}`);
-        const json = await res.json();
-
-        if (json.success) {
-          setMangas(json.data.items);
-          setPagination(json.data.pagination);
-        }
-      } catch (error) {
-        console.error('Failed to fetch mangas:', error);
-      } finally {
-        setLoading(false);
-      }
     }
 
-    fetchMangas();
-  }, [category, page, keyword]);
+    try {
+      const params = new URLSearchParams({
+        page: pageNum.toString(),
+      });
+
+      if (keyword) {
+        params.set('keyword', keyword);
+      } else {
+        params.set('category', category);
+      }
+
+      const res = await fetch(`/api/manga?${params}`);
+      const json = await res.json();
+
+      if (json.success) {
+        setMangas((prev) =>
+          append ? [...prev, ...json.data.items] : json.data.items
+        );
+        setPagination(json.data.pagination);
+      }
+    } catch (error) {
+      console.error('Failed to fetch mangas:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // 初始載入或切換分類/搜尋時
+  useEffect(() => {
+    setPage(1);
+    fetchMangas(1, false);
+  }, [category, keyword]);
+
+  // 載入更多
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchMangas(nextPage, true);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setKeyword(searchInput);
-    setPage(1);
   };
 
   const clearSearch = () => {
     setKeyword('');
     setSearchInput('');
-    setPage(1);
   };
 
   return (
@@ -97,10 +114,7 @@ export default function Home() {
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => {
-                    setCategory(cat.id);
-                    setPage(1);
-                  }}
+                  onClick={() => setCategory(cat.id)}
                   className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
                     category === cat.id
                       ? 'bg-blue-600 text-white'
@@ -153,26 +167,19 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {pagination && pagination.total > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
+            {/* Load More */}
+            {pagination && page < pagination.total && (
+              <div className="mt-8 flex flex-col items-center gap-2">
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="rounded bg-gray-800 px-4 py-2 disabled:opacity-50"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="rounded-lg bg-blue-600 px-8 py-3 font-medium transition-colors hover:bg-blue-700 disabled:opacity-50"
                 >
-                  上一頁
+                  {loadingMore ? '載入中...' : '載入更多'}
                 </button>
-                <span className="px-4 text-gray-400">
-                  {page} / {pagination.total}
+                <span className="text-sm text-gray-500">
+                  已顯示 {mangas.length} / {pagination.totalItems} 部漫畫
                 </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(pagination.total, p + 1))}
-                  disabled={page === pagination.total}
-                  className="rounded bg-gray-800 px-4 py-2 disabled:opacity-50"
-                >
-                  下一頁
-                </button>
               </div>
             )}
           </>
