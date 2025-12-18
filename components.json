@@ -18,5 +18,7 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@animate-ui": "https://raw.githubusercontent.com/imskyleen/animate-ui/main/apps/www/public/r/{name}.json"
+  }
 }
