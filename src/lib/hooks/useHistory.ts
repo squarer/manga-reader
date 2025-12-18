@@ -8,6 +8,8 @@ export interface HistoryItem {
   mangaCover: string;
   chapterId: number;
   chapterName: string;
+  /** 閱讀到的頁碼（0-based） */
+  page: number;
   timestamp: number;
 }
 
@@ -57,6 +59,15 @@ export function useHistory() {
   }, []);
 
   /**
+   * 更新閱讀頁碼
+   */
+  const updateHistoryPage = useCallback((mangaId: number, page: number) => {
+    setHistory((prev) =>
+      prev.map((h) => (h.mangaId === mangaId ? { ...h, page, timestamp: Date.now() } : h))
+    );
+  }, []);
+
+  /**
    * 移除單個記錄
    */
   const removeHistory = useCallback((mangaId: number) => {
@@ -74,6 +85,7 @@ export function useHistory() {
     history,
     isLoaded,
     addHistory,
+    updateHistoryPage,
     removeHistory,
     clearHistory,
   };

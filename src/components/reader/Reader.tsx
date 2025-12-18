@@ -89,7 +89,7 @@ function ScrollReader({ data, imageWidth, onPageChange }: ScrollReaderProps) {
   return (
     <div
       ref={containerRef}
-      className="mx-auto max-w-4xl py-16"
+      className="mx-auto max-w-4xl space-y-2 py-16"
       style={{ width: `${imageWidth}%` }}
     >
       {data.images.map((url, index) => (
@@ -205,7 +205,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  const { addHistory } = useHistory();
+  const { addHistory, updateHistoryPage } = useHistory();
   const { isVisible, showToolbar } = useToolbarVisibility();
   const { toggleFullscreen } = useFullscreen();
   const { settings, updateSettings } = useReaderSettings();
@@ -236,6 +236,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
             mangaCover: `https://cf.mhgui.com/cpic/b/${json.data.bid}.jpg`,
             chapterId: json.data.cid,
             chapterName: json.data.cname,
+            page: validPage,
           });
         } else {
           setError(json.error || 'Failed to load chapter');
@@ -250,25 +251,42 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
     fetchChapter();
   }, [mangaId, chapterId, addHistory]);
 
-  // 頁面切換
+  /**
+   * 更新 URL 頁碼參數
+   */
+  const updatePageUrl = useCallback((page: number) => {
+    const url = new URL(window.location.href);
+    if (page === 0) {
+      url.searchParams.delete('page');
+    } else {
+      url.searchParams.set('page', String(page + 1));
+    }
+    window.history.replaceState({}, '', url.toString());
+  }, []);
+
+  /**
+   * 單頁模式頁面切換
+   */
   const goToPage = useCallback(
     (page: number) => {
       if (data && page >= 0 && page < data.total) {
         setCurrentPage(page);
-        if (settings.viewMode === 'single') {
-          window.scrollTo({ top: 0, behavior: 'instant' });
-          // 更新 URL 以反映當前頁碼
-          const url = new URL(window.location.href);
-          if (page === 0) {
-            url.searchParams.delete('page');
-          } else {
-            url.searchParams.set('page', String(page + 1));
-          }
-          window.history.replaceState({}, '', url.toString());
-        }
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        updatePageUrl(page);
       }
     },
-    [data, settings.viewMode]
+    [data, updatePageUrl]
+  );
+
+  /**
+   * 滾動模式頁面切換（由 IntersectionObserver 觸發）
+   */
+  const handleScrollPageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+      updatePageUrl(page);
+    },
+    [updatePageUrl]
   );
 
   // 鍵盤快捷鍵
@@ -353,6 +371,33 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [showToolbar]);
 
+  // 頁面離開時更新閱讀記錄
+  useEffect(() => {
+    if (!data) return;
+
+    const mangaId = data.bid;
+
+    function handleBeforeUnload() {
+      updateHistoryPage(mangaId, currentPage);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        updateHistoryPage(mangaId, currentPage);
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // 組件卸載時也保存
+      updateHistoryPage(mangaId, currentPage);
+    };
+  }, [data, currentPage, updateHistoryPage]);
+
   if (loading) {
     return <LoadingState />;
   }
@@ -377,7 +422,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
         <ScrollReader
           data={data}
           imageWidth={settings.imageWidth}
-          onPageChange={setCurrentPage}
+          onPageChange={handleScrollPageChange}
         />
       ) : (
         <SinglePageReader

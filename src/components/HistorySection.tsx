@@ -31,7 +31,7 @@ export default function HistorySection() {
           {history.slice(0, 10).map((item, index) => (
             <Link
               key={`${item.mangaId}-${item.chapterId}`}
-              href={`/read/${item.mangaId}/${item.chapterId}`}
+              href={`/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`}
               className="group w-24 flex-shrink-0"
             >
               {/* 3D 傾斜效果只作用於圖片區域 */}
