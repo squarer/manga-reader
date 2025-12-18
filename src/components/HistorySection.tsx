@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import TiltCard from '@/components/TiltCard';
 import { useHistory } from '@/lib/hooks/useHistory';
@@ -33,30 +32,32 @@ export default function HistorySection() {
             <Link
               key={`${item.mangaId}-${item.chapterId}`}
               href={`/read/${item.mangaId}/${item.chapterId}`}
-              className="group flex-shrink-0"
+              className="group w-24 flex-shrink-0"
             >
-              <TiltCard animationDelay={index * STAGGER_DELAY} className="h-32 w-24">
-                <Card className="h-full overflow-hidden border-0 bg-transparent">
-                  <CardContent className="h-full p-0">
-                    <div className="relative h-full w-full overflow-hidden rounded-lg bg-muted">
-                      <Image
-                        src={`/api/image?url=${encodeURIComponent(item.mangaCover)}`}
-                        alt={item.mangaName}
-                        fill
-                        className="object-cover transition-transform group-hover:scale-105"
-                        unoptimized
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <p className="truncate text-xs text-white/80">
-                          {item.chapterName}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* 3D 傾斜效果只作用於圖片區域 */}
+              <TiltCard
+                animationDelay={index * STAGGER_DELAY}
+                className="aspect-[3/4] w-full overflow-hidden rounded-lg"
+              >
+                <div className="relative h-full w-full bg-muted">
+                  <Image
+                    src={`/api/image?url=${encodeURIComponent(item.mangaCover)}`}
+                    alt={item.mangaName}
+                    fill
+                    className="object-cover transition-transform group-hover:scale-105"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-2">
+                    <p className="truncate text-xs text-white/80">
+                      {item.chapterName}
+                    </p>
+                  </div>
+                </div>
               </TiltCard>
-              <p className="mt-1 w-24 truncate text-xs text-muted-foreground group-hover:text-primary">
+
+              {/* 標題：背景透明，hover 時變色 */}
+              <p className="mt-1 truncate text-xs text-muted-foreground transition-colors group-hover:text-primary">
                 {item.mangaName}
               </p>
             </Link>
