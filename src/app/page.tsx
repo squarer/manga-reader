@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import MangaCard from '@/components/MangaCard';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -118,17 +119,20 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Manga Reader</h1>
 
-            {/* Search */}
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <Input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="搜尋漫畫..."
-                className="w-48 sm:w-64"
-              />
-              <Button type="submit">搜尋</Button>
-            </form>
+            {/* Search & Theme Toggle */}
+            <div className="flex items-center gap-2">
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <Input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="搜尋漫畫..."
+                  className="w-48 sm:w-64"
+                />
+                <Button type="submit">搜尋</Button>
+              </form>
+              <ThemeToggle />
+            </div>
           </div>
 
           {/* Categories with sliding indicator */}
