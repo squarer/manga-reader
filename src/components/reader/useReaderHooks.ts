@@ -73,6 +73,28 @@ export function useFullscreen() {
 /** localStorage key */
 const STORAGE_KEY = 'reader-settings';
 
+/** 快取的設定值 */
+let cachedSettings: ReaderSettings = DEFAULT_SETTINGS;
+
+/** 從 localStorage 讀取並更新快取 */
+function loadSettings(): ReaderSettings {
+  if (typeof window === 'undefined') {
+    return DEFAULT_SETTINGS;
+  }
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    cachedSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+  } else {
+    cachedSettings = DEFAULT_SETTINGS;
+  }
+  return cachedSettings;
+}
+
+// 初始化快取
+if (typeof window !== 'undefined') {
+  loadSettings();
+}
+
 /** 事件監聽器列表 */
 const listeners = new Set<() => void>();
 
@@ -82,13 +104,9 @@ function subscribe(callback: () => void) {
   return () => listeners.delete(callback);
 }
 
-/** 取得當前快照 */
+/** 取得當前快照（回傳快取的參照） */
 function getSnapshot(): ReaderSettings {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-  }
-  return DEFAULT_SETTINGS;
+  return cachedSettings;
 }
 
 /** SSR 快照 */
@@ -105,8 +123,8 @@ export function useReaderSettings() {
   const settings = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const updateSettings = useCallback((updates: Partial<ReaderSettings>) => {
-    const current = getSnapshot();
-    const next = { ...current, ...updates };
+    const next = { ...cachedSettings, ...updates };
+    cachedSettings = next;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     // 通知所有訂閱者
     listeners.forEach((listener) => listener());
