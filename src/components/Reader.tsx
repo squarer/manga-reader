@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -51,11 +51,9 @@ interface ChapterData {
 }
 
 type ViewMode = 'single' | 'scroll';
-type BackgroundColor = 'black' | 'gray' | 'sepia';
 
 interface ReaderSettings {
   viewMode: ViewMode;
-  backgroundColor: BackgroundColor;
   imageWidth: number;
 }
 
@@ -66,20 +64,7 @@ interface ReaderSettings {
 const TOOLBAR_HIDE_DELAY = 3000;
 const DEFAULT_SETTINGS: ReaderSettings = {
   viewMode: 'scroll',
-  backgroundColor: 'black',
   imageWidth: 100,
-};
-
-const BACKGROUND_COLORS: Record<BackgroundColor, string> = {
-  black: 'bg-black',
-  gray: 'bg-zinc-900',
-  sepia: 'bg-amber-950',
-};
-
-const BACKGROUND_LABELS: Record<BackgroundColor, string> = {
-  black: '純黑',
-  gray: '深灰',
-  sepia: '米色',
 };
 
 const SHORTCUTS = [
@@ -182,10 +167,10 @@ function useReaderSettings() {
 
 function LoadingState() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="space-y-4 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-        <p className="text-sm text-zinc-400">載入中...</p>
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+        <p className="text-sm text-muted-foreground">載入中...</p>
       </div>
     </div>
   );
@@ -193,8 +178,8 @@ function LoadingState() {
 
 function ErrorState({ mangaId, error }: { mangaId: number; error: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black">
-      <div className="text-xl text-red-500">{error}</div>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+      <div className="text-xl text-destructive">{error}</div>
       <Button asChild variant="secondary">
         <Link href={`/manga/${mangaId}`}>返回漫畫詳情</Link>
       </Button>
@@ -213,15 +198,15 @@ function ShortcutsPanel({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80"
       onClick={onClose}
     >
       <div
-        className="w-80 rounded-lg bg-zinc-900 p-6"
+        className="w-80 rounded-lg border bg-card p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-medium text-white">快捷鍵</h3>
+          <h3 className="text-lg font-medium">快捷鍵</h3>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -232,10 +217,10 @@ function ShortcutsPanel({
               key={key}
               className="flex items-center justify-between text-sm"
             >
-              <kbd className="rounded bg-zinc-800 px-2 py-1 font-mono text-zinc-300">
+              <kbd className="rounded bg-muted px-2 py-1 font-mono text-muted-foreground">
                 {key}
               </kbd>
-              <span className="text-zinc-400">{description}</span>
+              <span className="text-muted-foreground">{description}</span>
             </div>
           ))}
         </div>
@@ -254,20 +239,18 @@ function SettingsPanel({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+        <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="border-zinc-800 bg-zinc-900">
+      <SheetContent>
         <SheetHeader>
-          <SheetTitle className="text-white">閱讀設定</SheetTitle>
+          <SheetTitle>閱讀設定</SheetTitle>
         </SheetHeader>
         <div className="mt-6 space-y-6">
           {/* 閱讀模式 */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-zinc-300">
-              閱讀模式
-            </label>
+            <label className="text-sm font-medium">閱讀模式</label>
             <div className="flex gap-2">
               <Button
                 variant={settings.viewMode === 'single' ? 'secondary' : 'ghost'}
@@ -288,36 +271,11 @@ function SettingsPanel({
             </div>
           </div>
 
-          {/* 背景顏色 */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-zinc-300">
-              背景顏色
-            </label>
-            <div className="flex gap-2">
-              {(Object.keys(BACKGROUND_COLORS) as BackgroundColor[]).map(
-                (color) => (
-                  <Button
-                    key={color}
-                    variant={
-                      settings.backgroundColor === color ? 'secondary' : 'ghost'
-                    }
-                    className="flex-1"
-                    onClick={() => onUpdate({ backgroundColor: color })}
-                  >
-                    {BACKGROUND_LABELS[color]}
-                  </Button>
-                )
-              )}
-            </div>
-          </div>
-
           {/* 圖片寬度 */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-zinc-300">
-                圖片寬度
-              </label>
-              <span className="text-sm text-zinc-500">
+              <label className="text-sm font-medium">圖片寬度</label>
+              <span className="text-sm text-muted-foreground">
                 {settings.imageWidth}%
               </span>
             </div>
@@ -351,26 +309,21 @@ function TopToolbar({
 }) {
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-gradient-to-b from-black/90 to-transparent px-4 py-3 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-gradient-to-b from-background/90 to-transparent px-4 py-3 transition-all duration-300 ${
         isVisible
           ? 'translate-y-0 opacity-100'
           : '-translate-y-full opacity-0'
       }`}
     >
-      <Button
-        asChild
-        variant="ghost"
-        size="icon"
-        className="text-white/80 hover:text-white"
-      >
+      <Button asChild variant="ghost" size="icon">
         <Link href={`/manga/${mangaId}`}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
       </Button>
 
       <div className="text-center">
-        <h1 className="text-sm font-medium text-white">{data.bname}</h1>
-        <p className="text-xs text-zinc-400">{data.cname}</p>
+        <h1 className="text-sm font-medium">{data.bname}</h1>
+        <p className="text-xs text-muted-foreground">{data.cname}</p>
       </div>
 
       <SettingsPanel settings={settings} onUpdate={onSettingsUpdate} />
@@ -401,7 +354,7 @@ function BottomToolbar({
 
   return (
     <footer
-      className={`fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black/90 to-transparent transition-all duration-300 ${
+      className={`fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-background/90 to-transparent transition-all duration-300 ${
         isVisible
           ? 'translate-y-0 opacity-100'
           : 'translate-y-full opacity-0'
@@ -410,7 +363,7 @@ function BottomToolbar({
       {/* 進度條 */}
       <div className="px-4 pb-2">
         <div
-          className="group relative h-1 cursor-pointer rounded-full bg-zinc-700"
+          className="group relative h-1 cursor-pointer rounded-full bg-muted"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
@@ -419,11 +372,11 @@ function BottomToolbar({
           }}
         >
           <div
-            className="h-full rounded-full bg-white transition-all group-hover:bg-zinc-300"
+            className="h-full rounded-full bg-foreground transition-all group-hover:bg-muted-foreground"
             style={{ width: `${progressPercent}%` }}
           />
           <div
-            className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-white opacity-0 transition-opacity group-hover:opacity-100"
+            className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-foreground opacity-0 transition-opacity group-hover:opacity-100"
             style={{ left: `${progressPercent}%`, marginLeft: '-6px' }}
           />
         </div>
@@ -436,12 +389,7 @@ function BottomToolbar({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="icon"
-                    className="text-white/80 hover:text-white"
-                  >
+                  <Button asChild variant="ghost" size="icon">
                     <Link href={`/read/${mangaId}/${data.prevCid}`}>
                       <ChevronLeft className="h-5 w-5" />
                     </Link>
@@ -456,14 +404,13 @@ function BottomToolbar({
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="min-w-[80px] text-center text-sm text-zinc-300">
+          <span className="min-w-[80px] text-center text-sm text-muted-foreground">
             {currentPage + 1} / {data.total}
           </span>
 
           <Button
             variant="ghost"
             size="sm"
-            className="text-white/80 hover:text-white"
             onClick={() =>
               onSettingsUpdate({
                 viewMode: settings.viewMode === 'single' ? 'scroll' : 'single',
@@ -489,7 +436,6 @@ function BottomToolbar({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white/80 hover:text-white"
                   onClick={onShowShortcuts}
                 >
                   <Keyboard className="h-4 w-4" />
@@ -505,12 +451,7 @@ function BottomToolbar({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="icon"
-                    className="text-white/80 hover:text-white"
-                  >
+                  <Button asChild variant="ghost" size="icon">
                     <Link href={`/read/${mangaId}/${data.nextCid}`}>
                       <ChevronRight className="h-5 w-5" />
                     </Link>
@@ -565,7 +506,11 @@ function ScrollReader({
   }, [data.images.length, onPageChange]);
 
   return (
-    <div ref={containerRef} className="mx-auto py-16" style={{ maxWidth: `${imageWidth}%` }}>
+    <div
+      ref={containerRef}
+      className="mx-auto max-w-4xl py-16"
+      style={{ width: `${imageWidth}%` }}
+    >
       {data.images.map((url, index) => (
         <div
           key={index}
@@ -633,8 +578,8 @@ function SinglePageReader({
       onClick={handleClick}
     >
       <div
-        className="relative flex items-center justify-center"
-        style={{ maxWidth: `${imageWidth}%` }}
+        className="relative flex max-w-4xl items-center justify-center"
+        style={{ width: `${imageWidth}%` }}
       >
         <Image
           src={`/api/image?url=${encodeURIComponent(data.images[currentPage])}`}
@@ -665,11 +610,6 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   const { isVisible, showToolbar } = useToolbarVisibility();
   const { toggleFullscreen } = useFullscreen();
   const { settings, updateSettings } = useReaderSettings();
-
-  const backgroundColor = useMemo(
-    () => BACKGROUND_COLORS[settings.backgroundColor],
-    [settings.backgroundColor]
-  );
 
   // 載入章節資料
   useEffect(() => {
@@ -809,7 +749,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   }
 
   return (
-    <div className={`min-h-screen ${backgroundColor}`}>
+    <div className="min-h-screen bg-background">
       {/* 頂部工具列 */}
       <TopToolbar
         mangaId={mangaId}
