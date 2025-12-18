@@ -180,6 +180,13 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
   let status = '連載中';
   const genres: string[] = [];
   let lastUpdate = '';
+  let score: number | undefined;
+
+  // 解析評分（.hcover .score em 或 .book-score em）
+  const scoreText = $('.hcover .score em, .book-score em, p.hcover em').first().text().trim();
+  if (scoreText) {
+    score = parseFloat(scoreText);
+  }
 
   // 排除的類型（地區、年份、字母索引）
   const excludedGenrePatterns = [/^\/list\/\d{4}\/$/, /^\/list\/japan\/$/, /^\/list\/hongkong\/$/, /^\/list\/europe\/$/, /^\/list\/korea\/$/, /^\/list\/[a-z]\//];
@@ -243,6 +250,7 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
     description,
     lastUpdate,
     chapters,
+    score,
   };
 }
 

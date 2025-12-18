@@ -9,6 +9,8 @@ export interface MangaInfo {
   description: string;
   lastUpdate: string;
   chapters: ChapterGroup[];
+  /** 評分 (10 分制) */
+  score?: number;
 }
 
 // 章節分組 (單話、番外篇等)
