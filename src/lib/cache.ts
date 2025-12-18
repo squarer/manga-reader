@@ -7,6 +7,9 @@
 /** 快取過期時間：24 小時 */
 const CACHE_TTL_MS = 86400000;
 
+/** 快取最大數量限制 */
+const MAX_CACHE_SIZE = 1000;
+
 /** 快取項目 */
 interface CacheEntry<T> {
   data: T;
@@ -40,10 +43,20 @@ export function getCache<T>(key: string): T | null {
 /**
  * 設定快取資料
  *
+ * 當快取數量超過限制時，刪除最舊的項目（FIFO）
+ *
  * @param key - 快取 key（通常是完整 URL）
  * @param data - 要快取的資料
  */
 export function setCache<T>(key: string, data: T): void {
+  // 超過限制時刪除最舊的項目
+  if (cache.size >= MAX_CACHE_SIZE && !cache.has(key)) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey) {
+      cache.delete(oldestKey);
+    }
+  }
+
   cache.set(key, {
     data,
     expiredAt: Date.now() + CACHE_TTL_MS,
