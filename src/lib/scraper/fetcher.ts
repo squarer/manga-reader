@@ -138,3 +138,93 @@ export async function searchManga(keyword: string, page: number = 1): Promise<st
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * 構建篩選 URL 路徑
+ * URL 結構：/list/{filters}/{sort}.html
+ * - filters: region_genre_status_year_letter（底線連接，空值省略）
+ * - sort: update.html / view.html / rate.html（預設無需加）
+ */
+function buildFilterPath(options: import('./types').FilterOptions): string {
+  const { region, genre, status, year, letter, sort, page } = options;
+
+  // 組合篩選條件（底線連接）
+  const filters: string[] = [];
+  if (region) filters.push(region);
+  if (genre) filters.push(genre);
+  if (status) filters.push(status);
+  if (year) filters.push(year);
+  if (letter) filters.push(letter);
+
+  const filterPart = filters.length > 0 ? filters.join('_') : '';
+
+  // 構建路徑
+  let path = '/list/';
+  if (filterPart) {
+    path += `${filterPart}/`;
+  }
+
+  // 分頁和排序
+  if (page && page > 1) {
+    if (sort) {
+      path += `${sort}_p${page}.html`;
+    } else {
+      path += `index_p${page}.html`;
+    }
+  } else if (sort) {
+    path += `${sort}.html`;
+  }
+
+  return path;
+}
+
+/**
+ * 獲取帶篩選的漫畫列表
+ */
+export async function fetchMangaListWithFilters(
+  options: import('./types').FilterOptions
+): Promise<string> {
+  const url = buildFilterPath(options);
+
+  const response = await client.get(url, {
+    headers: {
+      'User-Agent': getRandomUserAgent(),
+    },
+  });
+
+  return response.data;
+}
+
+/**
+ * 獲取排行榜頁面
+ * 排行榜頁面包含所有類型（日/週/月/總）的資料，由 parseRankList 解析
+ */
+export async function fetchRankList(): Promise<string> {
+  const url = '/rank/';
+
+  const response = await client.get(url, {
+    headers: {
+      'User-Agent': getRandomUserAgent(),
+    },
+  });
+
+  return response.data;
+}
+
+/**
+ * 獲取最新更新頁面
+ * URL 結構：/update/（第一頁）或 /update/d{page}.html（其他頁）
+ */
+export async function fetchUpdateList(page: number = 1): Promise<string> {
+  const url = page === 1
+    ? '/update/'
+    : `/update/d${page}.html`;
+
+  const response = await client.get(url, {
+    headers: {
+      'User-Agent': getRandomUserAgent(),
+    },
+  });
+
+  return response.data;
+}
