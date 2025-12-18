@@ -27,6 +27,7 @@ import {
   MangaStatus,
 } from '@/lib/scraper';
 import type { FilterOptions } from '@/lib/scraper';
+import { withCache } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -47,29 +48,32 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   try {
-    let html: string;
+    const cacheKey = request.url;
+    const result = await withCache(cacheKey, async () => {
+      let html: string;
 
-    if (keyword) {
-      // 搜尋模式
-      html = await searchManga(keyword, page);
-    } else if (region || genre || year || letter || status || sort) {
-      // 進階篩選模式
-      const options: FilterOptions = {
-        region: region || undefined,
-        genre: genre || undefined,
-        year: year || undefined,
-        letter: letter?.toLowerCase() || undefined,
-        status: status || undefined,
-        sort: sort || undefined,
-        page,
-      };
-      html = await fetchMangaListWithFilters(options);
-    } else {
-      // 舊版分類列表模式（向後相容）
-      html = await fetchMangaList(category || 'japan', page);
-    }
+      if (keyword) {
+        // 搜尋模式
+        html = await searchManga(keyword, page);
+      } else if (region || genre || year || letter || status || sort) {
+        // 進階篩選模式
+        const options: FilterOptions = {
+          region: region || undefined,
+          genre: genre || undefined,
+          year: year || undefined,
+          letter: letter?.toLowerCase() || undefined,
+          status: status || undefined,
+          sort: sort || undefined,
+          page,
+        };
+        html = await fetchMangaListWithFilters(options);
+      } else {
+        // 舊版分類列表模式（向後相容）
+        html = await fetchMangaList(category || 'japan', page);
+      }
 
-    const result = parseMangaList(html);
+      return parseMangaList(html);
+    });
 
     return NextResponse.json({
       success: true,

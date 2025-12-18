@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchRankList, parseRankList, RankTypeEnum } from '@/lib/scraper';
+import { withCache } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -25,8 +26,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const html = await fetchRankList();
-    const rankData = parseRankList(html);
+    const cacheKey = request.url;
+    const rankData = await withCache(cacheKey, async () => {
+      const html = await fetchRankList();
+      return parseRankList(html);
+    });
 
     // 根據請求的 type 回傳對應資料
     const items = rankData[type as keyof typeof rankData];

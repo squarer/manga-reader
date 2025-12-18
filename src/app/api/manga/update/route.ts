@@ -5,14 +5,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchUpdateList, parseUpdateList } from '@/lib/scraper';
+import { withCache } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   try {
-    const html = await fetchUpdateList(page);
-    const result = parseUpdateList(html);
+    const cacheKey = request.url;
+    const result = await withCache(cacheKey, async () => {
+      const html = await fetchUpdateList(page);
+      return parseUpdateList(html);
+    });
 
     return NextResponse.json({
       success: true,
