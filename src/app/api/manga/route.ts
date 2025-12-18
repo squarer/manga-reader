@@ -4,13 +4,15 @@
  * 支援參數：
  * - keyword: 搜尋關鍵字
  * - category: 分類（舊版相容）
- * - region: 地區（japan/korea/hongkong/other）
- * - genre: 劇情分類
+ * - region: 地區（japan/korea/hongkong/china/europe/other）
+ * - genre: 劇情分類（單一值，網站不支援多類型組合）
  * - year: 年份
  * - letter: 字母索引（a-z）
  * - status: 連載狀態（lianzai/wanjie）
  * - sort: 排序（update/view/rate）
  * - page: 頁碼
+ *
+ * URL 結構：/list/{region}_{genre}_{status}_{year}_{letter}/{sort}.html
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -35,7 +37,9 @@ export async function GET(request: NextRequest) {
   // 篩選參數
   const category = searchParams.get('category');
   const region = searchParams.get('region') as RegionType | null;
-  const genre = searchParams.get('genre') as GenreType | null;
+  // genre 可能是逗號分隔的多值，只取第一個（網站不支援多類型組合）
+  const genreParam = searchParams.get('genre');
+  const genre = genreParam ? (genreParam.split(',')[0] as GenreType) : null;
   const year = searchParams.get('year');
   const letter = searchParams.get('letter');
   const status = searchParams.get('status') as MangaStatus | null;

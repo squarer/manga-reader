@@ -142,19 +142,19 @@ export function delay(ms: number): Promise<void> {
 /**
  * 構建篩選 URL 路徑
  * URL 結構：/list/{filters}/{sort}.html
- * - filters: region_genre_status_year_letter（底線連接，空值省略）
+ * - filters: region_genre_year_letter_status（底線連接，空值省略）
  * - sort: update.html / view.html / rate.html（預設無需加）
  */
 function buildFilterPath(options: import('./types').FilterOptions): string {
   const { region, genre, status, year, letter, sort, page } = options;
 
-  // 組合篩選條件（底線連接）
+  // 組合篩選條件（底線連接，順序必須是 region_genre_year_letter_status）
   const filters: string[] = [];
   if (region) filters.push(region);
   if (genre) filters.push(genre);
-  if (status) filters.push(status);
   if (year) filters.push(year);
   if (letter) filters.push(letter);
+  if (status) filters.push(status);
 
   const filterPart = filters.length > 0 ? filters.join('_') : '';
 

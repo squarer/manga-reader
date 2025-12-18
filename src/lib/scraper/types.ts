@@ -90,6 +90,8 @@ export enum RegionType {
   Japan = 'japan',
   Korea = 'korea',
   HongKong = 'hongkong',
+  China = 'china',
+  Europe = 'europe',
   Other = 'other',
 }
 
@@ -102,6 +104,7 @@ export enum GenreType {
   Mohuan = 'mohuan',         // 魔幻
   Shengui = 'shengui',       // 神鬼
   Gaoxiao = 'gaoxiao',       // 搞笑
+  Mengxi = 'mengxi',         // 萌系
   Aiqing = 'aiqing',         // 愛情
   Kehuan = 'kehuan',         // 科幻
   Mofa = 'mofa',             // 魔法
@@ -152,6 +155,7 @@ export const GENRE_LABELS: Record<GenreType, string> = {
   [GenreType.Mohuan]: '魔幻',
   [GenreType.Shengui]: '神鬼',
   [GenreType.Gaoxiao]: '搞笑',
+  [GenreType.Mengxi]: '萌系',
   [GenreType.Aiqing]: '愛情',
   [GenreType.Kehuan]: '科幻',
   [GenreType.Mofa]: '魔法',
