@@ -14,6 +14,7 @@
 | 圖標 | Lucide React                         |
 | 爬蟲 | cheerio, axios                       |
 | 解密 | lz-string                            |
+| 主題 | next-themes                          |
 
 ## 專案結構
 
@@ -23,15 +24,23 @@ src/
 │   ├── api/               # API Routes
 │   │   ├── manga/         # 漫畫列表/詳情 API
 │   │   ├── chapter/       # 章節內容 API
-│   │   └── image/         # 圖片代理 API
+│   │   ├── image/         # 圖片代理 API
+│   │   └── rank/          # 排行榜 API
 │   ├── manga/[id]/        # 漫畫詳情頁
-│   └── read/[bid]/[cid]/  # 閱讀器頁面
+│   ├── rank/              # 排行榜頁面
+│   ├── read/[bid]/[cid]/  # 閱讀器頁面
+│   └── update/            # 最新更新頁面
 ├── components/            # React 元件
 │   ├── ui/                # shadcn/ui 元件
-│   ├── MangaCard.tsx      # 漫畫卡片
-│   ├── Reader.tsx         # 閱讀器
 │   ├── FavoritesSection.tsx
-│   └── HistorySection.tsx
+│   ├── HistorySection.tsx
+│   ├── MangaCard.tsx      # 漫畫卡片
+│   ├── MangaFilter.tsx    # 篩選器
+│   ├── Navbar.tsx         # 導航列
+│   ├── Reader.tsx         # 閱讀器
+│   ├── ThemeProvider.tsx  # 主題提供者
+│   ├── ThemeToggle.tsx    # 主題切換
+│   └── TiltCard.tsx       # 傾斜卡片效果
 └── lib/
     ├── hooks/             # 自定義 Hooks
     │   ├── useFavorites.ts
@@ -73,6 +82,9 @@ npx shadcn@latest add https://www.tinte.dev/r/claude
 - `MangaListItem` - 列表項目
 - `ChapterInfo` - 章節資訊
 - `ImageData` - 閱讀器圖片資料
+- `RankItem` - 排行項目
+- `FilterOptions` - 篩選選項
+- `PaginationInfo` - 分頁資訊
 
 ## API 路由
 
@@ -80,8 +92,10 @@ npx shadcn@latest add https://www.tinte.dev/r/claude
 | -------------------------- | ---------------------- |
 | `/api/manga`               | 漫畫列表、搜尋         |
 | `/api/manga/[id]`          | 漫畫詳情               |
+| `/api/manga/update`        | 最新更新 API           |
 | `/api/chapter/[bid]/[cid]` | 章節圖片               |
 | `/api/image`               | 圖片代理（繞過防盜鏈） |
+| `/api/rank`                | 排行榜 API             |
 
 ## 注意事項
 

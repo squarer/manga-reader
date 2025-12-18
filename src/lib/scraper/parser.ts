@@ -10,7 +10,9 @@ import type {
   ChapterGroup,
   ChapterInfo,
   PaginationInfo,
+  RankItem,
 } from './types';
+import { RankTrend } from './types';
 
 const BASE_URL = 'https://www.manhuagui.com';
 const CDN_URL = 'https://cf.mhgui.com';
@@ -370,4 +372,254 @@ export function buildUrl(path: string): string {
  */
 export function buildCoverUrl(mangaId: number): string {
   return `${CDN_URL}/cpic/h/${mangaId}.jpg`;
+}
+
+/**
+ * 解析排行榜頁面
+ * 排行榜頁面使用表格結構 table.rank-detail
+ * 每個頁面只有一種排行榜類型（日/週/月/總），由 URL 決定
+ */
+export function parseRankList(html: string): {
+  day: RankItem[];
+  week: RankItem[];
+  month: RankItem[];
+  total: RankItem[];
+} {
+  const $ = cheerio.load(html);
+  const result = {
+    day: [] as RankItem[],
+    week: [] as RankItem[],
+    month: [] as RankItem[],
+    total: [] as RankItem[],
+  };
+
+  // 從頁面標題或 URL 判斷當前排行榜類型
+  const title = $('title').text();
+  const selectedTab = $('.bar-tab li.selected a').text();
+  let currentType: 'day' | 'week' | 'month' | 'total' = 'day';
+
+  if (title.includes('周排行') || selectedTab.includes('周排行')) {
+    currentType = 'week';
+  } else if (title.includes('月排行') || selectedTab.includes('月排行')) {
+    currentType = 'month';
+  } else if (title.includes('总排行') || selectedTab.includes('总排行')) {
+    currentType = 'total';
+  }
+
+  // 解析表格中的排行榜項目
+  const $table = $('table.rank-detail');
+  if ($table.length) {
+    result[currentType] = parseRankTableItems($, $table);
+  }
+
+  return result;
+}
+
+/**
+ * 解析排行榜表格項目
+ * 表格結構：table.rank-detail > tr（排除表頭和分隔行）
+ */
+function parseRankTableItems(
+  $: ReturnType<typeof cheerio.load>,
+  $table: ReturnType<ReturnType<typeof cheerio.load>>
+): RankItem[] {
+  const items: RankItem[] = [];
+
+  // 遍歷表格行（排除表頭 th 行和分隔行 .rank-split）
+  $table.find('tr').each((_, el) => {
+    const $row = $(el);
+
+    // 跳過表頭行和分隔行
+    if ($row.find('th').length > 0 || $row.hasClass('rank-split') || $row.hasClass('rank-split-first')) {
+      return;
+    }
+
+    // 提取排名
+    const $rankNo = $row.find('.rank-no span');
+    const rankText = $rankNo.text().trim();
+    const rank = parseInt(rankText, 10);
+    if (isNaN(rank)) return;
+
+    // 提取漫畫 ID 和名稱
+    const $titleLink = $row.find('.rank-title h5 a');
+    const href = $titleLink.attr('href') || '';
+    const idMatch = href.match(/\/comic\/(\d+)/);
+    if (!idMatch) return;
+
+    const id = parseInt(idMatch[1], 10);
+    const name = $titleLink.text().trim();
+
+    // 提取作者（可能有多個作者，用逗號分隔）
+    const authors: string[] = [];
+    $row.find('.rank-author a').each((_, authorEl) => {
+      const authorName = $(authorEl).text().trim();
+      if (authorName) {
+        authors.push(authorName);
+      }
+    });
+    const author = authors.length > 0 ? authors.join(', ') : undefined;
+
+    // 提取最新章節
+    const latestChapter = $row.find('.rank-update a').text().trim();
+
+    // 提取更新時間
+    const updateTime = $row.find('.rank-time').text().trim();
+
+    // 提取評分
+    const scoreText = $row.find('.rank-score').text().trim();
+    const score = scoreText ? parseFloat(scoreText) : undefined;
+
+    // 提取趨勢
+    let trend: RankTrend = RankTrend.SAME;
+    const $trendSpan = $row.find('.rank-trend span');
+    if ($trendSpan.hasClass('trend-up')) {
+      trend = RankTrend.UP;
+    } else if ($trendSpan.hasClass('trend-down')) {
+      trend = RankTrend.DOWN;
+    } else if ($trendSpan.hasClass('trend-no')) {
+      trend = RankTrend.SAME;
+    }
+
+    // 封面使用 CDN URL 構建
+    const cover = buildCoverUrl(id);
+
+    items.push({
+      rank,
+      id,
+      name,
+      cover,
+      latestChapter,
+      updateTime,
+      score,
+      trend,
+      author,
+    });
+  });
+
+  return items;
+}
+
+/**
+ * 解析更新時間文字為日期字串
+ * 處理 "今天 12:30"、"昨天 12:30"、"前天 12:30"、"12-18" 等格式
+ */
+function parseUpdateTimeText(text: string): string {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (text.includes('今天')) {
+    return formatDate(today);
+  }
+  if (text.includes('昨天')) {
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return formatDate(yesterday);
+  }
+  if (text.includes('前天')) {
+    const dayBefore = new Date(today);
+    dayBefore.setDate(dayBefore.getDate() - 2);
+    return formatDate(dayBefore);
+  }
+
+  // 處理 "MM-DD" 格式
+  const dateMatch = text.match(/(\d{1,2})-(\d{1,2})/);
+  if (dateMatch) {
+    const month = parseInt(dateMatch[1], 10) - 1;
+    const day = parseInt(dateMatch[2], 10);
+    const date = new Date(now.getFullYear(), month, day);
+    // 如果日期在未來，說明是去年的
+    if (date > now) {
+      date.setFullYear(date.getFullYear() - 1);
+    }
+    return formatDate(date);
+  }
+
+  return '';
+}
+
+/**
+ * 格式化日期為 YYYY-MM-DD
+ */
+function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * 解析最新更新頁面
+ * 頁面結構：.latest-list > ul > li
+ */
+export function parseUpdateList(html: string): {
+  items: MangaListItem[];
+  pagination: PaginationInfo;
+} {
+  const $ = cheerio.load(html);
+  const items: MangaListItem[] = [];
+
+  // 更新頁面結構：.latest-list > ul > li
+  $('.latest-list ul li').each((_, el) => {
+    const $el = $(el);
+    const $link = $el.find('a.cover');
+    const href = $link.attr('href') || '';
+    const idMatch = href.match(/\/comic\/(\d+)\//);
+
+    if (!idMatch) return;
+
+    const $img = $el.find('img');
+    let cover = $img.attr('src') || $img.attr('data-src') || '';
+    if (cover.startsWith('//')) {
+      cover = 'https:' + cover;
+    }
+
+    const name = $link.attr('title') || '';
+    const latestChapter = $el.find('.tt').text().trim();
+    const updateTimeText = $el.find('.dt').text().trim();
+    const updateTime = parseUpdateTimeText(updateTimeText);
+
+    const scoreText = $el.find('em').text().trim();
+    const score = scoreText ? parseFloat(scoreText) : undefined;
+
+    items.push({
+      id: parseInt(idMatch[1], 10),
+      name,
+      cover,
+      latestChapter,
+      updateTime,
+      score,
+    });
+  });
+
+  // 解析分頁
+  let currentPage = 1;
+  let totalPages = 1;
+
+  const $pager = $('.pager');
+  if ($pager.length) {
+    const $current = $pager.find('.current').first();
+    if ($current.length) {
+      currentPage = parseInt($current.text().trim(), 10) || 1;
+    }
+
+    const pageNumbers: number[] = [];
+    $pager.find('a').each((_, el) => {
+      const num = parseInt($(el).text().trim(), 10);
+      if (!isNaN(num)) {
+        pageNumbers.push(num);
+      }
+    });
+    if (pageNumbers.length > 0) {
+      totalPages = Math.max(...pageNumbers, currentPage);
+    }
+  }
+
+  return {
+    items,
+    pagination: {
+      current: currentPage,
+      total: totalPages,
+      totalItems: items.length,
+    },
+  };
 }

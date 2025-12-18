@@ -1,7 +1,7 @@
 'use client';
 
 import { use } from 'react';
-import Reader from '@/components/Reader';
+import Reader from '@/components/reader';
 
 export default function ReadPage({
   params,
