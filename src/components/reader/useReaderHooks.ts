@@ -4,7 +4,7 @@
  * Reader 自定義 hooks
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { DEFAULT_SETTINGS, TOOLBAR_HIDE_DELAY } from './types';
 import type { ReaderSettings } from './types';
 
@@ -70,36 +70,46 @@ export function useFullscreen() {
   return { isFullscreen, toggleFullscreen };
 }
 
-/**
- * 取得初始設定
- *
- * 從 localStorage 讀取，若無則使用預設值
- */
-function getInitialSettings(): ReaderSettings {
-  if (typeof window === 'undefined') {
-    return DEFAULT_SETTINGS;
-  }
-  const saved = localStorage.getItem('reader-settings');
+/** localStorage key */
+const STORAGE_KEY = 'reader-settings';
+
+/** 事件監聽器列表 */
+const listeners = new Set<() => void>();
+
+/** 訂閱 localStorage 變更 */
+function subscribe(callback: () => void) {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+}
+
+/** 取得當前快照 */
+function getSnapshot(): ReaderSettings {
+  const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
   }
   return DEFAULT_SETTINGS;
 }
 
+/** SSR 快照 */
+function getServerSnapshot(): ReaderSettings {
+  return DEFAULT_SETTINGS;
+}
+
 /**
  * 閱讀器設定 hook
  *
- * 自動同步設定至 localStorage
+ * 使用 useSyncExternalStore 從 localStorage 讀取並同步設定
  */
 export function useReaderSettings() {
-  const [settings, setSettings] = useState<ReaderSettings>(getInitialSettings);
+  const settings = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const updateSettings = useCallback((updates: Partial<ReaderSettings>) => {
-    setSettings((prev) => {
-      const next = { ...prev, ...updates };
-      localStorage.setItem('reader-settings', JSON.stringify(next));
-      return next;
-    });
+    const current = getSnapshot();
+    const next = { ...current, ...updates };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    // 通知所有訂閱者
+    listeners.forEach((listener) => listener());
   }, []);
 
   return { settings, updateSettings };
