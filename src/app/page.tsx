@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import MangaCard from '@/components/MangaCard';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 
 const CATEGORIES = [
@@ -83,28 +86,23 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gray-800 bg-gray-900/95 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-blue-400">Manga Reader</h1>
+            <h1 className="text-2xl font-bold text-primary">Manga Reader</h1>
 
             {/* Search */}
             <form onSubmit={handleSearch} className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="搜尋漫畫..."
-                className="rounded-lg bg-gray-800 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-48 sm:w-64"
               />
-              <button
-                type="submit"
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm hover:bg-blue-700"
-              >
-                搜尋
-              </button>
+              <Button type="submit">搜尋</Button>
             </form>
           </div>
 
@@ -112,17 +110,18 @@ export default function Home() {
           {!keyword && (
             <div className="mt-4 flex gap-2 overflow-x-auto">
               {CATEGORIES.map((cat) => (
-                <button
+                <Button
                   key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
-                    category === cat.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }`}
+                  onClick={() => {
+                    setCategory(cat.id);
+                    setPage(1);
+                  }}
+                  variant={category === cat.id ? 'default' : 'secondary'}
+                  size="sm"
+                  className="whitespace-nowrap rounded-full"
                 >
                   {cat.name}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -130,13 +129,10 @@ export default function Home() {
           {/* Search indicator */}
           {keyword && (
             <div className="mt-4 flex items-center gap-2">
-              <span className="text-gray-400">搜尋結果：{keyword}</span>
-              <button
-                onClick={clearSearch}
-                className="text-sm text-blue-400 hover:underline"
-              >
+              <span className="text-muted-foreground">搜尋結果：{keyword}</span>
+              <Button variant="link" size="sm" onClick={clearSearch}>
                 清除搜尋
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -151,12 +147,17 @@ export default function Home() {
         {!keyword && <HistorySection />}
 
         {loading ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="text-xl text-gray-400">載入中...</div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ))}
           </div>
         ) : mangas.length === 0 ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="text-xl text-gray-400">沒有找到漫畫</div>
+            <div className="text-xl text-muted-foreground">沒有找到漫畫</div>
           </div>
         ) : (
           <>
@@ -170,14 +171,14 @@ export default function Home() {
             {/* Load More */}
             {pagination && page < pagination.total && (
               <div className="mt-8 flex flex-col items-center gap-2">
-                <button
+                <Button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="rounded-lg bg-blue-600 px-8 py-3 font-medium transition-colors hover:bg-blue-700 disabled:opacity-50"
+                  className="px-8 py-3 font-medium"
                 >
                   {loadingMore ? '載入中...' : '載入更多'}
-                </button>
-                <span className="text-sm text-gray-500">
+                </Button>
+                <span className="text-sm text-muted-foreground">
                   已顯示 {mangas.length} / {pagination.totalItems} 部漫畫
                 </span>
               </div>

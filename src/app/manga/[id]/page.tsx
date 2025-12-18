@@ -3,6 +3,10 @@
 import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
 import type { MangaInfo, ChapterGroup } from '@/lib/scraper/types';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 
@@ -128,19 +132,38 @@ export default function MangaDetailPage({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-900">
-        <div className="text-xl text-white">載入中...</div>
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border bg-background">
+          <div className="mx-auto max-w-7xl px-4 py-4">
+            <Skeleton className="h-5 w-24" />
+          </div>
+        </header>
+        <main className="mx-auto max-w-7xl px-4 py-8">
+          <div className="flex flex-col gap-8 md:flex-row">
+            <Skeleton className="h-80 w-60 flex-shrink-0 rounded-lg" />
+            <div className="flex-1 space-y-4">
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-1/3" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-20 w-full" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
   if (error || !manga) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-900">
-        <div className="text-xl text-red-500">{error || '載入失敗'}</div>
-        <Link href="/" className="text-blue-400 hover:underline">
-          返回首頁
-        </Link>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+        <div className="text-xl text-destructive">{error || '載入失敗'}</div>
+        <Button asChild variant="link">
+          <Link href="/">返回首頁</Link>
+        </Button>
       </div>
     );
   }
@@ -150,13 +173,13 @@ export default function MangaDetailPage({
     : '/placeholder.jpg';
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-900/95">
+      <header className="border-b border-border bg-background/95">
         <div className="mx-auto max-w-7xl px-4 py-4">
-          <Link href="/" className="text-blue-400 hover:underline">
-            ← 返回首頁
-          </Link>
+          <Button asChild variant="link" className="p-0">
+            <Link href="/">← 返回首頁</Link>
+          </Button>
         </div>
       </header>
 
@@ -165,15 +188,19 @@ export default function MangaDetailPage({
         <div className="flex flex-col gap-8 md:flex-row">
           {/* Cover */}
           <div className="flex-shrink-0">
-            <div className="relative h-80 w-60 overflow-hidden rounded-lg">
-              <Image
-                src={coverUrl}
-                alt={manga.name}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
+            <Card className="overflow-hidden border-0">
+              <CardContent className="p-0">
+                <div className="relative h-80 w-60 overflow-hidden rounded-lg">
+                  <Image
+                    src={coverUrl}
+                    alt={manga.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Details */}
@@ -181,7 +208,7 @@ export default function MangaDetailPage({
             <div className="flex items-start justify-between gap-4">
               <h1 className="text-3xl font-bold">{manga.name}</h1>
               {favLoaded && (
-                <button
+                <Button
                   onClick={() =>
                     toggleFavorite({
                       mangaId: manga.id,
@@ -189,29 +216,26 @@ export default function MangaDetailPage({
                       mangaCover: manga.cover,
                     })
                   }
-                  className={`flex-shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    isFavorite(manga.id)
-                      ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
-                  }`}
+                  variant={isFavorite(manga.id) ? 'destructive' : 'secondary'}
+                  className="flex-shrink-0"
                 >
                   {isFavorite(manga.id) ? '已收藏' : '收藏'}
-                </button>
+                </Button>
               )}
             </div>
 
-            <div className="mt-4 space-y-2 text-gray-300">
+            <div className="mt-4 space-y-2 text-muted-foreground">
               <p>
-                <span className="text-gray-500">作者：</span>
+                <span className="text-muted-foreground/60">作者：</span>
                 {manga.author}
               </p>
               <p>
-                <span className="text-gray-500">狀態：</span>
+                <span className="text-muted-foreground/60">狀態：</span>
                 {manga.status}
               </p>
               {manga.lastUpdate && (
                 <p>
-                  <span className="text-gray-500">更新：</span>
+                  <span className="text-muted-foreground/60">更新：</span>
                   {manga.lastUpdate}
                 </p>
               )}
@@ -221,19 +245,16 @@ export default function MangaDetailPage({
             {manga.genres.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {manga.genres.map((genre) => (
-                  <span
-                    key={genre}
-                    className="rounded-full bg-gray-800 px-3 py-1 text-sm"
-                  >
+                  <Badge key={genre} variant="secondary">
                     {genre}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             )}
 
             {/* Description */}
             {manga.description && (
-              <p className="mt-6 text-gray-400">{manga.description}</p>
+              <p className="mt-6 text-muted-foreground">{manga.description}</p>
             )}
           </div>
         </div>
@@ -243,7 +264,7 @@ export default function MangaDetailPage({
           <h2 className="text-xl font-bold">章節列表</h2>
 
           {manga.chapters.length === 0 ? (
-            <p className="mt-4 text-gray-500">沒有章節</p>
+            <p className="mt-4 text-muted-foreground">沒有章節</p>
           ) : (
             manga.chapters.map((group, groupIndex) => (
               <ChapterGroupDisplay
