@@ -134,8 +134,8 @@ export function parseImageData(decrypted: string): ImageData | null {
 
         // 如果 JSON 解析成功但缺少 prevcid/nextcid，嘗試從原始字串補充
         if (parsed && (parsed.prevcid === undefined || parsed.nextcid === undefined)) {
-          const prevcidMatch = decrypted.match(/prevcid['":\s]+(\d+)/);
-          const nextcidMatch = decrypted.match(/nextcid['":\s]+(\d+)/);
+          const prevcidMatch = decrypted.match(/prevcid['":\s=]+(\d+)/i);
+          const nextcidMatch = decrypted.match(/nextcid['":\s=]+(\d+)/i);
           if (prevcidMatch) parsed.prevcid = parseInt(prevcidMatch[1], 10);
           if (nextcidMatch) parsed.nextcid = parseInt(nextcidMatch[1], 10);
         }
@@ -164,8 +164,8 @@ function extractFieldsManually(decrypted: string): ImageData | null {
   const pathMatch = decrypted.match(/path['":\s]+['"]([^'"]+)['"]/);
   const filesMatch = decrypted.match(/files['":\s]+\[([^\]]+)\]/);
   const slMatch = decrypted.match(/sl['":\s]+\{([^}]+)\}/);
-  const prevcidMatch = decrypted.match(/prevcid['":\s]+(\d+)/);
-  const nextcidMatch = decrypted.match(/nextcid['":\s]+(\d+)/);
+  const prevcidMatch = decrypted.match(/prevcid['":\s=]+(\d+)/i);
+  const nextcidMatch = decrypted.match(/nextcid['":\s=]+(\d+)/i);
 
   if (!bidMatch || !cidMatch || !filesMatch || !pathMatch) {
     return null;
