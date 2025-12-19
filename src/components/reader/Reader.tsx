@@ -80,6 +80,7 @@ function MangaImage({ url, pageIndex, priority = false }: MangaImageProps) {
 interface ScrollReaderProps {
   data: ChapterData;
   imageWidth: number;
+  targetPage: number;
   onPageChange: (page: number) => void;
 }
 
@@ -88,9 +89,49 @@ interface ScrollReaderProps {
  *
  * 垂直滾動瀏覽所有頁面
  */
-function ScrollReader({ data, imageWidth, onPageChange }: ScrollReaderProps) {
+function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollReaderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const lastScrolledPage = useRef(-1);
+  const isUserScrolling = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 滾動到指定頁面（初始載入或使用者手動選擇）
+  useEffect(() => {
+    // 避免重複滾動到同一頁
+    if (targetPage === lastScrolledPage.current) return;
+    // 如果使用者正在滾動，不干擾
+    if (isUserScrolling.current) return;
+
+    const targetRef = imageRefs.current[targetPage];
+    if (targetRef) {
+      lastScrolledPage.current = targetPage;
+      requestAnimationFrame(() => {
+        targetRef.scrollIntoView({ behavior: 'instant', block: 'start' });
+      });
+    }
+  }, [targetPage]);
+
+  // 監聽使用者滾動
+  useEffect(() => {
+    function handleScroll() {
+      isUserScrolling.current = true;
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
+        isUserScrolling.current = false;
+      }, 150);
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -101,6 +142,7 @@ function ScrollReader({ data, imageWidth, onPageChange }: ScrollReaderProps) {
               (ref) => ref === entry.target
             );
             if (index !== -1) {
+              lastScrolledPage.current = index;
               onPageChange(index);
             }
           }
@@ -292,17 +334,20 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   }, []);
 
   /**
-   * 單頁模式頁面切換
+   * 頁面切換（單頁模式滾動到頂部，滾動模式由 ScrollReader 處理）
    */
   const goToPage = useCallback(
     (page: number) => {
       if (data && page >= 0 && page < data.total) {
         setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        // 單頁模式滾動到頂部，滾動模式由 ScrollReader 處理
+        if (settings.viewMode === 'single') {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
         updatePageUrl(page);
       }
     },
-    [data, updatePageUrl]
+    [data, settings.viewMode, updatePageUrl]
   );
 
   /**
@@ -443,6 +488,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
         <ScrollReader
           data={data}
           imageWidth={settings.imageWidth}
+          targetPage={currentPage}
           onPageChange={handleScrollPageChange}
         />
       ) : (
