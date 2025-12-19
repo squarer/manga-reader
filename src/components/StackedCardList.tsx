@@ -65,17 +65,17 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
   };
 
   return (
-    <div className="overflow-x-auto pb-4">
+    <div className="overflow-x-auto px-2 -mx-2">
       {/* 標題 */}
       <div className="mb-0.5 flex items-center gap-2">
         <h2 className="text-lg font-bold">{title}</h2>
         {titleExtra}
       </div>
       <div
-        className="relative flex items-end"
+        className="relative flex items-end pb-1"
         style={{
           width: `${CARD_OFFSET * (items.length - 1) + CARD_WIDTH + SPREAD_DISTANCE}px`,
-          height: '175px',
+          height: '180px',
         }}
         onMouseLeave={() => setHoveredIndex(null)}
       >
@@ -107,7 +107,7 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
                 />
                 <div
                   className="absolute inset-0 overflow-hidden rounded-lg bg-muted ring-1 ring-black/10 shadow-xl transition-shadow duration-300"
-                  style={isHovered ? { boxShadow: '0 0 20px 6px oklch(0.62 0.14 39 / 0.6)' } : undefined}
+                  style={isHovered ? { boxShadow: '0 0 12px 2px oklch(0.62 0.14 39 / 0.5)' } : undefined}
                 >
                   <Image
                     src={item.cover}
