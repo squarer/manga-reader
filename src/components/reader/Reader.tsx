@@ -298,14 +298,18 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   const { toggleFullscreen } = useFullscreen();
   const { settings, updateSettings } = useReaderSettings();
 
-  // 載入章節資料
+  // 載入章節資料（使用 AbortController 防止 Strict Mode 重複請求）
   useEffect(() => {
+    const abortController = new AbortController();
+
     async function fetchChapter() {
       setLoading(true);
       setError(null);
 
       try {
-        const res = await fetch(`/api/chapter/${mangaId}/${chapterId}`);
+        const res = await fetch(`/api/chapter/${mangaId}/${chapterId}`, {
+          signal: abortController.signal,
+        });
         const json = await res.json();
 
         if (json.success) {
@@ -329,14 +333,23 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
         } else {
           setError(json.error || 'Failed to load chapter');
         }
-      } catch {
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return; // 請求被取消，不處理
+        }
         setError('Network error');
       } finally {
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchChapter();
+
+    return () => {
+      abortController.abort();
+    };
   }, [mangaId, chapterId, addHistory]);
 
   /**
