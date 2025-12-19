@@ -6,7 +6,8 @@
     "dev": "next dev -p ${PORT:-3000}",
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pm2": "pm2 delete manga-reader 2>/dev/null; pm2 start ecosystem.config.js"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
