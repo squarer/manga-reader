@@ -16,7 +16,7 @@ import {
   useFullscreen,
   useReaderSettings,
 } from './useReaderHooks';
-import type { ReaderProps, ChapterData } from './types';
+import { ViewMode, type ReaderProps, type ChapterData } from './types';
 
 /**
  * 載入中狀態
@@ -341,7 +341,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
       if (data && page >= 0 && page < data.total) {
         setCurrentPage(page);
         // 單頁模式滾動到頂部，滾動模式由 ScrollReader 處理
-        if (settings.viewMode === 'single') {
+        if (settings.viewMode === ViewMode.Single) {
           window.scrollTo({ top: 0, behavior: 'instant' });
         }
         updatePageUrl(page);
@@ -376,14 +376,14 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
         case 'ArrowLeft':
         case 'a':
         case 'A':
-          if (settings.viewMode === 'single') {
+          if (settings.viewMode === ViewMode.Single) {
             goToPage(currentPage - 1);
           }
           break;
         case 'ArrowRight':
         case 'd':
         case 'D':
-          if (settings.viewMode === 'single') {
+          if (settings.viewMode === ViewMode.Single) {
             goToPage(currentPage + 1);
           }
           break;
@@ -406,7 +406,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
         case 'm':
         case 'M':
           updateSettings({
-            viewMode: settings.viewMode === 'single' ? 'scroll' : 'single',
+            viewMode: settings.viewMode === ViewMode.Single ? ViewMode.Scroll : ViewMode.Single,
           });
           break;
         case '?':
@@ -484,7 +484,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
       <TopToolbar mangaId={mangaId} data={data} isVisible={isVisible} />
 
       {/* 閱讀區域 */}
-      {settings.viewMode === 'scroll' ? (
+      {settings.viewMode === ViewMode.Scroll ? (
         <ScrollReader
           data={data}
           imageWidth={settings.imageWidth}

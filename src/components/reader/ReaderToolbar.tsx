@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
-import type { ChapterData, ReaderSettings } from './types';
+import { ViewMode, type ChapterData, type ReaderSettings } from './types';
 
 /** TopToolbar props */
 interface TopToolbarProps {
@@ -321,11 +321,11 @@ export function BottomToolbar({
               className="hidden sm:flex"
               onClick={() =>
                 onSettingsUpdate({
-                  viewMode: settings.viewMode === 'single' ? 'scroll' : 'single',
+                  viewMode: settings.viewMode === ViewMode.Single ? ViewMode.Scroll : ViewMode.Single,
                 })
               }
             >
-              {settings.viewMode === 'single' ? (
+              {settings.viewMode === ViewMode.Single ? (
                 <>
                   <Scroll className="mr-1 h-4 w-4" />
                   滾動

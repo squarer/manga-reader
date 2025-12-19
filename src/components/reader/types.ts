@@ -21,7 +21,10 @@ export interface ChapterData {
 }
 
 /** 閱讀模式 */
-export type ViewMode = 'single' | 'scroll';
+export enum ViewMode {
+  Single = 'single',
+  Scroll = 'scroll',
+}
 
 /** 閱讀器設定 */
 export interface ReaderSettings {
@@ -34,7 +37,7 @@ export const TOOLBAR_HIDE_DELAY = 3000;
 
 /** 預設閱讀器設定 */
 export const DEFAULT_SETTINGS: ReaderSettings = {
-  viewMode: 'scroll',
+  viewMode: ViewMode.Scroll,
   imageWidth: 100,
 };
 
