@@ -67,7 +67,7 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
   return (
     <div className="overflow-x-auto px-2 -mx-2">
       {/* 標題 */}
-      <div className="mb-0.5 flex items-center gap-2">
+      <div className="mb-1 flex items-center gap-2">
         <h2 className="text-lg font-bold">{title}</h2>
         {titleExtra}
       </div>
