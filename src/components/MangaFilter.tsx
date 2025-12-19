@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { GENRE_LABELS, GenreType } from '@/lib/scraper/types';
 
 /**
  * 地區選項
@@ -17,26 +18,10 @@ export const REGION_OPTIONS = {
 } as const;
 
 /**
- * 劇情分類選項
- * key: URL 參數, value: 顯示名稱
+ * 劇情分類選項（從 types.ts 導入）
+ * key: URL 參數 (pinyin), value: 顯示名稱 (中文)
  */
-export const GENRE_OPTIONS = {
-  rexue: '熱血',
-  maoxian: '冒險',
-  mohuan: '魔幻',
-  gaoxiao: '搞笑',
-  aiqing: '愛情',
-  kehuan: '科幻',
-  xiaoyuan: '校園',
-  xuanyi: '懸疑',
-  kongbu: '恐怖',
-  hougong: '後宮',
-  danmei: '耽美',
-  baihe: '百合',
-  wuxia: '武俠',
-  gedou: '格鬥',
-  zhiyu: '治癒',
-} as const;
+export const GENRE_OPTIONS: Record<GenreType, string> = GENRE_LABELS;
 
 /** 年份選項 */
 export const YEAR_OPTIONS = ['2025', '2024', '2023', '2022', '2021', '2020', '更早'] as const;
@@ -60,7 +45,7 @@ export const SORT_OPTIONS = {
 export type RegionKey = keyof typeof REGION_OPTIONS;
 
 /** 劇情分類 key 型別 */
-export type GenreKey = keyof typeof GENRE_OPTIONS;
+export type GenreKey = GenreType;
 
 /** 年份型別 */
 export type YearOption = (typeof YEAR_OPTIONS)[number];
