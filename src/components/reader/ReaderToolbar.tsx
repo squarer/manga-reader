@@ -67,24 +67,27 @@ export function TopToolbar({
 }: TopToolbarProps) {
   return (
     <header
-      className={`fixed top-14 left-0 right-0 z-50 flex items-center justify-between bg-gradient-to-b from-background/90 to-transparent px-4 py-3 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-background/90 to-transparent transition-all duration-300 ${
         isVisible
           ? 'translate-y-0 opacity-100'
           : '-translate-y-full opacity-0'
       }`}
     >
-      <Button asChild variant="ghost" size="icon">
-        <Link href={`/manga/${mangaId}`}>
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-      </Button>
+      {/* 內容區域 - 從 navbar 下方開始 */}
+      <div className="flex items-center justify-between px-4 py-3 pt-[4.5rem]">
+        <Button asChild variant="ghost" size="icon">
+          <Link href={`/manga/${mangaId}`}>
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+        </Button>
 
-      <div className="text-center">
-        <h1 className="text-sm font-medium">{data.bname}</h1>
-        <p className="text-xs text-muted-foreground">{data.cname}</p>
+        <div className="text-center">
+          <h1 className="text-sm font-medium">{data.bname}</h1>
+          <p className="text-xs text-muted-foreground">{data.cname}</p>
+        </div>
+
+        <SettingsPanel settings={settings} onUpdate={onSettingsUpdate} />
       </div>
-
-      <SettingsPanel settings={settings} onUpdate={onSettingsUpdate} />
     </header>
   );
 }
