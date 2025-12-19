@@ -109,12 +109,12 @@ function DesktopStackedCards({ items }: { items: StackedCardItem[] }) {
   };
 
   return (
-    <div className="overflow-x-auto px-2 -mx-2">
+    <div className="overflow-x-auto overflow-y-clip px-2 -mx-2">
       <div
         className="relative flex items-end pb-1"
         style={{
           width: `${CARD_OFFSET * (items.length - 1) + CARD_WIDTH + SPREAD_DISTANCE}px`,
-          height: '180px',
+          height: '190px',
         }}
         onMouseLeave={() => setHoveredIndex(null)}
       >
