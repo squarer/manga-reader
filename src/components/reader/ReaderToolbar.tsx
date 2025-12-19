@@ -179,30 +179,35 @@ export function BottomToolbar({
         </div>
 
         {/* 控制列 */}
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* 上一話按鈕 */}
-          <div className="flex items-center">
-            {data.prevCid ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button asChild variant="ghost" size="sm">
+        <div className="flex items-center justify-center px-4 py-3">
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* 上一話按鈕 */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    asChild={!!data.prevCid}
+                    variant="ghost"
+                    size="sm"
+                    disabled={!data.prevCid}
+                  >
+                    {data.prevCid ? (
                       <Link href={`/read/${mangaId}/${data.prevCid}`}>
                         <SkipBack className="mr-1 h-4 w-4" />
                         上一話
                       </Link>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>上一話 ([ 或 ,)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              <div className="h-9 w-[88px]" />
-            )}
-          </div>
+                    ) : (
+                      <>
+                        <SkipBack className="mr-1 h-4 w-4" />
+                        上一話
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>上一話 ([ 或 ,)</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-          {/* 中間控制區 */}
-          <div className="flex items-center gap-2 sm:gap-4">
             {/* 上一頁按鈕 */}
             <TooltipProvider>
               <Tooltip>
@@ -262,6 +267,33 @@ export function BottomToolbar({
               </Tooltip>
             </TooltipProvider>
 
+            {/* 下一話按鈕 */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    asChild={!!data.nextCid}
+                    variant="ghost"
+                    size="sm"
+                    disabled={!data.nextCid}
+                  >
+                    {data.nextCid ? (
+                      <Link href={`/read/${mangaId}/${data.nextCid}`}>
+                        下一話
+                        <SkipForward className="ml-1 h-4 w-4" />
+                      </Link>
+                    ) : (
+                      <>
+                        下一話
+                        <SkipForward className="ml-1 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>下一話 (] 或 .)</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             {/* 閱讀模式切換 */}
             <Button
               variant="ghost"
@@ -302,27 +334,6 @@ export function BottomToolbar({
                 <TooltipContent>快捷鍵 (?)</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          </div>
-
-          {/* 下一話按鈕 */}
-          <div className="flex items-center">
-            {data.nextCid ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={`/read/${mangaId}/${data.nextCid}`}>
-                        下一話
-                        <SkipForward className="ml-1 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>下一話 (] 或 .)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              <div className="h-9 w-[88px]" />
-            )}
           </div>
         </div>
       </footer>

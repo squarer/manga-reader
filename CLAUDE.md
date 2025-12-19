@@ -97,6 +97,15 @@ npx shadcn@latest add https://www.tinte.dev/r/claude
 | `/api/image`               | 圖片代理（繞過防盜鏈） |
 | `/api/rank`                | 排行榜 API             |
 
+## 開發流程
+
+### Fix Issue 流程
+
+1. 修改程式碼
+2. 驗證修復
+3. Commit
+4. Push
+
 ## 注意事項
 
 - 圖片需透過代理 API 載入（防盜鏈）
