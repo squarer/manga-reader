@@ -43,10 +43,10 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
 
 /** 快捷鍵列表 */
 export const SHORTCUTS = [
-  { key: '← / A', description: '上一頁' },
-  { key: '→ / D', description: '下一頁' },
-  { key: '[ / ,', description: '上一章' },
-  { key: '] / .', description: '下一章' },
+  { key: '← / A', description: '上一頁（首頁時跳上一話）' },
+  { key: '→ / D', description: '下一頁（末頁時跳下一話）' },
+  { key: '[ / ,', description: '上一話' },
+  { key: '] / .', description: '下一話' },
   { key: 'F', description: '全螢幕' },
   { key: 'M', description: '切換模式' },
   { key: 'Esc', description: '退出全螢幕' },
