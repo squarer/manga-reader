@@ -250,9 +250,6 @@ function NavbarContent() {
                 </Popover>
               )}
 
-              {/* 桌面版搜尋框 */}
-              <DesktopSearch onSearch={handleSearch} />
-
               {/* 閱讀歷史 */}
               <HistoryPopover
                 isOpen={isHistoryOpen}
@@ -263,6 +260,9 @@ function NavbarContent() {
 
               {/* 我的收藏 */}
               <HoverExpandButton icon={Heart} label="我的收藏" href="/favorites" />
+
+              {/* 桌面版搜尋框 */}
+              <DesktopSearch onSearch={handleSearch} />
 
               {/* 主題切換 */}
               <ThemeToggle />
