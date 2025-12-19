@@ -212,6 +212,24 @@ function SinglePageReader({
     }
   }, [currentPage, data.images, data.total]);
 
+  /** 上一頁或上一話 */
+  const goPrev = useCallback(() => {
+    if (currentPage > 0) {
+      onPageChange(currentPage - 1);
+    } else if (data.prevCid) {
+      window.location.href = `/read/${mangaId}/${data.prevCid}`;
+    }
+  }, [currentPage, data.prevCid, mangaId, onPageChange]);
+
+  /** 下一頁或下一話 */
+  const goNext = useCallback(() => {
+    if (currentPage < data.total - 1) {
+      onPageChange(currentPage + 1);
+    } else if (data.nextCid) {
+      window.location.href = `/read/${mangaId}/${data.nextCid}`;
+    }
+  }, [currentPage, data.total, data.nextCid, mangaId, onPageChange]);
+
   /** 左鍵點擊 - 換頁或顯示工具列 */
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -220,43 +238,24 @@ function SinglePageReader({
       const width = rect.width;
       const zone = x / width;
 
-      // 中間區域 (40%-60%) - 顯示工具列（縮小範圍讓換頁更容易）
       if (zone >= 0.4 && zone <= 0.6) {
         onTap();
-        return;
-      }
-
-      // 左側區域 (0%-40%) - 上一頁或上一話
-      if (zone < 0.4) {
-        if (currentPage > 0) {
-          onPageChange(currentPage - 1);
-        } else if (data.prevCid) {
-          window.location.href = `/read/${mangaId}/${data.prevCid}`;
-        }
-        return;
-      }
-
-      // 右側區域 (60%-100%) - 下一頁或下一話
-      if (currentPage < data.total - 1) {
-        onPageChange(currentPage + 1);
-      } else if (data.nextCid) {
-        window.location.href = `/read/${mangaId}/${data.nextCid}`;
+      } else if (zone < 0.4) {
+        goPrev();
+      } else {
+        goNext();
       }
     },
-    [currentPage, data.total, data.prevCid, data.nextCid, mangaId, onPageChange, onTap]
+    [goPrev, goNext, onTap]
   );
 
   /** 右鍵點擊 - 上一頁或上一話 */
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      if (currentPage > 0) {
-        onPageChange(currentPage - 1);
-      } else if (data.prevCid) {
-        window.location.href = `/read/${mangaId}/${data.prevCid}`;
-      }
+      goPrev();
     },
-    [currentPage, data.prevCid, mangaId, onPageChange]
+    [goPrev]
   );
 
   return (
