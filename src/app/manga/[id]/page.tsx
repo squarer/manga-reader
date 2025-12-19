@@ -25,6 +25,7 @@ import {
   Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import TiltCard from '@/components/TiltCard';
 
 /**
  * 章節分組顯示元件（支援分 tab、可折疊、已讀標記）
@@ -329,7 +330,7 @@ export default function MangaDetailPage({
         {/* 主要內容 */}
         <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 pb-12 pt-8 md:flex-row md:items-end md:pt-12">
           {/* 封面圖 */}
-          <div className="flex-shrink-0">
+          <TiltCard className="flex-shrink-0" enableEntrance={false}>
             <div className="relative h-72 w-48 overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/10 md:h-80 md:w-56">
               <Image
                 src={coverUrl}
@@ -340,7 +341,7 @@ export default function MangaDetailPage({
                 priority
               />
             </div>
-          </div>
+          </TiltCard>
 
           {/* 資訊區 */}
           <div className="flex-1 text-center md:pb-4 md:text-left">
