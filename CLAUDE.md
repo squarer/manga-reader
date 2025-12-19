@@ -106,6 +106,24 @@ npx shadcn@latest add https://www.tinte.dev/r/claude
 3. Commit
 4. Push
 
+## UI 元件規範
+
+### Fixed Header 漸層背景
+
+需要漸層背景延伸到 Navbar 區域的 fixed header 必須：
+
+```tsx
+<header className="fixed top-0 ... pt-[4.5rem] pb-3 bg-gradient-to-b from-background/90 to-transparent">
+  {/* 內容 */}
+</header>
+```
+
+| 屬性 | 值 | 說明 |
+| --- | --- | --- |
+| `top-0` | 從頁面最上方開始 | 讓漸層延伸到 Navbar 後方 |
+| `pt-[4.5rem]` | 72px | 內容在 Navbar 下方 |
+| `z-50` | 低於 Navbar (z-[60]) | 確保 Navbar 在上層 |
+
 ## 注意事項
 
 - 圖片需透過代理 API 載入（防盜鏈）
