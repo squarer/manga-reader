@@ -27,21 +27,16 @@ export async function GET(request: NextRequest) {
 
   try {
     const cacheKey = request.url;
-    const rankData = await withCache(cacheKey, async () => {
-      const html = await fetchRankList();
-      return parseRankList(html);
+    const items = await withCache(cacheKey, async () => {
+      const html = await fetchRankList(type);
+      return parseRankList(html, type);
     });
-
-    // 根據請求的 type 回傳對應資料
-    const items = rankData[type as keyof typeof rankData];
 
     return NextResponse.json({
       success: true,
       data: {
         type,
         items,
-        // 同時回傳所有類型的資料供前端快取
-        all: rankData,
       },
     });
   } catch (error) {

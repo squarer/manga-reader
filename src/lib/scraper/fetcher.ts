@@ -197,10 +197,22 @@ export async function fetchMangaListWithFilters(
 
 /**
  * 獲取排行榜頁面
- * 排行榜頁面包含所有類型（日/週/月/總）的資料，由 parseRankList 解析
+ * URL 結構：
+ * - 日榜：/rank/
+ * - 週榜：/rank/week.html
+ * - 月榜：/rank/month.html
+ * - 總榜：/rank/total.html
  */
-export async function fetchRankList(): Promise<string> {
-  const url = '/rank/';
+export async function fetchRankList(
+  type: import('./types').RankTypeEnum = 'day' as import('./types').RankTypeEnum
+): Promise<string> {
+  const urlMap: Record<string, string> = {
+    day: '/rank/',
+    week: '/rank/week.html',
+    month: '/rank/month.html',
+    total: '/rank/total.html',
+  };
+  const url = urlMap[type] || '/rank/';
 
   const response = await client.get(url, {
     headers: {

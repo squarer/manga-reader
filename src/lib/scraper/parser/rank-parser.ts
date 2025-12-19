@@ -3,7 +3,7 @@
  */
 
 import * as cheerio from 'cheerio';
-import type { RankItem } from '../types';
+import type { RankItem, RankTypeEnum } from '../types';
 import { RankTrend } from '../types';
 import { buildCoverUrl } from './constants';
 
@@ -11,41 +11,21 @@ import { buildCoverUrl } from './constants';
  * 解析排行榜頁面
  * 排行榜頁面使用表格結構 table.rank-detail
  * 每個頁面只有一種排行榜類型（日/週/月/總），由 URL 決定
+ *
+ * @param html - HTML 內容
+ * @param type - 排行榜類型（保留供未來日誌使用）
  */
-export function parseRankList(html: string): {
-  day: RankItem[];
-  week: RankItem[];
-  month: RankItem[];
-  total: RankItem[];
-} {
+export function parseRankList(html: string, type?: RankTypeEnum): RankItem[] {
+  void type; // 保留參數供未來日誌使用
   const $ = cheerio.load(html);
-  const result = {
-    day: [] as RankItem[],
-    week: [] as RankItem[],
-    month: [] as RankItem[],
-    total: [] as RankItem[],
-  };
-
-  // 從頁面標題或 URL 判斷當前排行榜類型
-  const title = $('title').text();
-  const selectedTab = $('.bar-tab li.selected a').text();
-  let currentType: 'day' | 'week' | 'month' | 'total' = 'day';
-
-  if (title.includes('周排行') || selectedTab.includes('周排行')) {
-    currentType = 'week';
-  } else if (title.includes('月排行') || selectedTab.includes('月排行')) {
-    currentType = 'month';
-  } else if (title.includes('总排行') || selectedTab.includes('总排行')) {
-    currentType = 'total';
-  }
 
   // 解析表格中的排行榜項目
   const $table = $('table.rank-detail');
   if ($table.length) {
-    result[currentType] = parseRankTableItems($, $table);
+    return parseRankTableItems($, $table);
   }
 
-  return result;
+  return [];
 }
 
 /**
