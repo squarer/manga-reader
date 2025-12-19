@@ -9,7 +9,7 @@
 import { useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { BookOpen, SlidersHorizontal, Menu, X, Heart } from 'lucide-react';
+import { BookOpen, SlidersHorizontal, Menu, X, Heart, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -25,7 +25,6 @@ import { NAV_ITEMS, type NavItem } from './types';
 import { parseFiltersFromParams, filtersToParams } from './utils';
 import { DesktopSearch } from './DesktopSearch';
 import { MobileMenu } from './MobileMenu';
-import { HistoryPopover } from './HistoryPopover';
 
 /**
  * Hover 展開按鈕共用元件
@@ -122,7 +121,6 @@ function NavbarContent() {
   const [searchValue, setSearchValue] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // 閱讀歷史
   const { history, isLoaded: isHistoryLoaded } = useHistory();
@@ -220,6 +218,22 @@ function NavbarContent() {
 
             {/* 操作區 */}
             <div className="flex items-center">
+              {/* 閱讀歷史 */}
+              <HoverExpandButton
+                icon={Clock}
+                label="閱讀歷史"
+                href="/history"
+                isActive={pathname.startsWith('/history')}
+              />
+
+              {/* 我的收藏 */}
+              <HoverExpandButton
+                icon={Heart}
+                label="我的收藏"
+                href="/favorites"
+                isActive={pathname.startsWith('/favorites')}
+              />
+
               {/* 篩選按鈕（僅首頁非搜尋模式顯示） */}
               {isHomePage && !isSearchMode && (
                 <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
@@ -249,23 +263,6 @@ function NavbarContent() {
                   </PopoverContent>
                 </Popover>
               )}
-
-              {/* 閱讀歷史 */}
-              <HistoryPopover
-                isOpen={isHistoryOpen}
-                onOpenChange={setIsHistoryOpen}
-                history={history}
-                isLoaded={isHistoryLoaded}
-                isActive={pathname.startsWith('/history')}
-              />
-
-              {/* 我的收藏 */}
-              <HoverExpandButton
-                icon={Heart}
-                label="我的收藏"
-                href="/favorites"
-                isActive={pathname.startsWith('/favorites')}
-              />
 
               {/* 桌面版搜尋框 */}
               <DesktopSearch onSearch={handleSearch} />
