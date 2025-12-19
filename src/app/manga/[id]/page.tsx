@@ -12,6 +12,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import type { MangaInfo, ChapterGroup } from '@/lib/scraper/types';
+import { GENRE_KEYS } from '@/lib/scraper';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 import { useHistory, type HistoryItem } from '@/lib/hooks/useHistory';
 import {
@@ -390,16 +391,27 @@ export default function MangaDetailPage({
             {/* 分類標籤 */}
             {manga.genres.length > 0 && (
               <div className="mt-4 flex flex-wrap justify-center gap-2 md:justify-start">
-                {manga.genres.map((genre) => (
-                  <Link key={genre} href={`/?genre=${encodeURIComponent(genre)}`}>
+                {manga.genres.map((genre) => {
+                  const genreKey = GENRE_KEYS[genre];
+                  return genreKey ? (
+                    <Link key={genre} href={`/?genre=${genreKey}`}>
+                      <Badge
+                        variant="outline"
+                        className="cursor-pointer bg-background/50 backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground"
+                      >
+                        {genre}
+                      </Badge>
+                    </Link>
+                  ) : (
                     <Badge
+                      key={genre}
                       variant="outline"
-                      className="cursor-pointer bg-background/50 backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground"
+                      className="bg-background/50 backdrop-blur-sm"
                     >
                       {genre}
                     </Badge>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
 

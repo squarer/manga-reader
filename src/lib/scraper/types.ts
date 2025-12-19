@@ -200,6 +200,13 @@ export const GENRE_LABELS: Record<GenreType, string> = {
 };
 
 /**
+ * 劇情分類反向對照表（中文名稱 → 拼音 key）
+ */
+export const GENRE_KEYS: Record<string, GenreType> = Object.fromEntries(
+  Object.entries(GENRE_LABELS).map(([key, label]) => [label, key as GenreType])
+) as Record<string, GenreType>;
+
+/**
  * 排序方式
  */
 export enum SortType {
