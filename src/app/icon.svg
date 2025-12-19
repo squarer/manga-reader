@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 背景圓角方形 -->
+  <rect width="32" height="32" rx="6" fill="#1a1a1a"/>
+
+  <!-- 翻開的漫畫書 -->
+  <g transform="translate(4, 6)">
+    <!-- 左頁 -->
+    <path d="M12 2 L12 18 Q8 17, 2 18 L2 2 Q8 3, 12 2" fill="#f5f5f5" stroke="#d4a574" stroke-width="0.5"/>
+    <!-- 右頁 -->
+    <path d="M12 2 L12 18 Q16 17, 22 18 L22 2 Q16 3, 12 2" fill="#fafafa" stroke="#d4a574" stroke-width="0.5"/>
+
+    <!-- 左頁漫畫格線 -->
+    <rect x="3.5" y="4" width="7" height="5" rx="0.5" fill="none" stroke="#d4a574" stroke-width="0.8"/>
+    <rect x="3.5" y="10.5" width="3" height="5" rx="0.5" fill="none" stroke="#d4a574" stroke-width="0.8"/>
+    <rect x="7.5" y="10.5" width="3" height="5" rx="0.5" fill="none" stroke="#d4a574" stroke-width="0.8"/>
+
+    <!-- 右頁漫畫格線 -->
+    <rect x="13.5" y="4" width="7" height="3" rx="0.5" fill="none" stroke="#d4a574" stroke-width="0.8"/>
+    <rect x="13.5" y="8.5" width="7" height="3" rx="0.5" fill="none" stroke="#d4a574" stroke-width="0.8"/>
+    <rect x="13.5" y="13" width="7" height="3" rx="0.5" fill="none" stroke="#d4a574" stroke-width="0.8"/>
+  </g>
+
+  <!-- 書脊高亮 -->
+  <line x1="16" y1="8" x2="16" y2="24" stroke="#d4a574" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
