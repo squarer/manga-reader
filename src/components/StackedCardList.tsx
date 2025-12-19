@@ -92,6 +92,7 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
                 left: `${index * CARD_OFFSET}px`,
                 zIndex: isHovered ? 50 : index,
                 transform: `translateX(${translateX}px) rotate(${isHovered ? 0 : getRotateAngle(index)}deg)`,
+                opacity: hoveredIndex !== null && index > hoveredIndex ? 0.5 : 1,
               }}
               onMouseEnter={() => setHoveredIndex(index)}
             >
