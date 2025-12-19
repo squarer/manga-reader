@@ -180,11 +180,11 @@ export function BottomToolbar({
               }}
             >
               <div
-                className="h-full rounded-full bg-foreground transition-all group-hover:bg-muted-foreground"
+                className="h-full rounded-full bg-primary transition-all"
                 style={{ width: `${progressPercent}%` }}
               />
               <div
-                className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-primary opacity-0 transition-opacity group-hover:opacity-100"
                 style={{ left: `${progressPercent}%`, marginLeft: '-6px' }}
               />
             </div>
