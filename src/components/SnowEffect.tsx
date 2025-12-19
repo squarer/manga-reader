@@ -33,7 +33,7 @@ export function SnowEffect() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const SNOWFLAKE_COUNT = 60;
+    const SNOWFLAKE_COUNT = 300;
 
     /**
      * 調整 Canvas 尺寸
