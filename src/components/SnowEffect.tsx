@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 
 /**
  * 雪花粒子介面
@@ -25,6 +26,7 @@ export function SnowEffect() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const snowflakesRef = useRef<Snowflake[]>([]);
   const animationFrameRef = useRef<number>(0);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -82,10 +84,11 @@ export function SnowEffect() {
           snowflakesRef.current[index] = createSnowflake(true);
         }
 
-        // 繪製雪花
+        // 繪製雪花（dark: 白色, light: 金色）
         ctx.beginPath();
         ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${flake.opacity})`;
+        const color = resolvedTheme === "dark" ? "255, 255, 255" : "218, 165, 32";
+        ctx.fillStyle = `rgba(${color}, ${flake.opacity})`;
         ctx.fill();
       });
 
@@ -102,7 +105,7 @@ export function SnowEffect() {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrameRef.current);
     };
-  }, []);
+  }, [resolvedTheme]);
 
   return (
     <canvas
