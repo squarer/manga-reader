@@ -121,6 +121,7 @@ export function BottomToolbar({
 }: BottomToolbarProps) {
   const router = useRouter();
   const [internalDialogOpen, setInternalDialogOpen] = useState(false);
+  const [hoverPage, setHoverPage] = useState<{ page: number; x: number } | null>(null);
 
   const progressPercent = ((currentPage + 1) / data.total) * 100;
   const isLastPage = currentPage === data.total - 1;
@@ -174,6 +175,13 @@ export function BottomToolbar({
                 const page = Math.floor(percent * data.total);
                 onPageChange(Math.max(0, Math.min(data.total - 1, page)));
               }}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                const page = Math.max(0, Math.min(data.total - 1, Math.floor(percent * data.total)));
+                setHoverPage({ page, x: e.clientX - rect.left });
+              }}
+              onMouseLeave={() => setHoverPage(null)}
             >
               <div
                 className="h-full rounded-full bg-primary transition-all"
@@ -183,6 +191,15 @@ export function BottomToolbar({
                 className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-primary opacity-0 transition-opacity group-hover:opacity-100"
                 style={{ left: `${progressPercent}%`, marginLeft: '-6px' }}
               />
+              {/* 懸停頁碼提示 */}
+              {hoverPage && (
+                <div
+                  className="absolute -top-8 -translate-x-1/2 whitespace-nowrap rounded bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md"
+                  style={{ left: hoverPage.x }}
+                >
+                  {hoverPage.page + 1} / {data.total}
+                </div>
+              )}
             </div>
 
             {/* 控制列 */}
