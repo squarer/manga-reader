@@ -210,6 +210,7 @@ function SinglePageReader({
         style={{ width: `${imageWidth}%`, maxWidth: '100vw' }}
       >
         <MangaImage
+          key={currentPage}
           url={data.images[currentPage]}
           pageIndex={currentPage}
           priority
