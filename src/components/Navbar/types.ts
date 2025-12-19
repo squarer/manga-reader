@@ -2,7 +2,7 @@
  * Navbar 型別定義與常數
  */
 
-import { Home, TrendingUp, Clock } from 'lucide-react';
+import { TrendingUp, Clock } from 'lucide-react';
 
 /** 導航項目定義 */
 export interface NavItem {
@@ -16,7 +16,6 @@ export interface NavItem {
 
 /** 導航選單項目 */
 export const NAV_ITEMS: NavItem[] = [
-  { label: '首頁', href: '/', icon: Home },
   { label: '排行榜', href: '/rank', icon: TrendingUp },
   { label: '最新更新', href: '/update', icon: Clock },
 ];
