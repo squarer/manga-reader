@@ -40,8 +40,10 @@ import {
   Keyboard,
   SkipBack,
   SkipForward,
+  ZoomOut,
+  ZoomIn,
 } from 'lucide-react';
-import { SettingsPanel } from './ReaderSettings';
+import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import type { ChapterData, ReaderSettings } from './types';
 
@@ -49,8 +51,6 @@ import type { ChapterData, ReaderSettings } from './types';
 interface TopToolbarProps {
   mangaId: number;
   data: ChapterData;
-  settings: ReaderSettings;
-  onSettingsUpdate: (updates: Partial<ReaderSettings>) => void;
   isVisible: boolean;
 }
 
@@ -59,13 +59,7 @@ interface TopToolbarProps {
  *
  * 顯示漫畫名稱、章節名稱和設定按鈕
  */
-export function TopToolbar({
-  mangaId,
-  data,
-  settings,
-  onSettingsUpdate,
-  isVisible,
-}: TopToolbarProps) {
+export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-gradient-to-b from-background/90 to-transparent px-4 pb-3 pt-[4.5rem] transition-all duration-300 ${
@@ -85,7 +79,8 @@ export function TopToolbar({
         <p className="text-xs text-muted-foreground">{data.cname}</p>
       </div>
 
-      <SettingsPanel settings={settings} onUpdate={onSettingsUpdate} />
+      {/* 佔位保持三欄布局 */}
+      <div className="w-10" />
     </header>
   );
 }
@@ -344,6 +339,23 @@ export function BottomToolbar({
                 <TooltipContent>快捷鍵 (?)</TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
+            {/* 分隔線 */}
+            <div className="hidden h-6 w-px bg-border sm:block" />
+
+            {/* 圖片尺寸 */}
+            <div className="hidden items-center gap-2 sm:flex">
+              <ZoomOut className="h-4 w-4 text-muted-foreground" />
+              <Slider
+                value={[settings.imageWidth]}
+                onValueChange={([value]) => onSettingsUpdate({ imageWidth: value })}
+                min={50}
+                max={100}
+                step={5}
+                className="w-20"
+              />
+              <ZoomIn className="h-4 w-4 text-muted-foreground" />
+            </div>
             </div>
           </div>
         </div>

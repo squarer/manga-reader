@@ -4,7 +4,7 @@
 
 export { default } from './Reader';
 export { TopToolbar, BottomToolbar } from './ReaderToolbar';
-export { SettingsPanel, ShortcutsPanel } from './ReaderSettings';
+export { ShortcutsPanel } from './ReaderSettings';
 export {
   useToolbarVisibility,
   useFullscreen,

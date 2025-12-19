@@ -1,91 +1,12 @@
 'use client';
 
 /**
- * Reader 設定面板和快捷鍵說明
+ * Reader 快捷鍵說明
  */
 
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Settings, BookOpen, Scroll, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { SHORTCUTS } from './types';
-import type { ReaderSettings as ReaderSettingsType } from './types';
-
-/** SettingsPanel props */
-interface SettingsPanelProps {
-  settings: ReaderSettingsType;
-  onUpdate: (updates: Partial<ReaderSettingsType>) => void;
-}
-
-/**
- * 設定面板
- *
- * 側邊滑出的設定面板，包含閱讀模式和圖片寬度調整
- */
-export function SettingsPanel({ settings, onUpdate }: SettingsPanelProps) {
-  return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>閱讀設定</SheetTitle>
-        </SheetHeader>
-        <div className="mt-6 space-y-6 px-4">
-          {/* 閱讀模式 */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium">閱讀模式</label>
-            <div className="flex gap-2">
-              <Button
-                variant={settings.viewMode === 'single' ? 'secondary' : 'ghost'}
-                className="flex-1"
-                onClick={() => onUpdate({ viewMode: 'single' })}
-              >
-                <BookOpen className="mr-2 h-4 w-4" />
-                單頁
-              </Button>
-              <Button
-                variant={settings.viewMode === 'scroll' ? 'secondary' : 'ghost'}
-                className="flex-1"
-                onClick={() => onUpdate({ viewMode: 'scroll' })}
-              >
-                <Scroll className="mr-2 h-4 w-4" />
-                滾動
-              </Button>
-            </div>
-          </div>
-
-          {/* 圖片寬度 */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">圖片寬度</label>
-              <span className="text-sm text-muted-foreground">
-                {settings.imageWidth}%
-              </span>
-            </div>
-            <Slider
-              value={[settings.imageWidth]}
-              onValueChange={([value]) => onUpdate({ imageWidth: value })}
-              min={50}
-              max={100}
-              step={5}
-              className="w-full"
-            />
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
 
 /** ShortcutsPanel props */
 interface ShortcutsPanelProps {

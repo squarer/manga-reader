@@ -435,13 +435,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* 頂部工具列 */}
-      <TopToolbar
-        mangaId={mangaId}
-        data={data}
-        settings={settings}
-        onSettingsUpdate={updateSettings}
-        isVisible={isVisible}
-      />
+      <TopToolbar mangaId={mangaId} data={data} isVisible={isVisible} />
 
       {/* 閱讀區域 */}
       {settings.viewMode === 'scroll' ? (
