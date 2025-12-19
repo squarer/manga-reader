@@ -42,6 +42,7 @@ import {
   SkipForward,
 } from 'lucide-react';
 import { SettingsPanel } from './ReaderSettings';
+import { cn } from '@/lib/utils';
 import type { ChapterData, ReaderSettings } from './types';
 
 /** TopToolbar props */
@@ -150,37 +151,46 @@ export function BottomToolbar({
   return (
     <>
       <footer
-        className={`fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-background/90 to-transparent transition-all duration-300 ${
+        className={cn(
+          'fixed bottom-0 left-0 right-0 z-50 pb-4 transition-all duration-300',
           isVisible
             ? 'translate-y-0 opacity-100'
             : 'translate-y-full opacity-0'
-        }`}
+        )}
       >
-        {/* 進度條 */}
-        <div className="px-4 pb-2">
+        <div className="mx-auto flex justify-center px-4">
           <div
-            className="group relative h-1 cursor-pointer rounded-full bg-muted"
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const percent = (e.clientX - rect.left) / rect.width;
-              const page = Math.floor(percent * data.total);
-              onPageChange(Math.max(0, Math.min(data.total - 1, page)));
-            }}
+            className={cn(
+              'flex flex-col gap-2 px-4 py-3',
+              'rounded-2xl',
+              'border border-border/50',
+              'bg-background/80 backdrop-blur-xl',
+              'supports-[backdrop-filter]:bg-background/60',
+              'shadow-lg shadow-black/5'
+            )}
           >
+            {/* 進度條 */}
             <div
-              className="h-full rounded-full bg-foreground transition-all group-hover:bg-muted-foreground"
-              style={{ width: `${progressPercent}%` }}
-            />
-            <div
-              className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-foreground opacity-0 transition-opacity group-hover:opacity-100"
-              style={{ left: `${progressPercent}%`, marginLeft: '-6px' }}
-            />
-          </div>
-        </div>
+              className="group relative h-1 min-w-[200px] cursor-pointer rounded-full bg-muted sm:min-w-[300px]"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                const page = Math.floor(percent * data.total);
+                onPageChange(Math.max(0, Math.min(data.total - 1, page)));
+              }}
+            >
+              <div
+                className="h-full rounded-full bg-foreground transition-all group-hover:bg-muted-foreground"
+                style={{ width: `${progressPercent}%` }}
+              />
+              <div
+                className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                style={{ left: `${progressPercent}%`, marginLeft: '-6px' }}
+              />
+            </div>
 
-        {/* 控制列 */}
-        <div className="flex items-center justify-center px-4 py-3">
-          <div className="flex items-center gap-2 sm:gap-4">
+            {/* 控制列 */}
+            <div className="flex items-center justify-center gap-2 sm:gap-4">
             {/* 上一話按鈕 */}
             <TooltipProvider>
               <Tooltip>
@@ -334,6 +344,7 @@ export function BottomToolbar({
                 <TooltipContent>快捷鍵 (?)</TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            </div>
           </div>
         </div>
       </footer>
