@@ -201,6 +201,15 @@ function SinglePageReader({
   onPageChange,
   onTap,
 }: SinglePageReaderProps) {
+  // 預載下一頁圖片
+  useEffect(() => {
+    if (currentPage < data.total - 1) {
+      const nextUrl = getProxiedImageUrl(data.images[currentPage + 1]);
+      const img = new window.Image();
+      img.src = nextUrl;
+    }
+  }, [currentPage, data.images, data.total]);
+
   /** 左鍵點擊 - 換頁或顯示工具列 */
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -242,9 +251,6 @@ function SinglePageReader({
     [currentPage, onPageChange]
   );
 
-  // 預載下一頁圖片
-  const nextPageUrl = currentPage < data.total - 1 ? data.images[currentPage + 1] : null;
-
   return (
     <div
       className="flex min-h-screen cursor-pointer items-center justify-center py-16"
@@ -262,17 +268,6 @@ function SinglePageReader({
           priority
         />
       </div>
-
-      {/* 預載下一頁（隱藏） */}
-      {nextPageUrl && (
-        <div className="hidden">
-          <MangaImage
-            key={`preload-${currentPage + 1}`}
-            url={nextPageUrl}
-            pageIndex={currentPage + 1}
-          />
-        </div>
-      )}
     </div>
   );
 }
