@@ -229,38 +229,51 @@ export default function UpdatePage() {
   /**
    * 載入漫畫資料
    */
-  const fetchMangas = useCallback(async (pageNum: number, append = false) => {
-    if (append) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/manga/update?page=${pageNum}`);
-      const json = await res.json();
-
-      if (json.success) {
-        setMangas((prev) =>
-          append ? [...prev, ...json.data.items] : json.data.items
-        );
-        setPagination(json.data.pagination);
+  const fetchMangas = useCallback(
+    async (pageNum: number, append = false, signal?: AbortSignal) => {
+      if (append) {
+        setLoadingMore(true);
       } else {
-        setError(json.error || '載入失敗');
+        setLoading(true);
       }
-    } catch (err) {
-      console.error('Failed to fetch updates:', err);
-      setError('無法連接伺服器');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, []);
+      setError(null);
 
-  // 初始載入
+      try {
+        const res = await fetch(`/api/manga/update?page=${pageNum}`, { signal });
+        const json = await res.json();
+
+        if (json.success) {
+          setMangas((prev) =>
+            append ? [...prev, ...json.data.items] : json.data.items
+          );
+          setPagination(json.data.pagination);
+        } else {
+          setError(json.error || '載入失敗');
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return; // 請求被取消，不處理
+        }
+        console.error('Failed to fetch updates:', err);
+        setError('無法連接伺服器');
+      } finally {
+        if (!signal?.aborted) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
+      }
+    },
+    []
+  );
+
+  // 初始載入（使用 AbortController 防止 Strict Mode 重複請求）
   useEffect(() => {
-    fetchMangas(1, false);
+    const abortController = new AbortController();
+    fetchMangas(1, false, abortController.signal);
+
+    return () => {
+      abortController.abort();
+    };
   }, [fetchMangas]);
 
   // 無限滾動 Intersection Observer

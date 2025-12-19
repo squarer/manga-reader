@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use, useMemo } from 'react';
+import { useState, use, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import type { MangaInfo, ChapterGroup } from '@/lib/scraper/types';
 import { GENRE_KEYS } from '@/lib/scraper';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 import { useHistory, type HistoryItem } from '@/lib/hooks/useHistory';
+import { useFetch } from '@/lib/hooks/useFetch';
 import {
   Heart,
   Play,
@@ -230,35 +231,13 @@ export default function MangaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [manga, setManga] = useState<MangaInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: manga,
+    loading,
+    error,
+  } = useFetch<MangaInfo>(`/api/manga/${id}`, [id]);
   const { isFavorite, toggleFavorite, isLoaded: favLoaded } = useFavorites();
   const { history, isLoaded: historyLoaded } = useHistory();
-
-  useEffect(() => {
-    async function fetchManga() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const res = await fetch(`/api/manga/${id}`);
-        const json = await res.json();
-
-        if (json.success) {
-          setManga(json.data);
-        } else {
-          setError(json.error || 'Failed to load manga');
-        }
-      } catch {
-        setError('Network error');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchManga();
-  }, [id]);
 
   // 計算已讀章節 ID Set
   const readChapterIds = useMemo(() => {

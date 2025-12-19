@@ -40,7 +40,8 @@ function HomeContent() {
     pageNum: number,
     append = false,
     keyword?: string,
-    currentFilters?: FilterState
+    currentFilters?: FilterState,
+    signal?: AbortSignal
   ) => {
     if (append) {
       setLoadingMore(true);
@@ -84,7 +85,7 @@ function HomeContent() {
         params.set('sort', SORT_MAP[f.sort] || 'update');
       }
 
-      const res = await fetch(`/api/manga?${params}`);
+      const res = await fetch(`/api/manga?${params}`, { signal });
       const json = await res.json();
 
       if (json.success) {
@@ -94,17 +95,27 @@ function HomeContent() {
         setPagination(json.data.pagination);
       }
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return; // 請求被取消，不處理
+      }
       console.error('Failed to fetch mangas:', error);
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+        setLoadingMore(false);
+      }
     }
   };
 
-  // 初始載入或切換篩選/搜尋時
+  // 初始載入或切換篩選/搜尋時（使用 AbortController 防止 Strict Mode 重複請求）
   useEffect(() => {
+    const abortController = new AbortController();
     setPage(1);
-    fetchMangas(1, false, keywordFromUrl, filters);
+    fetchMangas(1, false, keywordFromUrl, filters, abortController.signal);
+
+    return () => {
+      abortController.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, keywordFromUrl]);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUp, ArrowDown, Minus, Eye, Trophy, Crown, Medal } from 'lucide-react';
@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { RankItem } from '@/lib/scraper/types';
 import { RankTrend } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
+import { useFetch } from '@/lib/hooks/useFetch';
 
 /** 榜單類型 */
 enum RankType {
@@ -313,39 +314,19 @@ function RankItemCard({ item, animationDelay = 0 }: RankItemCardProps) {
  */
 export default function RankPage() {
   const [rankType, setRankType] = useState<RankType>(RankType.DAY);
-  const [rankList, setRankList] = useState<RankItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Tab 滑動指示器
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   // 載入排行榜數據
-  const fetchRankList = async (type: RankType) => {
-    setLoading(true);
+  const { data, loading } = useFetch<{ items: RankItem[] }>(
+    `/api/rank?type=${rankType}`,
+    [rankType]
+  );
 
-    try {
-      const res = await fetch(`/api/rank?type=${type}`);
-      const json = await res.json();
-
-      if (json.success && json.data?.items?.length > 0) {
-        setRankList(json.data.items);
-      } else {
-        // API 回傳空資料，使用 mock 數據
-        setRankList(MOCK_RANK_DATA);
-      }
-    } catch {
-      // API 失敗，使用 mock 數據
-      setRankList(MOCK_RANK_DATA);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 切換榜單類型時重新載入
-  useEffect(() => {
-    fetchRankList(rankType);
-  }, [rankType]);
+  // API 失敗或空資料時使用 mock 數據
+  const rankList = data?.items?.length ? data.items : MOCK_RANK_DATA;
 
   // 更新滑動指示器位置
   useLayoutEffect(() => {
