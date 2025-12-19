@@ -4,10 +4,10 @@
  * 閱讀歷史 Popover 元件
  */
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Popover,
   PopoverContent,
@@ -29,28 +29,30 @@ export function HistoryPopover({
   history,
   isLoaded,
 }: HistoryPopoverProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <Popover open={isOpen} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           className={cn(
-            'relative h-8 w-8 rounded-full',
-            isLoaded && history.length > 0 && 'text-primary'
+            'flex items-center h-8 px-2 rounded-full',
+            'transition-all duration-200',
+            'text-muted-foreground hover:bg-accent hover:text-foreground'
           )}
-          title="閱讀歷史"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          <Clock className="h-4 w-4" />
-          {isLoaded && history.length > 0 && (
-            <Badge
-              variant="default"
-              className="absolute -right-1 -top-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center"
-            >
-              {history.length > 9 ? '9+' : history.length}
-            </Badge>
-          )}
-        </Button>
+          <Clock className="h-4 w-4 shrink-0" />
+          <span
+            className={cn(
+              'text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-200',
+              isHovered ? 'w-16 ml-1.5' : 'w-0'
+            )}
+          >
+            閱讀歷史
+          </span>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0" align="end" sideOffset={8}>
         <div className="p-3 border-b">

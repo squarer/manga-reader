@@ -28,6 +28,89 @@ import { MobileMenu } from './MobileMenu';
 import { HistoryPopover } from './HistoryPopover';
 
 /**
+ * Hover 展開按鈕共用元件
+ */
+interface HoverExpandButtonProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  isActive?: boolean;
+  href?: string;
+  onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}
+
+function HoverExpandButton({
+  icon: Icon,
+  label,
+  isActive = false,
+  href,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}: HoverExpandButtonProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    onMouseEnter?.();
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    onMouseLeave?.();
+  };
+
+  const className = cn(
+    'flex items-center h-8 px-2',
+    'rounded-full',
+    'transition-all duration-200',
+    isActive
+      ? 'bg-primary/10 text-primary'
+      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+  );
+
+  const content = (
+    <>
+      <Icon className="h-4 w-4 shrink-0" />
+      <span
+        className={cn(
+          'text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-200',
+          isHovered ? 'w-16 ml-1.5' : 'w-0'
+        )}
+      >
+        {label}
+      </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={className}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {content}
+    </button>
+  );
+}
+
+/**
  * 導航欄內容元件
  */
 function NavbarContent() {
@@ -121,28 +204,15 @@ function NavbarContent() {
 
             {/* 桌面版導航 */}
             <div className="relative hidden items-center md:flex">
-              {NAV_ITEMS.map((item) => {
-                const isActive = isActiveNavItem(item);
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5',
-                      'rounded-full text-sm font-medium',
-                      'transition-all duration-200',
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
+              {NAV_ITEMS.map((item) => (
+                <HoverExpandButton
+                  key={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  href={item.href}
+                  isActive={isActiveNavItem(item)}
+                />
+              ))}
             </div>
 
             {/* 分隔線 */}
@@ -192,17 +262,7 @@ function NavbarContent() {
               />
 
               {/* 我的收藏 */}
-              <Button
-                asChild
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                title="我的收藏"
-              >
-                <Link href="/favorites">
-                  <Heart className="h-4 w-4" />
-                </Link>
-              </Button>
+              <HoverExpandButton icon={Heart} label="我的收藏" href="/favorites" />
 
               {/* 主題切換 */}
               <ThemeToggle />
