@@ -31,7 +31,7 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
       {/* 卡片容器：微光邊框效果 */}
       <div className="relative rounded-xl p-[1px] transition-all duration-300 bg-gradient-to-br from-border/50 via-border/20 to-border/50 group-hover:from-primary/60 group-hover:via-primary/30 group-hover:to-primary/60 group-focus-visible:from-primary/60 group-focus-visible:via-primary/30 group-focus-visible:to-primary/60 group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background">
         {/* 3D 傾斜效果 */}
-        <TiltCard animationDelay={animationDelay} className="aspect-[3/4] overflow-hidden rounded-[11px] bg-card">
+        <TiltCard animationDelay={animationDelay} className="aspect-[3/4] overflow-hidden rounded-[11px]">
           <div className="relative h-full w-full overflow-hidden">
             {/* 封面圖片 */}
             <Image
