@@ -364,7 +364,7 @@ export function BottomToolbar({
               <Slider
                 value={[settings.imageWidth]}
                 onValueChange={([value]) => onSettingsUpdate({ imageWidth: value })}
-                min={50}
+                min={30}
                 max={100}
                 step={5}
                 className="w-20"
