@@ -203,13 +203,15 @@ function SinglePageReader({
   onPageChange,
   onTap,
 }: SinglePageReaderProps) {
-  // 預載下一頁圖片
+  // 預載後續兩頁圖片
   useEffect(() => {
-    if (currentPage < data.total - 1) {
-      const nextUrl = getProxiedImageUrl(data.images[currentPage + 1]);
-      const img = new window.Image();
-      img.src = nextUrl;
-    }
+    [1, 2].forEach((offset) => {
+      const nextIndex = currentPage + offset;
+      if (nextIndex < data.total) {
+        const img = new window.Image();
+        img.src = getProxiedImageUrl(data.images[nextIndex]);
+      }
+    });
   }, [currentPage, data.images, data.total]);
 
   /** 上一頁或上一話 */
