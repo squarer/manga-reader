@@ -256,10 +256,16 @@ function NavbarContent() {
                 onOpenChange={setIsHistoryOpen}
                 history={history}
                 isLoaded={isHistoryLoaded}
+                isActive={pathname.startsWith('/history')}
               />
 
               {/* 我的收藏 */}
-              <HoverExpandButton icon={Heart} label="我的收藏" href="/favorites" />
+              <HoverExpandButton
+                icon={Heart}
+                label="我的收藏"
+                href="/favorites"
+                isActive={pathname.startsWith('/favorites')}
+              />
 
               {/* 桌面版搜尋框 */}
               <DesktopSearch onSearch={handleSearch} />

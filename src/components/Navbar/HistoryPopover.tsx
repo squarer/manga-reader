@@ -21,6 +21,7 @@ interface HistoryPopoverProps {
   onOpenChange: (open: boolean) => void;
   history: HistoryItem[];
   isLoaded: boolean;
+  isActive?: boolean;
 }
 
 export function HistoryPopover({
@@ -28,6 +29,7 @@ export function HistoryPopover({
   onOpenChange,
   history,
   isLoaded,
+  isActive = false,
 }: HistoryPopoverProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -38,7 +40,9 @@ export function HistoryPopover({
           className={cn(
             'flex items-center h-8 px-2 rounded-full',
             'transition-all duration-200',
-            'text-muted-foreground hover:bg-accent hover:text-foreground'
+            isActive
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
           )}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
