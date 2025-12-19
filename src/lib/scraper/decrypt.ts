@@ -38,11 +38,19 @@ function encodeBase(num: number, radix: number): string {
   return encodeBase(Math.floor(num / radix), radix) + encodeBase(num % radix, radix);
 }
 
+/** Payload 最大長度限制（防止 ReDoS） */
+const MAX_PAYLOAD_LENGTH = 500000;
+
 /**
  * 解密 Dean Edwards Packed JavaScript
  * 格式: eval(function(p,a,c,k,e,d){...}('packed_string',base,count,keywords,...))
  */
 export function unpack(packed: string): string {
+  // 長度檢查（防止 ReDoS）
+  if (packed.length > MAX_PAYLOAD_LENGTH) {
+    throw new Error('Packed string too large');
+  }
+
   // 匹配 packed 格式的正則
   const packedRegex = /}\('(.+)',(\d+),(\d+),'([^']+)'\.split\('\|'\)/;
   const match = packed.match(packedRegex);

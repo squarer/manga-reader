@@ -28,7 +28,11 @@ export async function GET(request: NextRequest) {
     ];
 
     const urlObj = new URL(url);
-    if (!allowedDomains.some((domain) => urlObj.hostname.includes(domain))) {
+    const isAllowed = allowedDomains.some(
+      (domain) =>
+        urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain)
+    );
+    if (!isAllowed) {
       return NextResponse.json(
         { error: 'Domain not allowed' },
         { status: 403 }

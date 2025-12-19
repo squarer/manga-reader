@@ -56,11 +56,23 @@ function validateParam<T extends string>(
   return validValues.includes(value as T) ? (value as T) : null;
 }
 
+/** 參數限制常數 */
+const MAX_KEYWORD_LENGTH = 100;
+const MAX_PAGE = 500;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  // 搜尋參數
-  const keyword = searchParams.get('keyword');
+  // 搜尋參數（含長度驗證）
+  const keywordParam = searchParams.get('keyword');
+  const keyword =
+    keywordParam && keywordParam.length <= MAX_KEYWORD_LENGTH
+      ? keywordParam
+      : null;
+
+  // 頁碼驗證（含上限）
+  const pageParam = parseInt(searchParams.get('page') || '1', 10);
+  const page = isNaN(pageParam) ? 1 : Math.min(Math.max(1, pageParam), MAX_PAGE);
 
   // 篩選參數（加入驗證）
   const category = searchParams.get('category');
@@ -74,7 +86,6 @@ export async function GET(request: NextRequest) {
   const letter = searchParams.get('letter');
   const status = validateParam(searchParams.get('status'), VALID_STATUSES);
   const sort = validateParam(searchParams.get('sort'), VALID_SORTS);
-  const page = parseInt(searchParams.get('page') || '1', 10);
 
   try {
     const cacheKey = request.url;
