@@ -44,6 +44,7 @@ src/
 └── lib/
     ├── hooks/             # 自定義 Hooks
     │   ├── useFavorites.ts
+    │   ├── useFetch.ts    # API 請求（內建 AbortController）
     │   └── useHistory.ts
     └── scraper/           # 爬蟲模組
         ├── index.ts       # 主入口
@@ -123,6 +124,36 @@ npx shadcn@latest add https://www.tinte.dev/r/claude
 | `top-0` | 從頁面最上方開始 | 讓漸層延伸到 Navbar 後方 |
 | `pt-[4.5rem]` | 72px | 內容在 Navbar 下方 |
 | `z-50` | 低於 Navbar (z-[60]) | 確保 Navbar 在上層 |
+
+## 程式碼規範
+
+### API 請求
+
+- **必須**使用 `useFetch` hook 進行 API 請求（內建 AbortController 防止 Strict Mode 重複請求）
+- 簡單場景：`useFetch<T>(url, deps)`
+- 分頁/追加場景：在 fetch 函數加入 `signal?: AbortSignal` 參數
+
+```tsx
+// ✅ 簡單場景
+const { data, loading, error } = useFetch<MangaInfo>(`/api/manga/${id}`, [id]);
+
+// ✅ 分頁場景
+const fetchData = async (page: number, signal?: AbortSignal) => {
+  const res = await fetch(`/api/data?page=${page}`, { signal });
+  // ...
+};
+
+useEffect(() => {
+  const abortController = new AbortController();
+  fetchData(1, abortController.signal);
+  return () => abortController.abort();
+}, [deps]);
+
+// ❌ 禁止直接在 useEffect 中 fetch
+useEffect(() => {
+  fetch('/api/data').then(...); // 會在 Strict Mode 重複請求
+}, []);
+```
 
 ## 注意事項
 
