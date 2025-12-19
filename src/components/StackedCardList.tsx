@@ -87,7 +87,7 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
             <Link
               key={item.id}
               href={item.href}
-              className="group absolute origin-bottom transition-all duration-300 ease-out"
+              className="group absolute bottom-0 origin-bottom transition-all duration-300 ease-out"
               style={{
                 left: `${index * CARD_OFFSET}px`,
                 zIndex: isHovered ? 50 : index,
@@ -121,7 +121,7 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
               </div>
               {/* Hover 時顯示標題（書下方） */}
               <div
-                className="mt-1 w-24 transition-opacity duration-300"
+                className="mt-1 h-7 w-24 transition-opacity duration-300"
                 style={{ opacity: isHovered ? 1 : 0 }}
               >
                 <p className="truncate text-xs text-foreground">
