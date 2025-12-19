@@ -241,7 +241,7 @@ export function BottomToolbar({
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>上一頁</TooltipContent>
+                <TooltipContent>上一頁 (← 或 A)</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -282,7 +282,7 @@ export function BottomToolbar({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {isLastPage && data.nextCid ? '前往下一話' : '下一頁'}
+                  {isLastPage && data.nextCid ? '前往下一話 (→ 或 D)' : '下一頁 (→ 或 D)'}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -315,28 +315,35 @@ export function BottomToolbar({
             </TooltipProvider>
 
             {/* 閱讀模式切換 */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex"
-              onClick={() =>
-                onSettingsUpdate({
-                  viewMode: settings.viewMode === ViewMode.Single ? ViewMode.Scroll : ViewMode.Single,
-                })
-              }
-            >
-              {settings.viewMode === ViewMode.Single ? (
-                <>
-                  <Scroll className="mr-1 h-4 w-4" />
-                  滾動
-                </>
-              ) : (
-                <>
-                  <BookOpen className="mr-1 h-4 w-4" />
-                  單頁
-                </>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="hidden sm:flex"
+                    onClick={() =>
+                      onSettingsUpdate({
+                        viewMode: settings.viewMode === ViewMode.Single ? ViewMode.Scroll : ViewMode.Single,
+                      })
+                    }
+                  >
+                    {settings.viewMode === ViewMode.Single ? (
+                      <>
+                        <Scroll className="mr-1 h-4 w-4" />
+                        滾動
+                      </>
+                    ) : (
+                      <>
+                        <BookOpen className="mr-1 h-4 w-4" />
+                        單頁
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>切換閱讀模式 (M)</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             {/* 快捷鍵說明 */}
             <TooltipProvider>
