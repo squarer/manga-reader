@@ -183,11 +183,13 @@ function HomeContent() {
           </div>
         )}
 
-        {/* 我的收藏 */}
-        {!keywordFromUrl && <FavoritesSection />}
-
-        {/* 最近閱讀 */}
-        {!keywordFromUrl && <HistorySection />}
+        {/* 我的收藏 & 最近閱讀 */}
+        {!keywordFromUrl && (
+          <div className="mb-8 flex flex-col gap-8 lg:flex-row lg:gap-12">
+            <FavoritesSection />
+            <HistorySection />
+          </div>
+        )}
 
         {loading ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

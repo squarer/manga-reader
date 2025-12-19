@@ -39,6 +39,10 @@ export interface StackedCardItem {
 interface StackedCardListProps {
   /** 卡片資料列表 */
   items: StackedCardItem[];
+  /** 標題 */
+  title: string;
+  /** 標題右側額外元素 */
+  titleExtra?: React.ReactNode;
 }
 
 /**
@@ -46,29 +50,32 @@ interface StackedCardListProps {
  *
  * 卡片像書本一樣堆疊，hover 時左右讓開
  */
-export default function StackedCardList({ items }: StackedCardListProps) {
+export default function StackedCardList({ items, title, titleExtra }: StackedCardListProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   if (items.length === 0) {
     return null;
   }
 
-  /** 計算卡片的水平偏移 */
+  /** 計算卡片的水平偏移（只讓右邊的書往右移） */
   const getTransformX = (index: number) => {
     if (hoveredIndex === null) return 0;
-    if (index < hoveredIndex) return -SPREAD_DISTANCE;
     if (index > hoveredIndex) return SPREAD_DISTANCE;
     return 0;
   };
 
   return (
     <div className="overflow-x-auto pb-4">
+      {/* 標題 */}
+      <div className="mb-0.5 flex items-center gap-2">
+        <h2 className="text-lg font-bold">{title}</h2>
+        {titleExtra}
+      </div>
       <div
         className="relative flex items-end"
         style={{
-          width: `${CARD_OFFSET * (items.length - 1) + CARD_WIDTH + SPREAD_DISTANCE * 2}px`,
-          height: '160px',
-          marginLeft: `${SPREAD_DISTANCE}px`,
+          width: `${CARD_OFFSET * (items.length - 1) + CARD_WIDTH + SPREAD_DISTANCE}px`,
+          height: '175px',
         }}
         onMouseLeave={() => setHoveredIndex(null)}
       >
@@ -88,39 +95,42 @@ export default function StackedCardList({ items }: StackedCardListProps) {
               }}
               onMouseEnter={() => setHoveredIndex(index)}
             >
-              {/* 卡片厚度陰影 */}
-              <div
-                className="absolute inset-0 rounded-lg bg-black/40"
-                style={{ transform: 'translate(3px, 3px)' }}
-              />
-              <div
-                className="absolute inset-0 rounded-lg bg-black/20"
-                style={{ transform: 'translate(2px, 2px)' }}
-              />
-              <div className="relative h-32 w-24 overflow-hidden rounded-lg bg-muted shadow-xl ring-1 ring-black/10">
-                <Image
-                  src={item.cover}
-                  alt={item.title}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-                {/* Hover 時顯示標題 */}
+              <div className="relative h-32 w-24">
+                {/* 卡片厚度陰影 */}
                 <div
-                  className="absolute inset-x-0 bottom-0 bg-black/80 px-2 py-1.5 backdrop-blur-sm transition-all duration-300"
-                  style={{
-                    transform: isHovered ? 'translateY(0)' : 'translateY(100%)',
-                  }}
+                  className="absolute inset-0 rounded-lg bg-black/40"
+                  style={{ transform: 'translate(3px, 3px)' }}
+                />
+                <div
+                  className="absolute inset-0 rounded-lg bg-black/20"
+                  style={{ transform: 'translate(2px, 2px)' }}
+                />
+                <div
+                  className="absolute inset-0 overflow-hidden rounded-lg bg-muted ring-1 ring-black/10 shadow-xl transition-shadow duration-300"
+                  style={isHovered ? { boxShadow: '0 0 20px 6px oklch(0.62 0.14 39 / 0.6)' } : undefined}
                 >
-                  <p className="truncate text-xs font-medium text-white">
-                    {item.title}
-                  </p>
-                  {item.subtitle && (
-                    <p className="truncate text-[10px] text-white/70">
-                      {item.subtitle}
-                    </p>
-                  )}
+                  <Image
+                    src={item.cover}
+                    alt={item.title}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
                 </div>
+              </div>
+              {/* Hover 時顯示標題（書下方） */}
+              <div
+                className="mt-1 w-24 transition-opacity duration-300"
+                style={{ opacity: isHovered ? 1 : 0 }}
+              >
+                <p className="truncate text-xs text-foreground">
+                  {item.title}
+                </p>
+                {item.subtitle && (
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {item.subtitle}
+                  </p>
+                )}
               </div>
             </Link>
           );

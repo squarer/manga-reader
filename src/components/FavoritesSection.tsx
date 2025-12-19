@@ -22,10 +22,5 @@ export default function FavoritesSection() {
     return null;
   }
 
-  return (
-    <section className="mb-8">
-      <h2 className="mb-4 text-lg font-bold">我的收藏</h2>
-      <StackedCardList items={items} />
-    </section>
-  );
+  return <StackedCardList items={items} title="我的收藏" />;
 }

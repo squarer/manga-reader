@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
 import { useHistory } from '@/lib/hooks/useHistory';
 import StackedCardList, { type StackedCardItem } from './StackedCardList';
 
@@ -28,14 +27,17 @@ export default function HistorySection() {
   }
 
   return (
-    <section className="mb-8">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold">最近閱讀</h2>
-        <Button variant="ghost" size="sm" onClick={clearHistory}>
+    <StackedCardList
+      items={items}
+      title="最近閱讀"
+      titleExtra={
+        <button
+          onClick={clearHistory}
+          className="text-xs text-muted-foreground/60 hover:text-muted-foreground"
+        >
           清除歷史
-        </Button>
-      </div>
-      <StackedCardList items={items} />
-    </section>
+        </button>
+      }
+    />
   );
 }
