@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import TiltCard from '@/components/TiltCard';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
+import { getProxiedImageUrl } from '@/lib/image-utils';
+import { STAGGER_DELAY } from '@/lib/constants';
 
 /** 日期分組類型 */
 enum DateGroup {
@@ -24,8 +26,6 @@ const DATE_GROUP_CONFIG = {
   [DateGroup.EARLIER]: { label: '更早更新', icon: Calendar },
 } as const;
 
-/** 交錯進場延遲基數 */
-const STAGGER_DELAY = 30;
 
 /**
  * 判斷日期屬於哪個分組
@@ -97,9 +97,7 @@ function UpdateMangaCard({
   manga: MangaListItem;
   animationDelay: number;
 }) {
-  const coverUrl = manga.cover
-    ? `/api/image?url=${encodeURIComponent(manga.cover)}`
-    : '/placeholder.jpg';
+  const coverUrl = getProxiedImageUrl(manga.cover);
 
   return (
     <Link href={`/manga/${manga.id}`} className="group block">

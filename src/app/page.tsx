@@ -3,44 +3,14 @@
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MangaCard from '@/components/MangaCard';
-import {
-  type FilterState,
-  type GenreKey,
-  type RegionKey,
-  type StatusKey,
-  type SortKey,
-  type YearOption,
-  GENRE_OPTIONS,
-  YEAR_OPTIONS,
-} from '@/components/MangaFilter';
+import type { FilterState } from '@/components/MangaFilter';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
-
-/** 交錯進場延遲基數（毫秒） */
-const STAGGER_DELAY = 50;
-
-/**
- * 從 URL 參數解析 FilterState
- */
-function parseFiltersFromParams(searchParams: URLSearchParams): FilterState {
-  const region = searchParams.get('region') as RegionKey | null;
-  const genreParam = searchParams.get('genre');
-  const genres = genreParam
-    ? (genreParam.split(',').filter((g) => g in GENRE_OPTIONS) as GenreKey[])
-    : [];
-  const yearParam = searchParams.get('year');
-  const year =
-    yearParam && YEAR_OPTIONS.includes(yearParam as YearOption)
-      ? (yearParam as YearOption)
-      : null;
-  const status = (searchParams.get('status') as StatusKey) || 'all';
-  const sort = (searchParams.get('sort') as SortKey) || 'update';
-
-  return { region, genres, year, status, sort };
-}
+import { STAGGER_DELAY } from '@/lib/constants';
+import { parseFiltersFromParams, STATUS_MAP, SORT_MAP } from '@/lib/filter-utils';
 
 /**
  * 首頁內容元件
@@ -105,23 +75,13 @@ function HomeContent() {
           params.set('year', f.year === '更早' ? '2019' : f.year);
         }
 
-        // 進度映射：UI 值 -> API 值
-        const statusMap: Record<string, string> = {
-          ongoing: 'lianzai',
-          completed: 'wanjie',
-        };
-        if (f.status !== 'all' && statusMap[f.status]) {
-          params.set('status', statusMap[f.status]);
+        // 進度
+        if (f.status !== 'all' && STATUS_MAP[f.status]) {
+          params.set('status', STATUS_MAP[f.status]);
         }
 
-        // 排序映射：UI 值 -> API 值
-        const sortMap: Record<string, string> = {
-          latest: 'update', // 最新發布
-          update: 'update', // 最新更新
-          popular: 'view', // 人氣最旺
-          rating: 'rate', // 評分最高
-        };
-        params.set('sort', sortMap[f.sort] || 'update');
+        // 排序
+        params.set('sort', SORT_MAP[f.sort] || 'update');
       }
 
       const res = await fetch(`/api/manga?${params}`);

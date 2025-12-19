@@ -2,20 +2,19 @@
 
 import { useMemo } from 'react';
 import { useHistory } from '@/lib/hooks/useHistory';
+import { getProxiedImageUrl } from '@/lib/image-utils';
+import { MAX_STACKED_CARDS } from '@/lib/constants';
 import StackedCardList, { type StackedCardItem } from './StackedCardList';
-
-/** 最多顯示幾張卡片 */
-const MAX_CARDS = 10;
 
 export default function HistorySection() {
   const { history, isLoaded, clearHistory } = useHistory();
 
   const items: StackedCardItem[] = useMemo(
     () =>
-      history.slice(0, MAX_CARDS).map((item) => ({
+      history.slice(0, MAX_STACKED_CARDS).map((item) => ({
         id: `${item.mangaId}-${item.chapterId}`,
         href: `/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`,
-        cover: `/api/image?url=${encodeURIComponent(item.mangaCover)}`,
+        cover: getProxiedImageUrl(item.mangaCover),
         title: item.mangaName,
         subtitle: item.chapterName,
       })),

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TiltCard from '@/components/TiltCard';
+import { getProxiedImageUrl } from '@/lib/image-utils';
 
 /**
  * 章節分組顯示元件（支援分 tab、可折疊、已讀標記）
@@ -295,9 +296,7 @@ export default function MangaDetailPage({
     );
   }
 
-  const coverUrl = manga.cover
-    ? `/api/image?url=${encodeURIComponent(manga.cover)}`
-    : '/placeholder.jpg';
+  const coverUrl = getProxiedImageUrl(manga.cover);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

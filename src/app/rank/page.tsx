@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { RankItem } from '@/lib/scraper/types';
 import { RankTrend } from '@/lib/scraper/types';
+import { getProxiedImageUrl } from '@/lib/image-utils';
 
 /** 榜單類型 */
 enum RankType {
@@ -231,9 +232,7 @@ function TrendIndicator({ trend }: { trend?: RankTrend }) {
  * 排行榜項目卡片元件
  */
 function RankItemCard({ item, animationDelay = 0 }: RankItemCardProps) {
-  const coverUrl = item.cover
-    ? `/api/image?url=${encodeURIComponent(item.cover)}`
-    : '/placeholder.jpg';
+  const coverUrl = getProxiedImageUrl(item.cover);
 
   const isTopThree = item.rank <= 3;
 

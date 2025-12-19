@@ -2,20 +2,19 @@
 
 import { useMemo } from 'react';
 import { useFavorites } from '@/lib/hooks/useFavorites';
+import { getProxiedImageUrl } from '@/lib/image-utils';
+import { MAX_STACKED_CARDS } from '@/lib/constants';
 import StackedCardList, { type StackedCardItem } from './StackedCardList';
-
-/** 最多顯示幾張卡片 */
-const MAX_CARDS = 10;
 
 export default function FavoritesSection() {
   const { favorites, isLoaded } = useFavorites();
 
   const items: StackedCardItem[] = useMemo(
     () =>
-      favorites.slice(0, MAX_CARDS).map((item) => ({
+      favorites.slice(0, MAX_STACKED_CARDS).map((item) => ({
         id: String(item.mangaId),
         href: `/manga/${item.mangaId}`,
-        cover: `/api/image?url=${encodeURIComponent(item.mangaCover)}`,
+        cover: getProxiedImageUrl(item.mangaCover),
         title: item.mangaName,
       })),
     [favorites]

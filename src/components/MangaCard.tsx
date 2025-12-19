@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Star, Clock } from 'lucide-react';
 import TiltCard from '@/components/TiltCard';
 import type { MangaListItem } from '@/lib/scraper/types';
+import { getProxiedImageUrl } from '@/lib/image-utils';
 
 interface MangaCardProps {
   /** 漫畫資料 */
@@ -18,9 +19,7 @@ interface MangaCardProps {
  * 精緻暗色風格，支援 3D 傾斜效果、微光邊框和滑入動畫
  */
 export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps) {
-  const coverUrl = manga.cover
-    ? `/api/image?url=${encodeURIComponent(manga.cover)}`
-    : '/placeholder.jpg';
+  const coverUrl = getProxiedImageUrl(manga.cover);
 
   return (
     <Link

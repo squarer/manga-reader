@@ -6,9 +6,8 @@ import { Clock, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TiltCard from '@/components/TiltCard';
 import { useHistory } from '@/lib/hooks/useHistory';
-
-/** 交錯動畫延遲（毫秒） */
-const STAGGER_DELAY = 30;
+import { getProxiedImageUrl } from '@/lib/image-utils';
+import { STAGGER_DELAY } from '@/lib/constants';
 
 export default function HistoryPage() {
   const { history, isLoaded, removeHistory, clearHistory } = useHistory();
@@ -59,7 +58,7 @@ export default function HistoryPage() {
                   >
                     <div className="relative h-full w-full bg-muted">
                       <Image
-                        src={`/api/image?url=${encodeURIComponent(item.mangaCover)}`}
+                        src={getProxiedImageUrl(item.mangaCover)}
                         alt={item.mangaName}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"

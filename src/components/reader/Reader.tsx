@@ -17,6 +17,7 @@ import {
   useReaderSettings,
 } from './useReaderHooks';
 import { ViewMode, type ReaderProps, type ChapterData } from './types';
+import { getProxiedImageUrl } from '@/lib/image-utils';
 
 /**
  * 載入中狀態
@@ -64,7 +65,7 @@ interface MangaImageProps {
 function MangaImage({ url, pageIndex, priority = false }: MangaImageProps) {
   return (
     <Image
-      src={`/api/image?url=${encodeURIComponent(url)}`}
+      src={getProxiedImageUrl(url)}
       alt={`Page ${pageIndex + 1}`}
       width={1200}
       height={1800}
