@@ -46,6 +46,36 @@ function ErrorState({ mangaId, error }: { mangaId: number; error: string }) {
   );
 }
 
+/** MangaImage props */
+interface MangaImageProps {
+  /** 圖片 URL */
+  url: string;
+  /** 頁碼（從 0 開始） */
+  pageIndex: number;
+  /** 是否優先載入 */
+  priority?: boolean;
+}
+
+/**
+ * 漫畫圖片元件
+ *
+ * 統一單頁和滾動模式的圖片渲染
+ */
+function MangaImage({ url, pageIndex, priority = false }: MangaImageProps) {
+  return (
+    <Image
+      src={`/api/image?url=${encodeURIComponent(url)}`}
+      alt={`Page ${pageIndex + 1}`}
+      width={1200}
+      height={1800}
+      className="pointer-events-none h-auto w-full max-w-full select-none"
+      unoptimized
+      priority={priority}
+      draggable={false}
+    />
+  );
+}
+
 /** ScrollReader props */
 interface ScrollReaderProps {
   data: ChapterData;
@@ -89,8 +119,8 @@ function ScrollReader({ data, imageWidth, onPageChange }: ScrollReaderProps) {
   return (
     <div
       ref={containerRef}
-      className="mx-auto max-w-4xl space-y-2 py-16"
-      style={{ width: `${imageWidth}%` }}
+      className="mx-auto space-y-2 py-16"
+      style={{ width: `${imageWidth}%`, maxWidth: '100vw' }}
     >
       {data.images.map((url, index) => (
         <div
@@ -98,17 +128,9 @@ function ScrollReader({ data, imageWidth, onPageChange }: ScrollReaderProps) {
           ref={(el) => {
             imageRefs.current[index] = el;
           }}
-          className="relative w-full"
+          className="relative flex w-full items-center justify-center"
         >
-          <Image
-            src={`/api/image?url=${encodeURIComponent(url)}`}
-            alt={`Page ${index + 1}`}
-            width={1200}
-            height={1800}
-            className="h-auto w-full"
-            unoptimized
-            priority={index < 3}
-          />
+          <MangaImage url={url} pageIndex={index} priority={index < 3} />
         </div>
       ))}
     </div>
@@ -187,15 +209,10 @@ function SinglePageReader({
         className="relative flex items-center justify-center"
         style={{ width: `${imageWidth}%`, maxWidth: '100vw' }}
       >
-        <Image
-          src={`/api/image?url=${encodeURIComponent(data.images[currentPage])}`}
-          alt={`Page ${currentPage + 1}`}
-          width={1200}
-          height={1800}
-          className="pointer-events-none h-auto w-full max-w-full select-none"
-          unoptimized
+        <MangaImage
+          url={data.images[currentPage]}
+          pageIndex={currentPage}
           priority
-          draggable={false}
         />
       </div>
     </div>
