@@ -391,13 +391,14 @@ export default function MangaDetailPage({
             {manga.genres.length > 0 && (
               <div className="mt-4 flex flex-wrap justify-center gap-2 md:justify-start">
                 {manga.genres.map((genre) => (
-                  <Badge
-                    key={genre}
-                    variant="outline"
-                    className="bg-background/50 backdrop-blur-sm"
-                  >
-                    {genre}
-                  </Badge>
+                  <Link key={genre} href={`/?genre=${encodeURIComponent(genre)}`}>
+                    <Badge
+                      variant="outline"
+                      className="cursor-pointer bg-background/50 backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground"
+                    >
+                      {genre}
+                    </Badge>
+                  </Link>
                 ))}
               </div>
             )}
