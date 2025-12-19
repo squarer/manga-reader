@@ -49,8 +49,8 @@ export async function GET(
         bname: imageData.bname,
         cname: imageData.cname,
         images,
-        prevCid: imageData.prevcid,
-        nextCid: imageData.nextcid,
+        prevCid: imageData.prevcid ?? null,
+        nextCid: imageData.nextcid ?? null,
         total: images.length,
       },
     });

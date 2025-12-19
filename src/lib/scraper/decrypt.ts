@@ -130,7 +130,17 @@ export function parseImageData(decrypted: string): ImageData | null {
         // 修復重複引號
         jsonStr = jsonStr.replace(/""+/g, '"');
 
-        return JSON.parse(jsonStr);
+        const parsed = JSON.parse(jsonStr) as ImageData;
+
+        // 如果 JSON 解析成功但缺少 prevcid/nextcid，嘗試從原始字串補充
+        if (parsed && (parsed.prevcid === undefined || parsed.nextcid === undefined)) {
+          const prevcidMatch = decrypted.match(/prevcid['":\s]+(\d+)/);
+          const nextcidMatch = decrypted.match(/nextcid['":\s]+(\d+)/);
+          if (prevcidMatch) parsed.prevcid = parseInt(prevcidMatch[1], 10);
+          if (nextcidMatch) parsed.nextcid = parseInt(nextcidMatch[1], 10);
+        }
+
+        return parsed;
       } catch {
         // 嘗試另一種解析方式
         continue;
@@ -154,6 +164,8 @@ function extractFieldsManually(decrypted: string): ImageData | null {
   const pathMatch = decrypted.match(/path['":\s]+['"]([^'"]+)['"]/);
   const filesMatch = decrypted.match(/files['":\s]+\[([^\]]+)\]/);
   const slMatch = decrypted.match(/sl['":\s]+\{([^}]+)\}/);
+  const prevcidMatch = decrypted.match(/prevcid['":\s]+(\d+)/);
+  const nextcidMatch = decrypted.match(/nextcid['":\s]+(\d+)/);
 
   if (!bidMatch || !cidMatch || !filesMatch || !pathMatch) {
     return null;
@@ -183,6 +195,8 @@ function extractFieldsManually(decrypted: string): ImageData | null {
     path: pathMatch[1],
     files,
     sl,
+    prevcid: prevcidMatch ? parseInt(prevcidMatch[1], 10) : undefined,
+    nextcid: nextcidMatch ? parseInt(nextcidMatch[1], 10) : undefined,
   };
 }
 
