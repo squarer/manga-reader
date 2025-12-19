@@ -42,6 +42,7 @@ import {
   SkipForward,
   ZoomOut,
   ZoomIn,
+  List,
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
@@ -186,6 +187,20 @@ export function BottomToolbar({
 
             {/* 控制列 */}
             <div className="flex items-center justify-center gap-2 sm:gap-4">
+            {/* 章節列表 */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button asChild variant="ghost" size="icon">
+                    <Link href={`/manga/${mangaId}`}>
+                      <List className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>章節列表</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             {/* 上一話按鈕 */}
             <TooltipProvider>
               <Tooltip>
