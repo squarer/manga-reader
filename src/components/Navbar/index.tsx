@@ -213,9 +213,6 @@ function NavbarContent() {
               ))}
             </div>
 
-            {/* 分隔線 */}
-            <div className="hidden h-6 w-px bg-border/50 md:block" />
-
             {/* 操作區 */}
             <div className="flex items-center">
               {/* 閱讀歷史 */}
@@ -233,6 +230,9 @@ function NavbarContent() {
                 href="/favorites"
                 isActive={pathname.startsWith('/favorites')}
               />
+
+              {/* 分隔線 */}
+              <div className="hidden h-6 w-px bg-border/50 md:block" />
 
               {/* 篩選按鈕（僅首頁非搜尋模式顯示） */}
               {isHomePage && !isSearchMode && (
