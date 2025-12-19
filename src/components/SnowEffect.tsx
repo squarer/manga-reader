@@ -38,6 +38,22 @@ export function SnowEffect() {
     const SNOWFLAKE_COUNT = 300;
 
     /**
+     * 從 CSS 變數取得 primary 色的 RGB 值
+     */
+    const getPrimaryColor = (): string => {
+      const temp = document.createElement("div");
+      temp.style.color = "var(--primary)";
+      document.body.appendChild(temp);
+      const computed = getComputedStyle(temp).color;
+      document.body.removeChild(temp);
+      // 解析 rgb(r, g, b) 格式
+      const match = computed.match(/(\d+),\s*(\d+),\s*(\d+)/);
+      return match ? `${match[1]}, ${match[2]}, ${match[3]}` : "218, 165, 32";
+    };
+
+    const primaryColor = getPrimaryColor();
+
+    /**
      * 調整 Canvas 尺寸
      */
     const resize = () => {
@@ -84,10 +100,10 @@ export function SnowEffect() {
           snowflakesRef.current[index] = createSnowflake(true);
         }
 
-        // 繪製雪花（dark: 白色, light: 金色）
+        // 繪製雪花（dark: 白色, light: primary 色）
         ctx.beginPath();
         ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
-        const color = resolvedTheme === "dark" ? "255, 255, 255" : "218, 165, 32";
+        const color = resolvedTheme === "dark" ? "255, 255, 255" : primaryColor;
         ctx.fillStyle = `rgba(${color}, ${flake.opacity})`;
         ctx.fill();
       });
