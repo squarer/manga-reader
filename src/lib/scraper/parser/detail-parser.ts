@@ -25,10 +25,8 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
   const { author, status, genres, lastUpdate } = parseDetailList($);
 
   // 解析評分
-  const scoreText = $('.hcover .score em, .book-score em, p.hcover em')
-    .first()
-    .text()
-    .trim();
+  // 網站結構：<p class="score-avg"><b><i></i></b><em>6.0</em></p>
+  const scoreText = $('p.score-avg em').first().text().trim();
   const score = scoreText ? parseFloat(scoreText) : undefined;
 
   // 描述
