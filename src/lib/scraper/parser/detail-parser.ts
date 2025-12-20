@@ -25,8 +25,24 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
   const { author, status, genres, lastUpdate } = parseDetailList($);
 
   // 解析評分
-  // 網站結構：<p class="score-avg"><b><i></i></b><em>6.0</em></p>
-  const scoreText = $('p.score-avg em').first().text().trim();
+  // 網站結構：<div class="score"><p class="score-avg"><em>6.0</em></p></div>
+  // 備選：可能評分區塊在不同位置
+  const scoreSelectors = [
+    'div.score p.score-avg em',
+    '.score .score-avg em',
+    'p.score-avg em',
+    '#scoreRes .score-avg em',
+  ];
+
+  let scoreText = '';
+  for (const selector of scoreSelectors) {
+    const text = $(selector).first().text().trim();
+    if (text && /^\d+(\.\d+)?$/.test(text)) {
+      scoreText = text;
+      break;
+    }
+  }
+
   const score = scoreText ? parseFloat(scoreText) : undefined;
 
   // 描述
