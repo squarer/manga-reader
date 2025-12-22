@@ -15,8 +15,22 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
   const name = $('.book-title h1').text().trim() || $('h1').first().text().trim();
   if (!name) return null;
 
-  // 封面
-  let cover = $('.hcover img, .book-cover img, p.hcover img').attr('src') || '';
+  // 封面 - 多種選擇器 fallback
+  let cover = '';
+  const coverSelectors = [
+    '.hcover img',
+    'p.hcover img',
+    '.book-cover img',
+    '.book-cont img[src*="cpic/h"]',
+    'img[src*="cpic/h"]',
+  ];
+  for (const selector of coverSelectors) {
+    const src = $(selector).first().attr('src');
+    if (src) {
+      cover = src;
+      break;
+    }
+  }
   if (cover.startsWith('//')) {
     cover = 'https:' + cover;
   }
