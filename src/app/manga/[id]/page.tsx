@@ -307,7 +307,7 @@ export default function MangaDetailPage({
         </div>
 
         {/* 主要內容 */}
-        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 pb-12 pt-8 md:flex-row md:items-end md:pt-12">
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 pb-12 pt-8 md:flex-row md:items-start md:pt-12">
           {/* 封面圖 */}
           <TiltCard className="flex-shrink-0" enableEntrance={false}>
             <div className="relative h-72 w-48 overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/10 md:h-80 md:w-56">
@@ -323,12 +323,20 @@ export default function MangaDetailPage({
           </TiltCard>
 
           {/* 資訊區 */}
-          <div className="flex-1 text-center md:pb-4 md:text-left">
+          <div className="flex-1 text-center md:text-left">
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
               {manga.name}
             </h1>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-muted-foreground md:justify-start">
+              {manga.score && (
+                <span className="flex items-center gap-1.5">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium text-yellow-400">
+                    {manga.score}
+                  </span>
+                </span>
+              )}
               <span className="flex items-center gap-1.5">
                 <span className="text-muted-foreground/60">作者</span>
                 <Link
@@ -338,6 +346,8 @@ export default function MangaDetailPage({
                   {manga.author}
                 </Link>
               </span>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-muted-foreground md:justify-start">
               <span className="flex items-center gap-1.5">
                 <span className="text-muted-foreground/60">狀態</span>
                 <Badge
@@ -355,16 +365,6 @@ export default function MangaDetailPage({
                 </span>
               )}
             </div>
-
-            {/* 評分 (10 分制) */}
-            {manga.score && (
-              <div className="mt-3 flex items-center justify-center gap-1.5 md:justify-start">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium text-yellow-400">
-                  {manga.score}
-                </span>
-              </div>
-            )}
 
             {/* 分類標籤 */}
             {manga.genres.length > 0 && (
