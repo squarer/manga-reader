@@ -354,17 +354,15 @@ export default function MangaDetailPage({
                   {manga.lastUpdate}
                 </span>
               )}
-            </div>
-
-            {/* 評分 (10 分制) */}
-            {manga.score && (
-              <div className="mt-3 flex items-center justify-center gap-1.5 md:justify-start">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium text-yellow-400">
-                  {manga.score}
+              {manga.score && (
+                <span className="flex items-center gap-1.5">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium text-yellow-400">
+                    {manga.score}
+                  </span>
                 </span>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* 分類標籤 */}
             {manga.genres.length > 0 && (
