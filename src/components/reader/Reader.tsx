@@ -9,7 +9,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useHistory } from '@/lib/hooks/useHistory';
+import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import { TopToolbar, BottomToolbar } from './ReaderToolbar';
+import { MobileBottomToolbar } from './MobileToolbar';
 import { ShortcutsPanel } from './ReaderSettings';
 import {
   useToolbarVisibility,
@@ -163,7 +165,7 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
     <div
       ref={containerRef}
       className="mx-auto space-y-2 py-16"
-      style={{ width: `${imageWidth}%`, maxWidth: '100vw' }}
+      style={{ width: `${imageWidth}%` }}
     >
       {data.images.map((url, index) => (
         <div
@@ -268,7 +270,7 @@ function SinglePageReader({
     >
       <div
         className="relative flex items-center justify-center"
-        style={{ width: `${imageWidth}%`, maxWidth: '100vw' }}
+        style={{ width: `${imageWidth}%` }}
       >
         <MangaImage
           key={currentPage}
@@ -297,6 +299,10 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   const { isVisible, showToolbar } = useToolbarVisibility();
   const { toggleFullscreen } = useFullscreen();
   const { settings, updateSettings } = useReaderSettings();
+  const isMobile = useIsMobile();
+
+  /** 圖片寬度：mobile 滿寬，桌面使用設定值 */
+  const imageWidth = isMobile ? 100 : settings.imageWidth;
 
   // 載入章節資料（使用 AbortController 防止 Strict Mode 重複請求）
   useEffect(() => {
@@ -529,7 +535,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
       {settings.viewMode === ViewMode.Scroll ? (
         <ScrollReader
           data={data}
-          imageWidth={settings.imageWidth}
+          imageWidth={imageWidth}
           targetPage={currentPage}
           onPageChange={handleScrollPageChange}
         />
@@ -538,23 +544,35 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
           mangaId={mangaId}
           data={data}
           currentPage={currentPage}
-          imageWidth={settings.imageWidth}
+          imageWidth={imageWidth}
           onPageChange={goToPage}
           onTap={showToolbar}
         />
       )}
 
       {/* 底部工具列 */}
-      <BottomToolbar
-        mangaId={mangaId}
-        data={data}
-        currentPage={currentPage}
-        onPageChange={goToPage}
-        settings={settings}
-        onSettingsUpdate={updateSettings}
-        isVisible={isVisible}
-        onShowShortcuts={() => setShowShortcuts(true)}
-      />
+      {isMobile ? (
+        <MobileBottomToolbar
+          mangaId={mangaId}
+          data={data}
+          currentPage={currentPage}
+          onPageChange={goToPage}
+          isVisible={isVisible}
+          viewMode={settings.viewMode}
+          onViewModeChange={(mode) => updateSettings({ viewMode: mode })}
+        />
+      ) : (
+        <BottomToolbar
+          mangaId={mangaId}
+          data={data}
+          currentPage={currentPage}
+          onPageChange={goToPage}
+          settings={settings}
+          onSettingsUpdate={updateSettings}
+          isVisible={isVisible}
+          onShowShortcuts={() => setShowShortcuts(true)}
+        />
+      )}
 
       {/* 快捷鍵說明面板 */}
       <ShortcutsPanel
