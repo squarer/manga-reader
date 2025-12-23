@@ -138,7 +138,7 @@ function HomeContent() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8">
+      <main className="mx-auto max-w-7xl px-4 pb-8 pt-20">
         {/* 搜尋結果提示 */}
         {keywordFromUrl && (
           <div className="mb-6 flex items-center gap-2 rounded-lg border border-border bg-card p-4">
@@ -219,7 +219,7 @@ export default function Home() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-background">
-          <div className="mx-auto max-w-7xl px-4 py-8">
+          <div className="mx-auto max-w-7xl px-4 pb-8 pt-20">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="space-y-2">
