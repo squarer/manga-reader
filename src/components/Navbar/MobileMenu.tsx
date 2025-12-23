@@ -37,10 +37,11 @@ export function MobileMenu({
       className={cn(
         'mt-2 overflow-hidden transition-all duration-300 ease-out md:hidden',
         'rounded-2xl',
-        'border border-border/50',
         'bg-background/95 backdrop-blur-xl',
         'shadow-lg shadow-black/5',
-        isOpen ? 'max-h-96 p-4' : 'max-h-0 p-0 border-transparent'
+        isOpen
+          ? 'max-h-96 border border-border/50 p-4'
+          : 'max-h-0 border-0 p-0'
       )}
     >
       {/* 手機版搜尋框 */}
