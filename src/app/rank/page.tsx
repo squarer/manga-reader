@@ -27,129 +27,6 @@ const RANK_TYPES = [
   { id: RankType.TOTAL, name: '總榜' },
 ];
 
-/** Mock 數據 - 待 API 完成後移除 */
-const MOCK_RANK_DATA: RankItem[] = [
-  {
-    id: 1,
-    rank: 1,
-    name: '鬼滅之刃',
-    cover: '',
-    author: '吾峠呼世晴',
-    score: 9.8,
-    views: 1234567,
-    trend: RankTrend.UP,
-    latestChapter: '第205話',
-    updateTime: '2024-01-15',
-  },
-  {
-    id: 2,
-    rank: 2,
-    name: '咒術迴戰',
-    cover: '',
-    author: '芥見下下',
-    score: 9.6,
-    views: 987654,
-    trend: RankTrend.SAME,
-    latestChapter: '第250話',
-    updateTime: '2024-01-14',
-  },
-  {
-    id: 3,
-    rank: 3,
-    name: '海賊王',
-    cover: '',
-    author: '尾田榮一郎',
-    score: 9.9,
-    views: 876543,
-    trend: RankTrend.DOWN,
-    latestChapter: '第1100話',
-    updateTime: '2024-01-13',
-  },
-  {
-    id: 4,
-    rank: 4,
-    name: '進擊的巨人',
-    cover: '',
-    author: '諫山創',
-    score: 9.5,
-    views: 765432,
-    trend: RankTrend.UP,
-    latestChapter: '第139話(完)',
-    updateTime: '2024-01-12',
-  },
-  {
-    id: 5,
-    rank: 5,
-    name: '我的英雄學院',
-    cover: '',
-    author: '堀越耕平',
-    score: 9.3,
-    views: 654321,
-    trend: RankTrend.SAME,
-    latestChapter: '第400話',
-    updateTime: '2024-01-11',
-  },
-  {
-    id: 6,
-    rank: 6,
-    name: '間諜家家酒',
-    cover: '',
-    author: '遠藤達哉',
-    score: 9.4,
-    views: 543210,
-    trend: RankTrend.UP,
-    latestChapter: '第85話',
-    updateTime: '2024-01-10',
-  },
-  {
-    id: 7,
-    rank: 7,
-    name: '鏈鋸人',
-    cover: '',
-    author: '藤本樹',
-    score: 9.2,
-    views: 432109,
-    trend: RankTrend.DOWN,
-    latestChapter: '第150話',
-    updateTime: '2024-01-09',
-  },
-  {
-    id: 8,
-    rank: 8,
-    name: '藍色監獄',
-    cover: '',
-    author: '金城宗幸',
-    score: 9.1,
-    views: 321098,
-    trend: RankTrend.UP,
-    latestChapter: '第230話',
-    updateTime: '2024-01-08',
-  },
-  {
-    id: 9,
-    rank: 9,
-    name: '排球少年',
-    cover: '',
-    author: '古舘春一',
-    score: 9.0,
-    views: 210987,
-    trend: RankTrend.SAME,
-    latestChapter: '第402話(完)',
-    updateTime: '2024-01-07',
-  },
-  {
-    id: 10,
-    rank: 10,
-    name: '東京復仇者',
-    cover: '',
-    author: '和久井健',
-    score: 8.9,
-    views: 109876,
-    trend: RankTrend.DOWN,
-    latestChapter: '第278話(完)',
-    updateTime: '2024-01-06',
-  },
-];
 
 interface RankItemCardProps {
   /** 排行榜項目 */
@@ -325,8 +202,7 @@ export default function RankPage() {
     [rankType]
   );
 
-  // API 失敗或空資料時使用 mock 數據
-  const rankList = data?.items?.length ? data.items : MOCK_RANK_DATA;
+  const rankList = data?.items ?? [];
 
   // 更新滑動指示器位置
   useLayoutEffect(() => {
