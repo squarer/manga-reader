@@ -63,7 +63,7 @@ interface TopToolbarProps {
 export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-gradient-to-b from-background/90 to-transparent px-4 pb-3 pt-[4.5rem] transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 flex select-none items-center justify-between bg-gradient-to-b from-background/90 to-transparent px-4 pb-3 pt-[4.5rem] transition-all duration-300 ${
         isVisible
           ? 'translate-y-0 opacity-100'
           : '-translate-y-full opacity-0'
@@ -164,7 +164,8 @@ export function BottomToolbar({
               'border border-border/50',
               'bg-background/80 backdrop-blur-xl',
               'supports-[backdrop-filter]:bg-background/60',
-              'shadow-lg shadow-black/5'
+              'shadow-lg shadow-black/5',
+              'select-none'
             )}
           >
             {/* 進度條 */}
@@ -390,17 +391,33 @@ export function BottomToolbar({
             <div className="hidden h-6 w-px bg-border sm:block" />
 
             {/* 圖片尺寸 */}
-            <div className="hidden items-center gap-2 sm:flex">
-              <ZoomOut className="h-4 w-4 text-muted-foreground" />
+            <div className="hidden items-center gap-1 sm:flex">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => onSettingsUpdate({ imageWidth: Math.max(30, settings.imageWidth - 5) })}
+                disabled={settings.imageWidth <= 30}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
               <Slider
                 value={[settings.imageWidth]}
                 onValueChange={([value]) => onSettingsUpdate({ imageWidth: value })}
                 min={30}
                 max={100}
                 step={5}
-                className="w-20"
+                className="w-20 cursor-pointer"
               />
-              <ZoomIn className="h-4 w-4 text-muted-foreground" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => onSettingsUpdate({ imageWidth: Math.min(100, settings.imageWidth + 5) })}
+                disabled={settings.imageWidth >= 100}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
             </div>
             </div>
           </div>
