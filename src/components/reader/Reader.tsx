@@ -98,6 +98,8 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
   const lastScrolledPage = useRef(-1);
   const isUserScrolling = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prevImageWidth = useRef(imageWidth);
+  const isResizing = useRef(false);
 
   // 滾動到指定頁面（初始載入或使用者手動選擇）
   useEffect(() => {
@@ -114,6 +116,26 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
       });
     }
   }, [targetPage]);
+
+  // 圖片寬度變化時維持當前頁面位置
+  useEffect(() => {
+    if (prevImageWidth.current === imageWidth) return;
+    prevImageWidth.current = imageWidth;
+    isResizing.current = true;
+
+    // 在 DOM 更新後滾動回當前頁
+    requestAnimationFrame(() => {
+      const targetRef = imageRefs.current[targetPage];
+      if (targetRef) {
+        targetRef.scrollIntoView({ behavior: 'instant', block: 'start' });
+        lastScrolledPage.current = targetPage;
+      }
+      // 延遲重置 resizing 狀態，避免 IntersectionObserver 觸發頁碼變更
+      setTimeout(() => {
+        isResizing.current = false;
+      }, 100);
+    });
+  }, [imageWidth, targetPage]);
 
   // 監聽使用者滾動
   useEffect(() => {
@@ -139,6 +161,9 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
+        // 調整圖片寬度時忽略頁碼變更
+        if (isResizing.current) return;
+
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const index = imageRefs.current.findIndex(
