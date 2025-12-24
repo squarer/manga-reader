@@ -231,10 +231,7 @@ export function BottomToolbar({
                     disabled={!data.prevCid}
                   >
                     {data.prevCid ? (
-                      <Link
-                        href={`/read/${mangaId}/${data.prevCid}`}
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-                      >
+                      <Link href={`/read/${mangaId}/${data.prevCid}`}>
                         <SkipBack className="mr-1 h-4 w-4" />
                         上一話
                       </Link>
@@ -320,10 +317,7 @@ export function BottomToolbar({
                     disabled={!data.nextCid}
                   >
                     {data.nextCid ? (
-                      <Link
-                        href={`/read/${mangaId}/${data.nextCid}`}
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-                      >
+                      <Link href={`/read/${mangaId}/${data.nextCid}`}>
                         下一話
                         <SkipForward className="ml-1 h-4 w-4" />
                       </Link>

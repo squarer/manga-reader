@@ -137,10 +137,7 @@ export function MobileBottomToolbar({
                 disabled={!data.prevCid}
               >
                 {data.prevCid ? (
-                  <Link
-                    href={`/read/${mangaId}/${data.prevCid}`}
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-                  >
+                  <Link href={`/read/${mangaId}/${data.prevCid}`}>
                     <SkipBack className="h-4 w-4" />
                   </Link>
                 ) : (
@@ -190,10 +187,7 @@ export function MobileBottomToolbar({
                 disabled={!data.nextCid}
               >
                 {data.nextCid ? (
-                  <Link
-                    href={`/read/${mangaId}/${data.nextCid}`}
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-                  >
+                  <Link href={`/read/${mangaId}/${data.nextCid}`}>
                     <SkipForward className="h-4 w-4" />
                   </Link>
                 ) : (
