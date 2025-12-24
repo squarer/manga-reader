@@ -107,22 +107,50 @@ export async function fetchMangaDetail(mangaId: number): Promise<string> {
   return response.data;
 }
 
+/** 重試配置 */
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelay: 500,
+};
+
 /**
- * 獲取章節閱讀頁
+ * 獲取章節閱讀頁（含重試機制）
  */
 export async function fetchChapterPage(
   mangaId: number,
   chapterId: number
 ): Promise<string> {
   const url = `/comic/${mangaId}/${chapterId}.html`;
+  let lastError: Error | null = null;
 
-  const response = await client.get(url, {
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-    },
-  });
+  for (let attempt = 1; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const response = await client.get(url, {
+        headers: {
+          'User-Agent': getRandomUserAgent(),
+        },
+      });
 
-  return response.data;
+      const html = response.data as string;
+
+      // 驗證是否為有效的章節頁面（包含加密腳本）
+      if (!html.includes('function(p,a,c,k,e,d)')) {
+        if (attempt < RETRY_CONFIG.maxRetries) {
+          await delay(RETRY_CONFIG.baseDelay * attempt);
+          continue;
+        }
+      }
+
+      return html;
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < RETRY_CONFIG.maxRetries) {
+        await delay(RETRY_CONFIG.baseDelay * attempt);
+      }
+    }
+  }
+
+  throw lastError || new Error('Failed to fetch chapter page');
 }
 
 /**

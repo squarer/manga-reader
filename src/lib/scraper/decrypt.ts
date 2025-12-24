@@ -114,15 +114,50 @@ export function extractPackedScript(html: string): string | null {
   return null;
 }
 
+/** SMH.reader 格式資料結構 */
+interface ReaderFormatData {
+  bookId: number;
+  bookName: string;
+  chapterId: number;
+  chapterTitle: string;
+  images: string[];
+  nextId?: number;
+  prevId?: number;
+}
+
+/**
+ * 將 SMH.reader 格式轉換為 ImageData
+ */
+function convertReaderFormat(data: ReaderFormatData): ImageData {
+  const firstImage = data.images[0] || '';
+  const pathParts = firstImage.split('/');
+  pathParts.pop();
+  const path = pathParts.join('/') + '/';
+  const files = data.images.map((img) => img.split('/').pop() || img);
+
+  return {
+    bid: data.bookId,
+    cid: data.chapterId,
+    bname: data.bookName,
+    cname: data.chapterTitle,
+    path,
+    files,
+    sl: { e: 0, m: '' },
+    prevcid: data.prevId,
+    nextcid: data.nextId,
+  };
+}
+
 /**
  * 從解密後的 JavaScript 中提取圖片資料
  */
 export function parseImageData(decrypted: string): ImageData | null {
-  // 尋找 SMH.imgData({...}) 或類似的結構
+  // 尋找 SMH.imgData({...}) 或 SMH.reader({...}) 結構
   const patterns = [
     /SMH\.imgData\((\{[\s\S]+?\})\)/,
     /SMH\.reader\((\{[\s\S]+?\})\)/,
     /\{[^{}]*"bid"\s*:\s*\d+[^{}]*"files"\s*:\s*\[[^\]]+\][^{}]*\}/,
+    /\{[^{}]*"bookId"\s*:\s*\d+[^{}]*"images"\s*:\s*\[[^\]]+\][^{}]*\}/,
   ];
 
   for (const pattern of patterns) {
@@ -138,17 +173,23 @@ export function parseImageData(decrypted: string): ImageData | null {
         // 修復重複引號
         jsonStr = jsonStr.replace(/""+/g, '"');
 
-        const parsed = JSON.parse(jsonStr) as ImageData;
+        const parsed = JSON.parse(jsonStr);
 
-        // 如果 JSON 解析成功但缺少 prevcid/nextcid，嘗試從原始字串補充
-        if (parsed && (parsed.prevcid === undefined || parsed.nextcid === undefined)) {
-          const prevcidMatch = decrypted.match(/prevcid['":\s=]+(\d+)/i);
-          const nextcidMatch = decrypted.match(/nextcid['":\s=]+(\d+)/i);
-          if (prevcidMatch) parsed.prevcid = parseInt(prevcidMatch[1], 10);
-          if (nextcidMatch) parsed.nextcid = parseInt(nextcidMatch[1], 10);
+        // 判斷是 reader 格式還是 imgData 格式
+        if ('bookId' in parsed && 'images' in parsed) {
+          return convertReaderFormat(parsed as ReaderFormatData);
         }
 
-        return parsed;
+        // imgData 格式
+        const imageData = parsed as ImageData;
+        if (imageData.prevcid === undefined || imageData.nextcid === undefined) {
+          const prevcidMatch = decrypted.match(/prevcid['":\s=]+(\d+)/i);
+          const nextcidMatch = decrypted.match(/nextcid['":\s=]+(\d+)/i);
+          if (prevcidMatch) imageData.prevcid = parseInt(prevcidMatch[1], 10);
+          if (nextcidMatch) imageData.nextcid = parseInt(nextcidMatch[1], 10);
+        }
+
+        return imageData;
       } catch {
         // 嘗試另一種解析方式
         continue;
@@ -163,66 +204,113 @@ export function parseImageData(decrypted: string): ImageData | null {
 
 /**
  * 手動提取欄位 (備用方案)
+ * 支援 imgData 格式 (bid/cid/files) 和 reader 格式 (bookId/chapterId/images)
  */
 function extractFieldsManually(decrypted: string): ImageData | null {
+  // imgData 格式欄位
   const bidMatch = decrypted.match(/bid['":\s]+(\d+)/);
   const cidMatch = decrypted.match(/cid['":\s]+(\d+)/);
-  const bnameMatch = decrypted.match(/bname['":\s]+['"]([^'"]+)['"]/);
-  const cnameMatch = decrypted.match(/cname['":\s]+['"]([^'"]+)['"]/);
   const pathMatch = decrypted.match(/path['":\s]+['"]([^'"]+)['"]/);
   const filesMatch = decrypted.match(/files['":\s]+\[([^\]]+)\]/);
-  const slMatch = decrypted.match(/sl['":\s]+\{([^}]+)\}/);
-  const prevcidMatch = decrypted.match(/prevcid['":\s=]+(\d+)/i);
-  const nextcidMatch = decrypted.match(/nextcid['":\s=]+(\d+)/i);
 
-  if (!bidMatch || !cidMatch || !filesMatch || !pathMatch) {
-    return null;
+  // reader 格式欄位
+  const bookIdMatch = decrypted.match(/bookId['":\s]+(\d+)/);
+  const chapterIdMatch = decrypted.match(/chapterId['":\s]+(\d+)/);
+  const bookNameMatch = decrypted.match(/bookName['":\s]+['"]([^'"]+)['"]/);
+  const chapterTitleMatch = decrypted.match(/chapterTitle['":\s]+['"]([^'"]+)['"]/);
+  const imagesMatch = decrypted.match(/images['":\s]+\[([^\]]+)\]/);
+  const nextIdMatch = decrypted.match(/nextId['":\s]+(\d+)/);
+  const prevIdMatch = decrypted.match(/prevId['":\s]+(\d+)/);
+
+  // reader 格式：images 包含完整路徑
+  if (bookIdMatch && chapterIdMatch && imagesMatch) {
+    const imagesStr = imagesMatch[1];
+    const images = imagesStr
+      .split(',')
+      .map((f) => f.trim().replace(/['"]/g, ''))
+      .filter(Boolean);
+
+    // 從第一張圖片路徑提取 path
+    const firstImage = images[0] || '';
+    const pathParts = firstImage.split('/');
+    pathParts.pop(); // 移除檔名
+    const path = pathParts.join('/') + '/';
+
+    // 提取檔名
+    const files = images.map((img) => img.split('/').pop() || img);
+
+    return {
+      bid: parseInt(bookIdMatch[1], 10),
+      cid: parseInt(chapterIdMatch[1], 10),
+      bname: bookNameMatch?.[1] || '',
+      cname: chapterTitleMatch?.[1] || '',
+      path,
+      files,
+      sl: { e: 0, m: '' },
+      prevcid: prevIdMatch ? parseInt(prevIdMatch[1], 10) : undefined,
+      nextcid: nextIdMatch ? parseInt(nextIdMatch[1], 10) : undefined,
+    };
   }
 
-  // 解析 files 陣列
-  const filesStr = filesMatch[1];
-  const files = filesStr
-    .split(',')
-    .map((f) => f.trim().replace(/['"]/g, ''))
-    .filter(Boolean);
+  // imgData 格式
+  if (bidMatch && cidMatch && filesMatch && pathMatch) {
+    const bnameMatch = decrypted.match(/bname['":\s]+['"]([^'"]+)['"]/);
+    const cnameMatch = decrypted.match(/cname['":\s]+['"]([^'"]+)['"]/);
+    const slMatch = decrypted.match(/sl['":\s]+\{([^}]+)\}/);
+    const prevcidMatch = decrypted.match(/prevcid['":\s=]+(\d+)/i);
+    const nextcidMatch = decrypted.match(/nextcid['":\s=]+(\d+)/i);
 
-  // 解析 sl 參數
-  const sl = { e: 0, m: '' };
-  if (slMatch) {
-    const eMatch = slMatch[1].match(/e['":\s]+(\d+)/);
-    const mMatch = slMatch[1].match(/m['":\s]+['"]([^'"]+)['"]/);
-    if (eMatch) sl.e = parseInt(eMatch[1], 10);
-    if (mMatch) sl.m = mMatch[1];
+    const filesStr = filesMatch[1];
+    const files = filesStr
+      .split(',')
+      .map((f) => f.trim().replace(/['"]/g, ''))
+      .filter(Boolean);
+
+    const sl = { e: 0, m: '' };
+    if (slMatch) {
+      const eMatch = slMatch[1].match(/e['":\s]+(\d+)/);
+      const mMatch = slMatch[1].match(/m['":\s]+['"]([^'"]+)['"]/);
+      if (eMatch) sl.e = parseInt(eMatch[1], 10);
+      if (mMatch) sl.m = mMatch[1];
+    }
+
+    return {
+      bid: parseInt(bidMatch[1], 10),
+      cid: parseInt(cidMatch[1], 10),
+      bname: bnameMatch?.[1] || '',
+      cname: cnameMatch?.[1] || '',
+      path: pathMatch[1],
+      files,
+      sl,
+      prevcid: prevcidMatch ? parseInt(prevcidMatch[1], 10) : undefined,
+      nextcid: nextcidMatch ? parseInt(nextcidMatch[1], 10) : undefined,
+    };
   }
 
-  return {
-    bid: parseInt(bidMatch[1], 10),
-    cid: parseInt(cidMatch[1], 10),
-    bname: bnameMatch?.[1] || '',
-    cname: cnameMatch?.[1] || '',
-    path: pathMatch[1],
-    files,
-    sl,
-    prevcid: prevcidMatch ? parseInt(prevcidMatch[1], 10) : undefined,
-    nextcid: nextcidMatch ? parseInt(nextcidMatch[1], 10) : undefined,
-  };
+  return null;
 }
 
 /**
  * 完整的解密流程：HTML → ImageData
  */
 export function decryptChapterPage(html: string): ImageData | null {
+  // 檢查是否為錯誤頁面
+  if (html.includes('404') && html.includes('找不到')) {
+    return null;
+  }
+  if (html.includes('403') || html.includes('禁止訪問')) {
+    return null;
+  }
+
   const packed = extractPackedScript(html);
   if (!packed) {
-    console.error('Failed to extract packed script');
     return null;
   }
 
   try {
     const decrypted = unpack(packed);
     return parseImageData(decrypted);
-  } catch (error) {
-    console.error('Failed to decrypt:', error);
+  } catch {
     return null;
   }
 }
