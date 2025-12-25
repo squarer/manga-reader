@@ -92,26 +92,56 @@ export async function fetchMangaList(
   return response.data;
 }
 
-/**
- * 獲取漫畫詳情頁
- */
-export async function fetchMangaDetail(mangaId: number): Promise<string> {
-  const url = `/comic/${mangaId}/`;
-
-  const response = await client.get(url, {
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-    },
-  });
-
-  return response.data;
-}
-
 /** 重試配置 */
 const RETRY_CONFIG = {
   maxRetries: 3,
   baseDelay: 500,
 };
+
+/**
+ * 獲取漫畫詳情頁（含重試機制）
+ */
+export async function fetchMangaDetail(mangaId: number): Promise<string> {
+  const url = `/comic/${mangaId}/`;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const response = await client.get(url, {
+        headers: {
+          'User-Agent': getRandomUserAgent(),
+        },
+      });
+
+      const html = response.data as string;
+
+      // 驗證是否為完整的詳情頁（檢查關鍵元素和內容）
+      const isValidDetailPage =
+        // 結構驗證
+        html.includes('class="detail-list') &&
+        html.includes('class="chapter') &&
+        // 內容驗證（確保不是空骨架）
+        (html.includes('class="hcover"') || html.includes('cpic/h')) &&
+        (html.includes('/author/') || html.includes('漫画作者'));
+
+      if (!isValidDetailPage) {
+        if (attempt < RETRY_CONFIG.maxRetries) {
+          await delay(RETRY_CONFIG.baseDelay * attempt);
+          continue;
+        }
+      }
+
+      return html;
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < RETRY_CONFIG.maxRetries) {
+        await delay(RETRY_CONFIG.baseDelay * attempt);
+      }
+    }
+  }
+
+  throw lastError || new Error('Failed to fetch manga detail');
+}
 
 /**
  * 獲取章節閱讀頁（含重試機制）
