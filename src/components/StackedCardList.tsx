@@ -109,7 +109,7 @@ function DesktopStackedCards({ items }: { items: StackedCardItem[] }) {
   };
 
   return (
-    <div className="overflow-x-auto overflow-y-clip px-2 -mx-2">
+    <div className="overflow-x-auto overflow-y-clip px-2 -mx-2 scrollbar-none">
       <div
         className="relative flex items-end pb-1"
         style={{
