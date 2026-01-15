@@ -75,9 +75,9 @@ export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
         </Link>
       </Button>
 
-      <div className="text-center">
-        <h1 className="text-sm font-medium">{data.bname}</h1>
-        <p className="text-xs text-muted-foreground">{data.cname}</p>
+      <div className="text-center drop-shadow-md">
+        <h1 className="text-sm font-semibold">{data.bname}</h1>
+        <p className="text-xs text-foreground/70">{data.cname}</p>
       </div>
 
       {/* 佔位保持三欄布局 */}

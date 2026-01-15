@@ -71,7 +71,7 @@ function MangaImage({ url, pageIndex, priority = false }: MangaImageProps) {
       alt={`Page ${pageIndex + 1}`}
       width={1200}
       height={1800}
-      className="pointer-events-none h-auto w-full max-w-full select-none"
+      className="pointer-events-none h-auto w-full max-w-full select-none rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.06),0_4px_8px_rgba(0,0,0,0.04),0_8px_20px_rgba(0,0,0,0.03)]"
       unoptimized
       priority={priority}
       draggable={false}
@@ -189,7 +189,7 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
   return (
     <div
       ref={containerRef}
-      className="mx-auto space-y-2 py-16"
+      className="mx-auto space-y-6 pt-24 pb-16"
       style={{ width: `${imageWidth}%` }}
     >
       {data.images.map((url, index) => (
@@ -289,7 +289,7 @@ function SinglePageReader({
 
   return (
     <div
-      className="flex min-h-screen cursor-pointer items-center justify-center py-16"
+      className="flex min-h-screen cursor-pointer items-center justify-center pt-24 pb-16"
       onClick={handleClick}
       onContextMenu={handleContextMenu}
     >
