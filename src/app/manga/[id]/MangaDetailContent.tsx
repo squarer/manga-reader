@@ -408,7 +408,7 @@ export default function MangaDetailContent({ id }: MangaDetailContentProps) {
               {historyLoaded && currentMangaHistory ? (
                 <Button asChild size="lg" className="gap-2">
                   <Link
-                    href={`/read/${id}/${currentMangaHistory.chapterId}`}
+                    href={`/read/${id}/${currentMangaHistory.chapterId}${currentMangaHistory.page > 0 ? `?page=${currentMangaHistory.page + 1}` : ''}`}
                   >
                     <BookOpen className="h-5 w-5" />
                     繼續閱讀 {currentMangaHistory.chapterName}
