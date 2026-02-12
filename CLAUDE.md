@@ -18,7 +18,7 @@
 
 ## 專案結構
 
-```
+```text
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API Routes
@@ -26,30 +26,40 @@ src/
 │   │   ├── chapter/       # 章節內容 API
 │   │   ├── image/         # 圖片代理 API
 │   │   └── rank/          # 排行榜 API
+│   ├── favorites/          # 收藏頁面
+│   ├── history/            # 閱讀紀錄頁面
 │   ├── manga/[id]/        # 漫畫詳情頁
 │   ├── rank/              # 排行榜頁面
 │   ├── read/[bid]/[cid]/  # 閱讀器頁面
 │   └── update/            # 最新更新頁面
 ├── components/            # React 元件
 │   ├── ui/                # shadcn/ui 元件
+│   ├── Navbar/            # 導航列（多檔案目錄）
+│   ├── reader/            # 閱讀器（多檔案目錄）
 │   ├── FavoritesSection.tsx
 │   ├── HistorySection.tsx
 │   ├── MangaCard.tsx      # 漫畫卡片
 │   ├── MangaFilter.tsx    # 篩選器
-│   ├── Navbar.tsx         # 導航列
-│   ├── Reader.tsx         # 閱讀器
+│   ├── SnowEffect.tsx     # 雪花特效
+│   ├── StackedCardList.tsx # 堆疊卡片列表
 │   ├── ThemeProvider.tsx  # 主題提供者
 │   ├── ThemeToggle.tsx    # 主題切換
 │   └── TiltCard.tsx       # 傾斜卡片效果
 └── lib/
+    ├── cache.ts           # 快取工具
+    ├── constants.ts       # 常數定義
+    ├── filter-utils.ts    # 篩選工具
+    ├── image-utils.ts     # 圖片工具
+    ├── utils.ts           # 通用工具
     ├── hooks/             # 自定義 Hooks
     │   ├── useFavorites.ts
     │   ├── useFetch.ts    # API 請求（內建 AbortController）
-    │   └── useHistory.ts
+    │   ├── useHistory.ts
+    │   └── useIsMobile.ts # 裝置偵測
     └── scraper/           # 爬蟲模組
         ├── index.ts       # 主入口
         ├── fetcher.ts     # HTTP 請求
-        ├── parser.ts      # HTML 解析
+        ├── parser/        # HTML 解析（多檔案目錄）
         ├── decrypt.ts     # 圖片解密
         └── types.ts       # 型別定義
 ```
@@ -57,14 +67,20 @@ src/
 ## 開發指令
 
 ```bash
-# 開發
+# 開發（支援 PORT 環境變數，預設 3000）
 npm run dev
 
 # 建置
 npm run build
 
+# 啟動（支援 PORT 環境變數，預設 3000）
+npm run start
+
 # 檢查
 npm run lint
+
+# PM2 部署（見 ecosystem.config.js）
+npm run pm2
 
 # 新增 shadcn 元件
 npx shadcn@latest add <component>
@@ -81,11 +97,14 @@ npx shadcn@latest add https://www.tinte.dev/r/claude
 
 - `MangaInfo` - 漫畫詳細資訊
 - `MangaListItem` - 列表項目
+- `ChapterGroup` - 章節分組（卷/話）
 - `ChapterInfo` - 章節資訊
 - `ImageData` - 閱讀器圖片資料
+- `ApiResponse<T>` - API 回應包裝
 - `RankItem` - 排行項目
 - `FilterOptions` - 篩選選項
 - `PaginationInfo` - 分頁資訊
+- Enums: `RegionType`, `GenreType`, `SortType`, `MangaStatus`, `RankTypeEnum`, `RankTrend`
 
 ## API 路由
 
@@ -114,16 +133,19 @@ npx shadcn@latest add https://www.tinte.dev/r/claude
 需要漸層背景延伸到 Navbar 區域的 fixed header 必須：
 
 ```tsx
-<header className="fixed top-0 ... pt-[4.5rem] pb-3 bg-gradient-to-b from-background/90 to-transparent">
+<header
+  className="fixed top-0 ... pt-[4.5rem] pb-3
+  bg-gradient-to-b from-background/90 to-transparent"
+>
   {/* 內容 */}
 </header>
 ```
 
-| 屬性 | 值 | 說明 |
-| --- | --- | --- |
-| `top-0` | 從頁面最上方開始 | 讓漸層延伸到 Navbar 後方 |
-| `pt-[4.5rem]` | 72px | 內容在 Navbar 下方 |
-| `z-50` | 低於 Navbar (z-[60]) | 確保 Navbar 在上層 |
+| 屬性          | 值                   | 說明                     |
+| ------------- | -------------------- | ------------------------ |
+| `top-0`       | 從頁面最上方開始     | 讓漸層延伸到 Navbar 後方 |
+| `pt-[4.5rem]` | 72px                 | 內容在 Navbar 下方       |
+| `z-50`        | 低於 Navbar (z-[60]) | 確保 Navbar 在上層       |
 
 ## 程式碼規範
 
