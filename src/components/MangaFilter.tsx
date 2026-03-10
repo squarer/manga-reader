@@ -210,22 +210,3 @@ export function FilterContent({
     </div>
   );
 }
-
-interface MangaFilterProps {
-  /** 當前篩選狀態 */
-  filters: FilterState;
-  /** 篩選狀態變更回調 */
-  onChange: (filters: FilterState) => void;
-}
-
-/**
- * 漫畫篩選器元件（卡片版）
- * @deprecated 使用 Navbar 中的 FilterPopover 取代
- */
-export default function MangaFilter({ filters, onChange }: MangaFilterProps) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <FilterContent filters={filters} onChange={onChange} />
-    </div>
-  );
-}
