@@ -22,7 +22,7 @@ import { FilterContent } from '@/components/MangaFilter';
 import { type FilterState, getActiveFilterCount } from '@/lib/filter-types';
 import { cn } from '@/lib/utils';
 import { useHistory } from '@/lib/hooks/useHistory';
-import { NAV_ITEMS, type NavItem } from './types';
+import { NAV_ITEMS, NAV_ACTIVE_CLASS, type NavItem } from './types';
 import { parseFiltersFromParams, filtersToParams } from './utils';
 import { DesktopSearch } from './DesktopSearch';
 import { MobileMenu } from './MobileMenu';
@@ -66,7 +66,7 @@ function HoverExpandButton({
     'rounded-full',
     'transition-all duration-200',
     isActive
-      ? 'bg-primary/10 text-primary'
+      ? NAV_ACTIVE_CLASS
       : 'text-muted-foreground hover:bg-accent hover:text-foreground'
   );
 
