@@ -6,6 +6,11 @@
 
 import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { DEFAULT_SETTINGS, TOOLBAR_HIDE_DELAY } from './types';
+
+/** 觸發翻頁的水平滑動閾值（px） */
+const SWIPE_THRESHOLD = 50;
+/** 忽略邊緣觸控區域（避免與瀏覽器返回手勢衝突） */
+const SWIPE_EDGE_MARGIN = 20;
 import type { ReaderSettings } from './types';
 
 /**
@@ -131,4 +136,97 @@ export function useReaderSettings() {
   }, []);
 
   return { settings, updateSettings };
+}
+
+/**
+ * 觸控滑動翻頁 hook（僅用於單頁模式）
+ *
+ * - 水平滑動超過 50px 觸發翻頁
+ * - 垂直意圖（|deltaY| > |deltaX| × 1.5）自動略過
+ * - 忽略左右邊緣 20px（避免與瀏覽器返回手勢衝突）
+ */
+export function useSwipe({
+  onSwipeLeft,
+  onSwipeRight,
+}: {
+  onSwipeLeft: () => void;
+  onSwipeRight: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const startXRef = useRef(0);
+  const startYRef = useRef(0);
+  const isSwipingRef = useRef(false);
+  const currentOffsetRef = useRef(0);
+  const onSwipeLeftRef = useRef(onSwipeLeft);
+  const onSwipeRightRef = useRef(onSwipeRight);
+
+  useEffect(() => { onSwipeLeftRef.current = onSwipeLeft; }, [onSwipeLeft]);
+  useEffect(() => { onSwipeRightRef.current = onSwipeRight; }, [onSwipeRight]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    function handleTouchStart(e: TouchEvent) {
+      const touch = e.touches[0];
+      startXRef.current = touch.clientX;
+      startYRef.current = touch.clientY;
+      isSwipingRef.current = false;
+      currentOffsetRef.current = 0;
+    }
+
+    function handleTouchMove(e: TouchEvent) {
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startXRef.current;
+      const deltaY = touch.clientY - startYRef.current;
+
+      // 垂直意圖偵測：傾斜角偏垂直時略過
+      if (!isSwipingRef.current && Math.abs(deltaY) > Math.abs(deltaX) * 1.5) {
+        return;
+      }
+
+      // 邊緣保護：忽略觸控起點在螢幕邊緣的滑動（瀏覽器返回手勢）
+      if (
+        startXRef.current < SWIPE_EDGE_MARGIN ||
+        startXRef.current > window.innerWidth - SWIPE_EDGE_MARGIN
+      ) {
+        return;
+      }
+
+      isSwipingRef.current = true;
+      e.preventDefault();
+      currentOffsetRef.current = deltaX;
+      setSwipeOffset(deltaX);
+    }
+
+    function handleTouchEnd() {
+      if (!isSwipingRef.current) return;
+
+      const offset = currentOffsetRef.current;
+      if (offset <= -SWIPE_THRESHOLD) {
+        onSwipeLeftRef.current();
+      } else if (offset >= SWIPE_THRESHOLD) {
+        onSwipeRightRef.current();
+      }
+
+      isSwipingRef.current = false;
+      currentOffsetRef.current = 0;
+      setSwipeOffset(0);
+    }
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+      el.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, []);
+
+  return { containerRef, swipeOffset };
 }

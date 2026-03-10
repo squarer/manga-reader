@@ -18,6 +18,7 @@ import {
   useToolbarVisibility,
   useFullscreen,
   useReaderSettings,
+  useSwipe,
 } from './useReaderHooks';
 import { ViewMode, type ReaderProps, type ChapterData } from './types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
@@ -271,8 +272,14 @@ function SinglePageReader({
     [goPrev]
   );
 
+  const { containerRef, swipeOffset } = useSwipe({
+    onSwipeLeft: goNext,
+    onSwipeRight: goPrev,
+  });
+
   return (
     <div
+      ref={containerRef}
       className="relative flex min-h-screen items-center justify-center pt-24 pb-16"
       onContextMenu={handleContextMenu}
     >
@@ -297,7 +304,11 @@ function SinglePageReader({
       />
       <div
         className="relative flex items-center justify-center"
-        style={{ width: `${imageWidth}%` }}
+        style={{
+          width: `${imageWidth}%`,
+          transform: `translateX(${swipeOffset}px)`,
+          transition: swipeOffset === 0 ? 'transform 0.2s ease-out' : 'none',
+        }}
       >
         <MangaImage
           key={currentPage}
