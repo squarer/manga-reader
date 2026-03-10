@@ -245,7 +245,7 @@ function parseChapterList($: ReturnType<typeof cheerio.load>): ChapterGroup[] {
 /**
  * 自然排序比較函數（處理章節名稱中的數字）
  */
-function naturalSort(a: string, b: string): number {
+export function naturalSort(a: string, b: string): number {
   const regex = /(\d+)|(\D+)/g;
   const aParts = a.match(regex) || [];
   const bParts = b.match(regex) || [];
