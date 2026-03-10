@@ -12,6 +12,7 @@ import {
   buildImageUrl,
 } from '@/lib/scraper';
 import { computePrevNextCid } from '@/lib/chapter-utils';
+import { CacheHeaders } from '@/lib/cache';
 
 export async function GET(
   request: NextRequest,
@@ -65,19 +66,22 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        bid: imageData.bid,
-        cid: imageData.cid,
-        bname: imageData.bname,
-        cname: imageData.cname,
-        images,
-        prevCid,
-        nextCid,
-        total: images.length,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          bid: imageData.bid,
+          cid: imageData.cid,
+          bname: imageData.bname,
+          cname: imageData.cname,
+          images,
+          prevCid,
+          nextCid,
+          total: images.length,
+        },
       },
-    });
+      { headers: { 'Cache-Control': CacheHeaders.CHAPTER } }
+    );
   } catch (error) {
     console.error('Chapter error:', error);
     return NextResponse.json(

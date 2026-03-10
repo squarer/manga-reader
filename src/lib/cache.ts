@@ -64,6 +64,20 @@ export function setCache<T>(key: string, data: T): void {
 }
 
 /**
+ * HTTP Cache-Control 回應標頭策略
+ */
+export const CacheHeaders = {
+  /** 排行榜、最新更新、漫畫列表：5 分鐘 CDN 快取 */
+  SHORT: 'public, s-maxage=300, stale-while-revalidate=3600',
+  /** 搜尋結果：1 分鐘 CDN 快取 */
+  SEARCH: 'public, s-maxage=60, stale-while-revalidate=300',
+  /** 漫畫詳情：1 小時 CDN 快取 */
+  DETAIL: 'public, s-maxage=3600, stale-while-revalidate=86400',
+  /** 章節 API：1 小時 CDN 快取（圖片 URL 含 sl.e expiry token，不加 stale-while-revalidate） */
+  CHAPTER: 'public, s-maxage=3600',
+} as const;
+
+/**
  * 帶快取的資料取得函數
  *
  * @param key - 快取 key（通常是完整 URL）

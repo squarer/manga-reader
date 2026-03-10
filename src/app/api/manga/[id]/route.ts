@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchMangaDetail, parseMangaDetail } from '@/lib/scraper';
+import { CacheHeaders } from '@/lib/cache';
 
 export async function GET(
   request: NextRequest,
@@ -65,10 +66,10 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      data: manga,
-    });
+    return NextResponse.json(
+      { success: true, data: manga },
+      { headers: { 'Cache-Control': CacheHeaders.DETAIL } }
+    );
   } catch (error) {
     console.error('Manga detail error:', error);
     return NextResponse.json(

@@ -27,7 +27,7 @@ import {
   MangaStatus,
 } from '@/lib/scraper';
 import type { FilterOptions } from '@/lib/scraper';
-import { withCache } from '@/lib/cache';
+import { withCache, CacheHeaders } from '@/lib/cache';
 
 /** 有效的地區值 */
 const VALID_REGIONS = Object.values(RegionType);
@@ -112,10 +112,10 @@ export async function GET(request: NextRequest) {
       return parseMangaList(html);
     });
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-    });
+    return NextResponse.json(
+      { success: true, data: result },
+      { headers: { 'Cache-Control': keyword ? CacheHeaders.SEARCH : CacheHeaders.SHORT } }
+    );
   } catch (error) {
     console.error('Manga list error:', error);
     return NextResponse.json(
