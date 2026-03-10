@@ -2,6 +2,21 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+/**
+ * 從非成功 HTTP 回應中提取錯誤訊息
+ * 優先取 JSON body 的 error/message，其次用 statusText，最後用 HTTP {status}
+ */
+export async function parseResponseError(res: Response): Promise<string> {
+  try {
+    const json = await res.json();
+    if (typeof json?.error === 'string' && json.error) return json.error;
+    if (typeof json?.message === 'string' && json.message) return json.message;
+  } catch {
+    // JSON 解析失敗，繼續 fallback
+  }
+  return res.statusText || `HTTP ${res.status}`;
+}
+
 /** useFetch 回傳型別 */
 interface UseFetchResult<T> {
   /** 資料 */
@@ -61,6 +76,14 @@ export function useFetch<T>(
 
       try {
         const res = await fetch(url, { signal });
+
+        if (!res.ok) {
+          const errorMsg = await parseResponseError(res);
+          setError(errorMsg);
+          onErrorRef.current?.(errorMsg);
+          return;
+        }
+
         const json = await res.json();
 
         if (json.success) {
@@ -75,7 +98,7 @@ export function useFetch<T>(
         if (err instanceof Error && err.name === 'AbortError') {
           return; // 請求被取消，不處理
         }
-        const errorMsg = '網路錯誤';
+        const errorMsg = err instanceof Error ? err.message : '網路錯誤';
         setError(errorMsg);
         onErrorRef.current?.(errorMsg);
       } finally {
@@ -136,6 +159,13 @@ export function useLazyFetch<T>(): {
 
     try {
       const res = await fetch(url, { signal: abortControllerRef.current.signal });
+
+      if (!res.ok) {
+        const errorMsg = await parseResponseError(res);
+        setError(errorMsg);
+        return null;
+      }
+
       const json = await res.json();
 
       if (json.success) {
@@ -150,7 +180,8 @@ export function useLazyFetch<T>(): {
       if (err instanceof Error && err.name === 'AbortError') {
         return null;
       }
-      setError('網路錯誤');
+      const errorMsg = err instanceof Error ? err.message : '網路錯誤';
+      setError(errorMsg);
       return null;
     } finally {
       if (!abortControllerRef.current?.signal.aborted) {
