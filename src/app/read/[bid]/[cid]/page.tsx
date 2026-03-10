@@ -7,6 +7,7 @@ import {
   parseMangaDetail,
   buildImageUrl,
 } from '@/lib/scraper';
+import { getProxiedImageUrl } from '@/lib/image-utils';
 import { computePrevNextCid } from '@/lib/chapter-utils';
 import type { ChapterData } from '@/components/reader/types';
 import ReaderContent from './ReaderContent';
@@ -77,9 +78,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getChapterData(mangaId, chapterId);
   if (!data) return { title: '閱讀' };
 
+  const title = `${data.bname} - ${data.cname}`;
+  const description = `閱讀 ${data.bname} ${data.cname}`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+  const coverUrl = `${baseUrl}${getProxiedImageUrl(`/cpic/b/${data.bid}.jpg`)}`;
+
   return {
-    title: `${data.bname} - ${data.cname}`,
-    description: `閱讀 ${data.bname} ${data.cname}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: coverUrl }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [coverUrl],
+    },
   };
 }
 

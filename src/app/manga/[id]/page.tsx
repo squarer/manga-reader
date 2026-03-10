@@ -2,6 +2,7 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { fetchMangaDetail, parseMangaDetail } from '@/lib/scraper';
 import type { MangaInfo } from '@/lib/scraper/types';
+import { getProxiedImageUrl } from '@/lib/image-utils';
 import MangaDetailContent from './MangaDetailContent';
 
 interface PageProps {
@@ -37,9 +38,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: '漫畫詳情' };
   }
 
+  const description = manga.description || `閱讀 ${manga.name}`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+  const coverUrl = `${baseUrl}${getProxiedImageUrl(manga.cover)}`;
+
   return {
     title: manga.name,
-    description: manga.description || `閱讀 ${manga.name}`,
+    description,
+    openGraph: {
+      title: manga.name,
+      description,
+      images: [{ url: coverUrl }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: manga.name,
+      description,
+      images: [coverUrl],
+    },
   };
 }
 
