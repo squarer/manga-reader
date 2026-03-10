@@ -18,7 +18,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { FilterContent, type FilterState, getActiveFilterCount } from '@/components/MangaFilter';
+import { FilterContent } from '@/components/MangaFilter';
+import { type FilterState, getActiveFilterCount } from '@/lib/filter-types';
 import { cn } from '@/lib/utils';
 import { useHistory } from '@/lib/hooks/useHistory';
 import { NAV_ITEMS, type NavItem } from './types';

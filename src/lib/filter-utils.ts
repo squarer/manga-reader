@@ -11,7 +11,7 @@ import {
   type YearOption,
   GENRE_OPTIONS,
   YEAR_OPTIONS,
-} from '@/components/MangaFilter';
+} from '@/lib/filter-types';
 
 /**
  * 進度映射：UI 值 -> API 值
