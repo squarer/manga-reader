@@ -361,7 +361,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
           addHistory({
             mangaId: json.data.bid,
             mangaName: json.data.bname,
-            mangaCover: `https://cf.mhgui.com/cpic/b/${json.data.bid}.jpg`,
+            mangaCover: `/cpic/b/${json.data.bid}.jpg`,
             chapterId: json.data.cid,
             chapterName: json.data.cname,
             page: validPage,

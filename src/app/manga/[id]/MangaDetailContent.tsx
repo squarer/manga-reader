@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TiltCard from '@/components/TiltCard';
-import { getProxiedImageUrl } from '@/lib/image-utils';
+import { getProxiedImageUrl, toCoverRelativePath } from '@/lib/image-utils';
 
 /**
  * 章節分組顯示元件（支援分 tab、可折疊、已讀標記）
@@ -431,7 +431,7 @@ export default function MangaDetailContent({ id }: MangaDetailContentProps) {
                     toggleFavorite({
                       mangaId: manga.id,
                       mangaName: manga.name,
-                      mangaCover: manga.cover,
+                      mangaCover: toCoverRelativePath(manga.cover),
                     })
                   }
                 />
