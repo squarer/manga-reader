@@ -9,17 +9,22 @@ import StackedCardList, { type StackedCardItem } from './StackedCardList';
 export default function HistorySection() {
   const { history, isLoaded, clearHistory } = useHistory();
 
-  const items: StackedCardItem[] = useMemo(
-    () =>
-      history.slice(0, MAX_STACKED_CARDS).map((item) => ({
-        id: `${item.mangaId}-${item.chapterId}`,
-        href: `/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`,
-        cover: getProxiedImageUrl(item.mangaCover),
-        title: item.mangaName,
-        subtitle: item.chapterName,
-      })),
-    [history]
-  );
+  const items: StackedCardItem[] = useMemo(() => {
+    // 每部漫畫只顯示最新一筆（history 已按 timestamp desc 排序）
+    const seen = new Set<number>();
+    const deduped = history.filter((item) => {
+      if (seen.has(item.mangaId)) return false;
+      seen.add(item.mangaId);
+      return true;
+    });
+    return deduped.slice(0, MAX_STACKED_CARDS).map((item) => ({
+      id: `${item.mangaId}-${item.chapterId}`,
+      href: `/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`,
+      cover: getProxiedImageUrl(item.mangaCover),
+      title: item.mangaName,
+      subtitle: item.chapterName,
+    }));
+  }, [history]);
 
   if (!isLoaded || items.length === 0) {
     return null;

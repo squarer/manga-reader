@@ -49,11 +49,13 @@ export function useHistory() {
   }, [history, isLoaded]);
 
   /**
-   * 添加閱讀記錄
+   * 添加閱讀記錄（以 mangaId + chapterId 為唯一 key，保留同一漫畫的多章節記錄）
    */
   const addHistory = useCallback((item: Omit<HistoryItem, 'timestamp'>) => {
     setHistory((prev) => {
-      const filtered = prev.filter((h) => h.mangaId !== item.mangaId);
+      const filtered = prev.filter(
+        (h) => !(h.mangaId === item.mangaId && h.chapterId === item.chapterId)
+      );
       return [{ ...item, timestamp: Date.now() }, ...filtered].slice(0, MAX_HISTORY);
     });
   }, []);
@@ -61,9 +63,13 @@ export function useHistory() {
   /**
    * 更新閱讀頁碼
    */
-  const updateHistoryPage = useCallback((mangaId: number, page: number) => {
+  const updateHistoryPage = useCallback((mangaId: number, chapterId: number, page: number) => {
     setHistory((prev) =>
-      prev.map((h) => (h.mangaId === mangaId ? { ...h, page, timestamp: Date.now() } : h))
+      prev.map((h) =>
+        h.mangaId === mangaId && h.chapterId === chapterId
+          ? { ...h, page, timestamp: Date.now() }
+          : h
+      )
     );
   }, []);
 

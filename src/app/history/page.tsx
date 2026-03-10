@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useMemo } from 'react';
 import { Clock, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TiltCard from '@/components/TiltCard';
@@ -12,6 +13,16 @@ import { STAGGER_DELAY } from '@/lib/constants';
 export default function HistoryPage() {
   const { history, isLoaded, removeHistory, clearHistory } = useHistory();
 
+  // 每部漫畫只顯示最新一筆（history 已按 timestamp desc 排序）
+  const deduped = useMemo(() => {
+    const seen = new Set<number>();
+    return history.filter((item) => {
+      if (seen.has(item.mangaId)) return false;
+      seen.add(item.mangaId);
+      return true;
+    });
+  }, [history]);
+
   return (
     <div className="min-h-screen bg-background">
 
@@ -20,13 +31,13 @@ export default function HistoryPage() {
           <div className="flex items-center gap-3">
             <Clock className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold">閱讀歷史</h1>
-            {isLoaded && history.length > 0 && (
+            {isLoaded && deduped.length > 0 && (
               <span className="text-sm text-muted-foreground">
-                ({history.length} 部)
+                ({deduped.length} 部)
               </span>
             )}
           </div>
-          {isLoaded && history.length > 0 && (
+          {isLoaded && deduped.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearHistory}>
               清除全部
             </Button>
@@ -37,7 +48,7 @@ export default function HistoryPage() {
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
           </div>
-        ) : history.length === 0 ? (
+        ) : deduped.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
             <Clock className="h-16 w-16 text-muted-foreground/30" />
             <p className="text-lg text-muted-foreground">尚無閱讀記錄</p>
@@ -47,7 +58,7 @@ export default function HistoryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
-            {history.map((item, index) => (
+            {deduped.map((item, index) => (
               <div key={`${item.mangaId}-${item.chapterId}`} className="group relative">
                 <Link
                   href={`/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`}

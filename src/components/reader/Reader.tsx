@@ -521,14 +521,15 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
     if (!data) return;
 
     const mangaId = data.bid;
+    const chapterId = data.cid;
 
     function handleBeforeUnload() {
-      updateHistoryPage(mangaId, currentPage);
+      updateHistoryPage(mangaId, chapterId, currentPage);
     }
 
     function handleVisibilityChange() {
       if (document.visibilityState === 'hidden') {
-        updateHistoryPage(mangaId, currentPage);
+        updateHistoryPage(mangaId, chapterId, currentPage);
       }
     }
 
@@ -539,7 +540,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       // 組件卸載時也保存
-      updateHistoryPage(mangaId, currentPage);
+      updateHistoryPage(mangaId, chapterId, currentPage);
     };
   }, [data, currentPage, updateHistoryPage]);
 
