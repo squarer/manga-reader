@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toCoverRelativePath } from '@/lib/image-utils';
 
 export interface FavoriteItem {
   mangaId: number;
@@ -19,7 +20,8 @@ function getStoredFavorites(): FavoriteItem[] {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return [];
   try {
-    return JSON.parse(stored);
+    const items: FavoriteItem[] = JSON.parse(stored);
+    return items.map((item) => ({ ...item, mangaCover: toCoverRelativePath(item.mangaCover) }));
   } catch {
     return [];
   }
@@ -57,7 +59,7 @@ export function useFavorites() {
   const addFavorite = useCallback((item: Omit<FavoriteItem, 'addedAt'>) => {
     setFavorites((prev) => {
       if (prev.some((f) => f.mangaId === item.mangaId)) return prev;
-      return [{ ...item, addedAt: Date.now() }, ...prev];
+      return [{ ...item, mangaCover: toCoverRelativePath(item.mangaCover), addedAt: Date.now() }, ...prev];
     });
   }, []);
 

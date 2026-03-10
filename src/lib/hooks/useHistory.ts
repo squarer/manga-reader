@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toCoverRelativePath } from '@/lib/image-utils';
 
 export interface HistoryItem {
   mangaId: number;
@@ -24,7 +25,8 @@ function getStoredHistory(): HistoryItem[] {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return [];
   try {
-    return JSON.parse(stored);
+    const items: HistoryItem[] = JSON.parse(stored);
+    return items.map((item) => ({ ...item, mangaCover: toCoverRelativePath(item.mangaCover) }));
   } catch {
     return [];
   }
@@ -56,7 +58,10 @@ export function useHistory() {
       const filtered = prev.filter(
         (h) => !(h.mangaId === item.mangaId && h.chapterId === item.chapterId)
       );
-      return [{ ...item, timestamp: Date.now() }, ...filtered].slice(0, MAX_HISTORY);
+      return [
+        { ...item, mangaCover: toCoverRelativePath(item.mangaCover), timestamp: Date.now() },
+        ...filtered,
+      ].slice(0, MAX_HISTORY);
     });
   }, []);
 
