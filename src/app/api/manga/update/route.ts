@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchUpdateList, parseUpdateList } from '@/lib/scraper';
-import { withCache, CacheHeaders } from '@/lib/cache';
+import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const cacheKey = request.url;
+    const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
       const html = await fetchUpdateList(page);
       return parseUpdateList(html);

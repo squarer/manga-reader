@@ -27,7 +27,7 @@ import {
   MangaStatus,
 } from '@/lib/scraper';
 import type { FilterOptions } from '@/lib/scraper';
-import { withCache, CacheHeaders } from '@/lib/cache';
+import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 
 /** 有效的地區值 */
 const VALID_REGIONS = Object.values(RegionType);
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
   const sort = validateParam(searchParams.get('sort'), VALID_SORTS);
 
   try {
-    const cacheKey = request.url;
+    const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
       let html: string;
 

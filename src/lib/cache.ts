@@ -1,7 +1,7 @@
 /**
  * 記憶體快取工具
  *
- * 提供簡單的記憶體快取機制，使用完整 URL 作為 cache key
+ * 提供簡單的記憶體快取機制，使用 pathname + searchParams 作為 cache key
  */
 
 /** 快取過期時間：24 小時 */
@@ -20,9 +20,21 @@ interface CacheEntry<T> {
 const cache = new Map<string, CacheEntry<unknown>>();
 
 /**
+ * 將 URL 正規化為 cache key，移除 host/protocol
+ * 確保不同環境（localhost/production）同參數命中同一快取
+ *
+ * @param url - 完整 URL 字串
+ * @returns pathname + search，例如 "/api/rank?type=day"
+ */
+export function normalizeUrlCacheKey(url: string): string {
+  const { pathname, search } = new URL(url);
+  return pathname + search;
+}
+
+/**
  * 取得快取資料
  *
- * @param key - 快取 key（通常是完整 URL）
+ * @param key - 快取 key（pathname + searchParams）
  * @returns 快取資料，若不存在或已過期則回傳 null
  */
 export function getCache<T>(key: string): T | null {
@@ -45,7 +57,7 @@ export function getCache<T>(key: string): T | null {
  *
  * 當快取數量超過限制時，刪除最舊的項目（FIFO）
  *
- * @param key - 快取 key（通常是完整 URL）
+ * @param key - 快取 key（pathname + searchParams）
  * @param data - 要快取的資料
  */
 export function setCache<T>(key: string, data: T): void {
@@ -80,7 +92,7 @@ export const CacheHeaders = {
 /**
  * 帶快取的資料取得函數
  *
- * @param key - 快取 key（通常是完整 URL）
+ * @param key - 快取 key（pathname + searchParams）
  * @param fetcher - 取得資料的函數
  * @returns 快取或新取得的資料
  */
