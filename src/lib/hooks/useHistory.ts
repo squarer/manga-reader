@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { toCoverRelativePath } from '@/lib/image-utils';
+import { useLocalStorage } from './useLocalStorage';
 
 export interface HistoryItem {
   mangaId: number;
@@ -17,80 +18,50 @@ export interface HistoryItem {
 const STORAGE_KEY = 'manga-reader-history';
 const MAX_HISTORY = 50;
 
-/**
- * 從 localStorage 讀取歷史記錄
- */
-function getStoredHistory(): HistoryItem[] {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return [];
-  try {
-    const items: HistoryItem[] = JSON.parse(stored);
-    return items.map((item) => ({ ...item, mangaCover: toCoverRelativePath(item.mangaCover) }));
-  } catch {
-    return [];
-  }
-}
-
 export function useHistory() {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [history, setHistory, isLoaded] = useLocalStorage<HistoryItem[]>(STORAGE_KEY, [], {
+    transform: (items) =>
+      items.map((item) => ({ ...item, mangaCover: toCoverRelativePath(item.mangaCover) })),
+  });
 
-  // 初始化：從 localStorage 載入（這是 hydration 同步，必須在 effect 中執行）
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 初始化 localStorage 的標準模式
-    setHistory(getStoredHistory());
-    setIsLoaded(true);
-  }, []);
+  const addHistory = useCallback(
+    (item: Omit<HistoryItem, 'timestamp'>) => {
+      setHistory((prev) => {
+        const filtered = prev.filter(
+          (h) => !(h.mangaId === item.mangaId && h.chapterId === item.chapterId)
+        );
+        return [
+          { ...item, mangaCover: toCoverRelativePath(item.mangaCover), timestamp: Date.now() },
+          ...filtered,
+        ].slice(0, MAX_HISTORY);
+      });
+    },
+    [setHistory]
+  );
 
-  // 同步到 localStorage
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-    }
-  }, [history, isLoaded]);
-
-  /**
-   * 添加閱讀記錄（以 mangaId + chapterId 為唯一 key，保留同一漫畫的多章節記錄）
-   */
-  const addHistory = useCallback((item: Omit<HistoryItem, 'timestamp'>) => {
-    setHistory((prev) => {
-      const filtered = prev.filter(
-        (h) => !(h.mangaId === item.mangaId && h.chapterId === item.chapterId)
+  const updateHistoryPage = useCallback(
+    (mangaId: number, chapterId: number, page: number) => {
+      setHistory((prev) =>
+        prev.map((h) =>
+          h.mangaId === mangaId && h.chapterId === chapterId
+            ? { ...h, page, timestamp: Date.now() }
+            : h
+        )
       );
-      return [
-        { ...item, mangaCover: toCoverRelativePath(item.mangaCover), timestamp: Date.now() },
-        ...filtered,
-      ].slice(0, MAX_HISTORY);
-    });
-  }, []);
+    },
+    [setHistory]
+  );
 
-  /**
-   * 更新閱讀頁碼
-   */
-  const updateHistoryPage = useCallback((mangaId: number, chapterId: number, page: number) => {
-    setHistory((prev) =>
-      prev.map((h) =>
-        h.mangaId === mangaId && h.chapterId === chapterId
-          ? { ...h, page, timestamp: Date.now() }
-          : h
-      )
-    );
-  }, []);
+  const removeHistory = useCallback(
+    (mangaId: number) => {
+      setHistory((prev) => prev.filter((h) => h.mangaId !== mangaId));
+    },
+    [setHistory]
+  );
 
-  /**
-   * 移除單個記錄
-   */
-  const removeHistory = useCallback((mangaId: number) => {
-    setHistory((prev) => prev.filter((h) => h.mangaId !== mangaId));
-  }, []);
-
-  /**
-   * 清空所有記錄
-   */
   const clearHistory = useCallback(() => {
     setHistory([]);
-  }, []);
+  }, [setHistory]);
 
   return {
     history,
