@@ -60,8 +60,8 @@ export type SortKey = keyof typeof SORT_OPTIONS;
 export interface FilterState {
   /** 地區（單選） */
   region: RegionKey | null;
-  /** 劇情分類（多選） */
-  genres: GenreKey[];
+  /** 劇情分類（單選） */
+  genre: GenreKey | null;
   /** 年份（單選） */
   year: YearOption | null;
   /** 進度（單選） */
@@ -73,7 +73,7 @@ export interface FilterState {
 /** 預設篩選狀態 */
 export const DEFAULT_FILTER_STATE: FilterState = {
   region: null,
-  genres: [],
+  genre: null,
   year: null,
   status: 'all',
   sort: 'update',
@@ -85,7 +85,7 @@ export const DEFAULT_FILTER_STATE: FilterState = {
 export function getActiveFilterCount(filters: FilterState): number {
   return (
     (filters.region ? 1 : 0)
-    + filters.genres.length
+    + (filters.genre ? 1 : 0)
     + (filters.year ? 1 : 0)
     + (filters.status !== 'all' ? 1 : 0)
     + (filters.sort !== 'update' ? 1 : 0)
@@ -98,7 +98,7 @@ export function getActiveFilterCount(filters: FilterState): number {
 export function hasActiveFilters(filters: FilterState): boolean {
   return (
     filters.region !== null
-    || filters.genres.length > 0
+    || filters.genre !== null
     || filters.year !== null
     || filters.status !== 'all'
     || filters.sort !== 'update'
@@ -175,12 +175,9 @@ export function FilterContent({
     onChange({ ...filters, region: region === filters.region ? null : region });
   };
 
-  /** 切換劇情分類（多選） */
-  const toggleGenre = (genre: GenreKey) => {
-    const newGenres = filters.genres.includes(genre)
-      ? filters.genres.filter((g) => g !== genre)
-      : [...filters.genres, genre];
-    onChange({ ...filters, genres: newGenres });
+  /** 設定劇情分類（單選，再次點擊取消） */
+  const setGenre = (genre: GenreKey) => {
+    onChange({ ...filters, genre: genre === filters.genre ? null : genre });
   };
 
   /** 設定年份（單選） */
@@ -237,14 +234,14 @@ export function FilterContent({
         ))}
       </FilterSection>
 
-      {/* 劇情分類（多選） */}
+      {/* 劇情分類（單選） */}
       <FilterSection title="劇情分類">
         {Object.entries(GENRE_OPTIONS).map(([key, label]) => (
           <FilterTag
             key={key}
             label={label}
-            isSelected={filters.genres.includes(key as GenreKey)}
-            onClick={() => toggleGenre(key as GenreKey)}
+            isSelected={filters.genre === key}
+            onClick={() => setGenre(key as GenreKey)}
           />
         ))}
       </FilterSection>

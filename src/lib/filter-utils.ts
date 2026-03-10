@@ -37,9 +37,8 @@ export const SORT_MAP: Record<string, string> = {
 export function parseFiltersFromParams(searchParams: URLSearchParams): FilterState {
   const region = searchParams.get('region') as RegionKey | null;
   const genreParam = searchParams.get('genre');
-  const genres = genreParam
-    ? (genreParam.split(',').filter((g) => g in GENRE_OPTIONS) as GenreKey[])
-    : [];
+  const firstGenre = genreParam?.split(',')[0];
+  const genre = firstGenre && firstGenre in GENRE_OPTIONS ? (firstGenre as GenreKey) : null;
   const yearParam = searchParams.get('year');
   const year =
     yearParam && YEAR_OPTIONS.includes(yearParam as YearOption)
@@ -48,7 +47,7 @@ export function parseFiltersFromParams(searchParams: URLSearchParams): FilterSta
   const status = (searchParams.get('status') as StatusKey) || 'all';
   const sort = (searchParams.get('sort') as SortKey) || 'update';
 
-  return { region, genres, year, status, sort };
+  return { region, genre, year, status, sort };
 }
 
 /**
@@ -60,8 +59,8 @@ export function filtersToParams(filters: FilterState): URLSearchParams {
   if (filters.region) {
     params.set('region', filters.region);
   }
-  if (filters.genres.length > 0) {
-    params.set('genre', filters.genres.join(','));
+  if (filters.genre) {
+    params.set('genre', filters.genre);
   }
   if (filters.year) {
     params.set('year', filters.year);

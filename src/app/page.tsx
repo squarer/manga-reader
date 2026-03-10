@@ -66,9 +66,9 @@ function HomeContent() {
           params.set('region', f.region);
         }
 
-        // 劇情分類（多選）
-        if (f.genres.length > 0) {
-          params.set('genre', f.genres.join(','));
+        // 劇情分類（單選）
+        if (f.genre) {
+          params.set('genre', f.genre);
         }
 
         // 年份
