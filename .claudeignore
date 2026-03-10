@@ -1,0 +1,21 @@
+# Build/Dependencies
+node_modules/
+.git/
+
+# Next.js
+.next/
+out/
+build/
+
+# Test coverage
+coverage/
+
+# Cache
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# Static assets (binary/generated, not useful for AI context)
+public/
+**/*.map
+**/*.woff2
