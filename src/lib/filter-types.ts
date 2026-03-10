@@ -11,8 +11,11 @@ export const REGION_OPTIONS = {
 /** 劇情分類選項 */
 export const GENRE_OPTIONS: Record<GenreType, string> = GENRE_LABELS;
 
-/** 年份選項 */
-export const YEAR_OPTIONS = ['2025', '2024', '2023', '2022', '2021', '2020', '更早'] as const;
+/** 年份選項（動態產生，往回推 6 年 + 更早） */
+export const YEAR_OPTIONS: readonly string[] = Array.from(
+  { length: 6 },
+  (_, i) => String(new Date().getFullYear() - i)
+).concat('更早');
 
 /** 進度選項 */
 export const STATUS_OPTIONS = {
@@ -36,7 +39,7 @@ export type RegionKey = keyof typeof REGION_OPTIONS;
 export type GenreKey = GenreType;
 
 /** 年份型別 */
-export type YearOption = (typeof YEAR_OPTIONS)[number];
+export type YearOption = string;
 
 /** 進度型別 */
 export type StatusKey = keyof typeof STATUS_OPTIONS;
