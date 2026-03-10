@@ -136,8 +136,18 @@ function FilterTag({
   isSelected: boolean;
   onClick: () => void;
 }) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <Badge
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
       variant={isSelected ? 'default' : 'outline'}
       className={cn(
         'cursor-pointer select-none transition-all duration-200',
@@ -146,6 +156,7 @@ function FilterTag({
           : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
     >
       {label}
     </Badge>

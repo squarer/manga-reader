@@ -89,24 +89,25 @@ export default function ChapterGroupDisplay({
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+        <div role="list" className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
           {displayChapters.map((chapter) => {
             const isRead = readChapterIds.has(chapter.id);
             return (
-              <Button
-                key={chapter.id}
-                asChild
-                variant={isRead ? 'outline' : 'secondary'}
-                size="sm"
-                className={cn('relative', isRead && 'border-primary/30 text-muted-foreground')}
-              >
-                <Link href={`/read/${mangaId}/${chapter.id}`}>
-                  {isRead && (
-                    <Check className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-primary p-0.5 text-primary-foreground" />
-                  )}
-                  {chapter.name}
-                </Link>
-              </Button>
+              <div key={chapter.id} role="listitem">
+                <Button
+                  asChild
+                  variant={isRead ? 'outline' : 'secondary'}
+                  size="sm"
+                  className={cn('relative w-full', isRead && 'border-primary/30 text-muted-foreground')}
+                >
+                  <Link href={`/read/${mangaId}/${chapter.id}`}>
+                    {isRead && (
+                      <Check className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-primary p-0.5 text-primary-foreground" />
+                    )}
+                    {chapter.name}
+                  </Link>
+                </Button>
+              </div>
             );
           })}
         </div>

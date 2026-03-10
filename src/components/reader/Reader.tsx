@@ -262,25 +262,6 @@ function SinglePageReader({
     }
   }, [currentPage, data.total, onPageChange, onNextChapter]);
 
-  /** 左鍵點擊 - 換頁或顯示工具列 */
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const width = rect.width;
-      const zone = x / width;
-
-      if (zone >= 0.4 && zone <= 0.6) {
-        onTap();
-      } else if (zone < 0.4) {
-        goPrev();
-      } else {
-        goNext();
-      }
-    },
-    [goPrev, goNext, onTap]
-  );
-
   /** 右鍵點擊 - 上一頁或上一話 */
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -292,10 +273,28 @@ function SinglePageReader({
 
   return (
     <div
-      className="flex min-h-screen cursor-pointer items-center justify-center pt-24 pb-16"
-      onClick={handleClick}
+      className="relative flex min-h-screen items-center justify-center pt-24 pb-16"
       onContextMenu={handleContextMenu}
     >
+      {/* 三個透明覆蓋按鈕：鍵盤/螢幕閱讀器可 Tab 到並觸發各區域動作 */}
+      <button
+        type="button"
+        className="absolute inset-y-0 left-0 z-10 w-2/5 cursor-pointer bg-transparent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-foreground/50"
+        onClick={goPrev}
+        aria-label="上一頁"
+      />
+      <button
+        type="button"
+        className="absolute inset-y-0 left-[40%] z-10 w-1/5 cursor-pointer bg-transparent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-foreground/50"
+        onClick={onTap}
+        aria-label="顯示工具列"
+      />
+      <button
+        type="button"
+        className="absolute inset-y-0 right-0 z-10 w-2/5 cursor-pointer bg-transparent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-foreground/50"
+        onClick={goNext}
+        aria-label="下一頁"
+      />
       <div
         className="relative flex items-center justify-center"
         style={{ width: `${imageWidth}%` }}
