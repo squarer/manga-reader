@@ -227,17 +227,19 @@ function LoadingSkeleton() {
 
 interface MangaDetailContentProps {
   id: string;
+  /** Server Component 預取資料，有值時略過 Client fetch */
+  initialData?: MangaInfo | null;
 }
 
 /**
  * 漫畫詳情頁內容（Client Component）
  */
-export default function MangaDetailContent({ id }: MangaDetailContentProps) {
+export default function MangaDetailContent({ id, initialData }: MangaDetailContentProps) {
   const {
     data: manga,
     loading,
     error,
-  } = useFetch<MangaInfo>(`/api/manga/${id}`, [id]);
+  } = useFetch<MangaInfo>(initialData ? null : `/api/manga/${id}`, [id], { initialData });
   const { isFavorite, toggleFavorite, isLoaded: favLoaded } = useFavorites();
   const { history, isLoaded: historyLoaded } = useHistory();
 

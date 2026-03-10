@@ -58,7 +58,7 @@ export function useFetch<T>(
   const { initialData = null, immediate = true, onSuccess, onError } = options;
 
   const [data, setData] = useState<T | null>(initialData);
-  const [loading, setLoading] = useState(immediate && url !== null);
+  const [loading, setLoading] = useState(immediate && url !== null && initialData == null);
   const [error, setError] = useState<string | null>(null);
 
   // 用 ref 保存 callbacks 避免加入依賴

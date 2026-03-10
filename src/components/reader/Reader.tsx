@@ -316,9 +316,9 @@ function SinglePageReader({
  *
  * 支援滾動和單頁兩種閱讀模式，含工具列和快捷鍵
  */
-export default function Reader({ mangaId, chapterId }: ReaderProps) {
-  const [data, setData] = useState<ChapterData | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function Reader({ mangaId, chapterId, initialData }: ReaderProps) {
+  const [data, setData] = useState<ChapterData | null>(initialData ?? null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -336,6 +336,27 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   // 載入章節資料（使用 AbortController 防止 Strict Mode 重複請求）
   useEffect(() => {
     setCurrentPage(0);
+
+    // 有 initialData 且 chapterId 吻合時，略過 fetch，直接處理頁碼與 history
+    if (initialData && initialData.cid === chapterId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageParam = urlParams.get('page');
+      const initialPage = pageParam ? Math.max(0, parseInt(pageParam, 10) - 1) : 0;
+      const validPage = Math.min(initialPage, initialData.total - 1);
+      setCurrentPage(validPage);
+
+      addHistory({
+        mangaId: initialData.bid,
+        mangaName: initialData.bname,
+        mangaCover: `/cpic/b/${initialData.bid}.jpg`,
+        chapterId: initialData.cid,
+        chapterName: initialData.cname,
+        page: validPage,
+      });
+      setLoading(false);
+      return;
+    }
+
     const abortController = new AbortController();
 
     async function fetchChapter() {
@@ -386,7 +407,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
     return () => {
       abortController.abort();
     };
-  }, [mangaId, chapterId, addHistory]);
+  }, [mangaId, chapterId, initialData, addHistory]);
 
   /**
    * 更新 URL 頁碼參數
