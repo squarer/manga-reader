@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useHistory } from '@/lib/hooks/useHistory';
 import { useIsMobile } from '@/lib/hooks/useIsMobile';
@@ -209,12 +210,13 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
 
 /** SinglePageReader props */
 interface SinglePageReaderProps {
-  mangaId: number;
   data: ChapterData;
   currentPage: number;
   imageWidth: number;
   onPageChange: (page: number) => void;
   onTap: () => void;
+  onPrevChapter: () => void;
+  onNextChapter: () => void;
 }
 
 /**
@@ -223,12 +225,13 @@ interface SinglePageReaderProps {
  * 左鍵換頁（左側上一頁、右側下一頁）、右鍵上一頁、中間點擊顯示工具列
  */
 function SinglePageReader({
-  mangaId,
   data,
   currentPage,
   imageWidth,
   onPageChange,
   onTap,
+  onPrevChapter,
+  onNextChapter,
 }: SinglePageReaderProps) {
   // 預載後續兩頁圖片
   useEffect(() => {
@@ -245,19 +248,19 @@ function SinglePageReader({
   const goPrev = useCallback(() => {
     if (currentPage > 0) {
       onPageChange(currentPage - 1);
-    } else if (data.prevCid) {
-      window.location.href = `/read/${mangaId}/${data.prevCid}`;
+    } else {
+      onPrevChapter();
     }
-  }, [currentPage, data.prevCid, mangaId, onPageChange]);
+  }, [currentPage, onPageChange, onPrevChapter]);
 
   /** 下一頁或下一話 */
   const goNext = useCallback(() => {
     if (currentPage < data.total - 1) {
       onPageChange(currentPage + 1);
-    } else if (data.nextCid) {
-      window.location.href = `/read/${mangaId}/${data.nextCid}`;
+    } else {
+      onNextChapter();
     }
-  }, [currentPage, data.total, data.nextCid, mangaId, onPageChange]);
+  }, [currentPage, data.total, onPageChange, onNextChapter]);
 
   /** 左鍵點擊 - 換頁或顯示工具列 */
   const handleClick = useCallback(
@@ -320,6 +323,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
+  const router = useRouter();
   const { addHistory, updateHistoryPage } = useHistory();
   const { isVisible, showToolbar } = useToolbarVisibility();
   const { toggleFullscreen } = useFullscreen();
@@ -331,6 +335,7 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
 
   // 載入章節資料（使用 AbortController 防止 Strict Mode 重複請求）
   useEffect(() => {
+    setCurrentPage(0);
     const abortController = new AbortController();
 
     async function fetchChapter() {
@@ -413,6 +418,30 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
     [data, settings.viewMode, updatePageUrl]
   );
 
+  /** 切換上一話（SPA 導航，儲存進度） */
+  const goToPrevChapter = useCallback(() => {
+    if (data?.prevCid) {
+      updateHistoryPage(mangaId, data.cid, currentPage);
+      setCurrentPage(0);
+      if (settings.viewMode === ViewMode.Single) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      router.push(`/read/${mangaId}/${data.prevCid}`);
+    }
+  }, [data, mangaId, currentPage, settings.viewMode, updateHistoryPage, router]);
+
+  /** 切換下一話（SPA 導航，儲存進度） */
+  const goToNextChapter = useCallback(() => {
+    if (data?.nextCid) {
+      updateHistoryPage(mangaId, data.cid, currentPage);
+      setCurrentPage(0);
+      if (settings.viewMode === ViewMode.Single) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      router.push(`/read/${mangaId}/${data.nextCid}`);
+    }
+  }, [data, mangaId, currentPage, settings.viewMode, updateHistoryPage, router]);
+
   /**
    * 滾動模式頁面切換（由 IntersectionObserver 觸發）
    */
@@ -442,9 +471,8 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
           if (settings.viewMode === ViewMode.Single) {
             if (currentPage > 0) {
               goToPage(currentPage - 1);
-            } else if (data?.prevCid) {
-              // 第一頁按左鍵跳上一話
-              window.location.href = `/read/${mangaId}/${data.prevCid}`;
+            } else {
+              goToPrevChapter();
             }
           }
           break;
@@ -454,23 +482,18 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
           if (settings.viewMode === ViewMode.Single) {
             if (data && currentPage < data.total - 1) {
               goToPage(currentPage + 1);
-            } else if (data?.nextCid) {
-              // 最後一頁按右鍵跳下一話
-              window.location.href = `/read/${mangaId}/${data.nextCid}`;
+            } else {
+              goToNextChapter();
             }
           }
           break;
         case '[':
         case ',':
-          if (data?.prevCid) {
-            window.location.href = `/read/${mangaId}/${data.prevCid}`;
-          }
+          goToPrevChapter();
           break;
         case ']':
         case '.':
-          if (data?.nextCid) {
-            window.location.href = `/read/${mangaId}/${data.nextCid}`;
-          }
+          goToNextChapter();
           break;
         case 'f':
         case 'F':
@@ -498,10 +521,11 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
   }, [
     currentPage,
     data,
-    mangaId,
     settings.viewMode,
     showShortcuts,
     goToPage,
+    goToPrevChapter,
+    goToNextChapter,
     toggleFullscreen,
     updateSettings,
   ]);
@@ -567,12 +591,13 @@ export default function Reader({ mangaId, chapterId }: ReaderProps) {
         />
       ) : (
         <SinglePageReader
-          mangaId={mangaId}
           data={data}
           currentPage={currentPage}
           imageWidth={imageWidth}
           onPageChange={goToPage}
           onTap={showToolbar}
+          onPrevChapter={goToPrevChapter}
+          onNextChapter={goToNextChapter}
         />
       )}
 
