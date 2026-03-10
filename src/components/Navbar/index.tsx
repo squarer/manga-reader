@@ -6,7 +6,7 @@
  * 響應式設計：桌面版水平導航，手機版漢堡選單
  */
 
-import { useState, useCallback, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { BookOpen, SlidersHorizontal, Menu, X, Heart, Clock } from 'lucide-react';
@@ -117,8 +117,10 @@ function NavbarContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const keyword = searchParams.get('keyword') || '';
+
   // 狀態
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState(keyword);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -128,6 +130,11 @@ function NavbarContent() {
   // 從 URL 解析 filter 狀態
   const filters = parseFiltersFromParams(searchParams);
   const activeFilterCount = getActiveFilterCount(filters);
+
+  /** 同步 URL keyword 到手機搜尋框 */
+  useEffect(() => {
+    setSearchValue(keyword);
+  }, [keyword]);
 
   // 頁面狀態
   const isHomePage = pathname === '/';
@@ -265,7 +272,7 @@ function NavbarContent() {
               )}
 
               {/* 桌面版搜尋框 */}
-              <DesktopSearch onSearch={handleSearch} />
+              <DesktopSearch onSearch={handleSearch} keyword={keyword} />
 
               {/* 主題切換 */}
               <ThemeToggle />
