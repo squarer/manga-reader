@@ -99,6 +99,8 @@ function MobileCarousel({ items }: { items: StackedCardItem[] }) {
 
 /** 桌面版：堆疊卡片效果 */
 function DesktopStackedCards({ items }: { items: StackedCardItem[] }) {
+  // 反轉順序讓最新的卡片（index 0）在最上層（最高 zIndex）
+  const reversedItems = [...items].reverse();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   /** 計算卡片的水平偏移（只讓右邊的書往右移） */
@@ -118,7 +120,7 @@ function DesktopStackedCards({ items }: { items: StackedCardItem[] }) {
         }}
         onMouseLeave={() => setHoveredIndex(null)}
       >
-        {items.map((item, index) => {
+        {reversedItems.map((item, index) => {
           const isHovered = hoveredIndex === index;
           const translateX = getTransformX(index);
 

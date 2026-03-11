@@ -12,19 +12,28 @@ import { cn } from '@/lib/utils';
 
 interface DesktopSearchProps {
   onSearch: (keyword: string) => void;
+  keyword?: string;
 }
 
-export function DesktopSearch({ onSearch }: DesktopSearchProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
+export function DesktopSearch({ onSearch, keyword = '' }: DesktopSearchProps) {
+  const [prevKeyword, setPrevKeyword] = useState(keyword);
+  const [isExpanded, setIsExpanded] = useState(!!keyword);
+  const [searchValue, setSearchValue] = useState(keyword);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /** 展開時自動聚焦 */
+  /** 同步 URL keyword 到輸入框（render 期間同步，避免 useEffect 觸發 lint 警告） */
+  if (prevKeyword !== keyword) {
+    setPrevKeyword(keyword);
+    setSearchValue(keyword);
+    setIsExpanded(!!keyword);
+  }
+
+  /** 展開時自動聚焦（僅無 keyword 時） */
   useEffect(() => {
-    if (isExpanded && inputRef.current) {
+    if (isExpanded && !keyword && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isExpanded]);
+  }, [isExpanded, keyword]);
 
   /** 處理搜尋提交 */
   const handleSubmit = (e: React.FormEvent) => {
