@@ -3,14 +3,14 @@
  * 處理對 manhuagui.com 的請求
  */
 
-import { ProxyAgent, setGlobalDispatcher } from 'undici';
-
 const BASE_URL = 'https://www.manhuagui.com';
 
-// 代理配置（從環境變數讀取）
+// 代理配置（從環境變數讀取，動態 import 避免 Turbopack 打包 node:net）
 if (process.env.PROXY_HOST && process.env.PROXY_PORT) {
   const proxyUrl = `http://${process.env.PROXY_HOST}:${process.env.PROXY_PORT}`;
-  setGlobalDispatcher(new ProxyAgent(proxyUrl));
+  import('undici').then(({ ProxyAgent, setGlobalDispatcher }) => {
+    setGlobalDispatcher(new ProxyAgent(proxyUrl));
+  });
 }
 
 // 預設請求標頭（不含 User-Agent，由 getRandomUserAgent() 動態注入）
