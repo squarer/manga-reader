@@ -9,7 +9,7 @@ import { Search, Clock, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { NAV_ITEMS, type NavItem } from './types';
+import { NAV_ITEMS, NAV_ACTIVE_CLASS, type NavItem } from './types';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -74,7 +74,7 @@ export function MobileMenu({
                 'rounded-full text-sm font-medium',
                 'transition-all duration-200',
                 isActive
-                  ? 'bg-primary/10 text-primary'
+                  ? NAV_ACTIVE_CLASS
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
             >
@@ -95,8 +95,8 @@ export function MobileMenu({
             'flex items-center gap-3 px-4 py-2.5',
             'rounded-full text-sm font-medium',
             'transition-all duration-200',
-            pathname === '/history'
-              ? 'bg-primary/10 text-primary'
+            pathname.startsWith('/history')
+              ? NAV_ACTIVE_CLASS
               : 'text-muted-foreground hover:bg-accent hover:text-foreground'
           )}
         >
@@ -117,8 +117,8 @@ export function MobileMenu({
             'flex items-center gap-3 px-4 py-2.5',
             'rounded-full text-sm font-medium',
             'transition-all duration-200',
-            pathname === '/favorites'
-              ? 'bg-primary/10 text-primary'
+            pathname.startsWith('/favorites')
+              ? NAV_ACTIVE_CLASS
               : 'text-muted-foreground hover:bg-accent hover:text-foreground'
           )}
         >

@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchRankList, parseRankList, RankTypeEnum } from '@/lib/scraper';
-import { withCache } from '@/lib/cache';
+import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -26,19 +26,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const cacheKey = request.url;
+    const cacheKey = normalizeUrlCacheKey(request.url);
     const items = await withCache(cacheKey, async () => {
       const html = await fetchRankList(type);
       return parseRankList(html, type);
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        type,
-        items,
-      },
-    });
+    return NextResponse.json(
+      { success: true, data: { type, items } },
+      { headers: { 'Cache-Control': CacheHeaders.SHORT } }
+    );
   } catch (error) {
     console.error('Rank list error:', error);
     return NextResponse.json(

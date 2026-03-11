@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchUpdateList, parseUpdateList } from '@/lib/scraper';
-import { withCache } from '@/lib/cache';
+import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -24,16 +24,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const cacheKey = request.url;
+    const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
       const html = await fetchUpdateList(page);
       return parseUpdateList(html);
     });
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-    });
+    return NextResponse.json(
+      { success: true, data: result },
+      { headers: { 'Cache-Control': CacheHeaders.SHORT } }
+    );
   } catch (error) {
     console.error('Update list error:', error);
     return NextResponse.json(

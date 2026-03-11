@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Manga Reader
 
-## Getting Started
+漫畫閱讀器 Web 應用，從漫畫網站爬取內容，提供閱讀器、收藏、閱讀紀錄與排行榜功能。
 
-First, run the development server:
+## 快速開始
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+預設在 [http://localhost:3000](http://localhost:3000) 啟動。可透過 `PORT` 環境變數指定埠號：
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+PORT=3500 npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 可用指令
 
-## Learn More
+| 指令 | 說明 |
+| --- | --- |
+| `npm run dev` | 開發模式（支援 PORT 環境變數） |
+| `npm run build` | 建置 |
+| `npm run start` | 啟動（支援 PORT 環境變數） |
+| `npm run test` | 執行測試（Vitest） |
+| `npm run lint` | ESLint 檢查 |
+| `npm run pm2` | PM2 部署（見 ecosystem.config.js） |
 
-To learn more about Next.js, take a look at the following resources:
+## 功能
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **漫畫列表** — 搜尋、篩選（地區/劇情/年份/進度）、排序
+- **漫畫詳情** — 章節列表、收藏管理
+- **閱讀器** — 單頁 / 捲動模式，觸控滑動翻頁，鍵盤快捷鍵
+- **收藏** — 新章節自動偵測提示
+- **閱讀紀錄** — 自動記錄，支援繼續閱讀
+- **最新更新** — 近期更新漫畫列表
+- **排行榜** — 多類型排行
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 環境變數
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| 變數 | 說明 | 預設值 |
+| --- | --- | --- |
+| `PORT` | 服務埠號 | `3000` |
+| `NEXT_PUBLIC_BASE_URL` | 用於 OpenGraph 封面圖 URL | `http://localhost:3000` |

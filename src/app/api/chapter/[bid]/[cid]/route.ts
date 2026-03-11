@@ -11,30 +11,8 @@ import {
   parseMangaDetail,
   buildImageUrl,
 } from '@/lib/scraper';
-
-/**
- * 從章節列表計算上一章/下一章 ID
- * 章節列表順序：最新 → 最舊
- */
-function computePrevNextCid(
-  chapters: { id: number }[],
-  currentCid: number
-): { prevCid: number | null; nextCid: number | null } {
-  // 展平所有章節群組
-  const index = chapters.findIndex((ch) => ch.id === currentCid);
-
-  if (index === -1) {
-    return { prevCid: null, nextCid: null };
-  }
-
-  // 列表順序：最新 → 最舊
-  // index - 1 = 較新的章節 = nextCid
-  // index + 1 = 較舊的章節 = prevCid
-  const nextCid = index > 0 ? chapters[index - 1].id : null;
-  const prevCid = index < chapters.length - 1 ? chapters[index + 1].id : null;
-
-  return { prevCid, nextCid };
-}
+import { computePrevNextCid } from '@/lib/chapter-utils';
+import { CacheHeaders } from '@/lib/cache';
 
 export async function GET(
   request: NextRequest,
@@ -88,19 +66,22 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        bid: imageData.bid,
-        cid: imageData.cid,
-        bname: imageData.bname,
-        cname: imageData.cname,
-        images,
-        prevCid,
-        nextCid,
-        total: images.length,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          bid: imageData.bid,
+          cid: imageData.cid,
+          bname: imageData.bname,
+          cname: imageData.cname,
+          images,
+          prevCid,
+          nextCid,
+          total: images.length,
+        },
       },
-    });
+      { headers: { 'Cache-Control': CacheHeaders.CHAPTER } }
+    );
   } catch (error) {
     console.error('Chapter error:', error);
     return NextResponse.json(

@@ -27,7 +27,7 @@ import {
   MangaStatus,
 } from '@/lib/scraper';
 import type { FilterOptions } from '@/lib/scraper';
-import { withCache } from '@/lib/cache';
+import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 
 /** 有效的地區值 */
 const VALID_REGIONS = Object.values(RegionType);
@@ -77,18 +77,15 @@ export async function GET(request: NextRequest) {
   // 篩選參數（加入驗證）
   const category = searchParams.get('category');
   const region = validateParam(searchParams.get('region'), VALID_REGIONS);
-  // genre 可能是逗號分隔的多值，只取第一個（網站不支援多類型組合）
   const genreParam = searchParams.get('genre');
-  const genre = genreParam
-    ? validateParam(genreParam.split(',')[0], VALID_GENRES)
-    : null;
+  const genre = genreParam ? validateParam(genreParam, VALID_GENRES) : null;
   const year = searchParams.get('year');
   const letter = searchParams.get('letter');
   const status = validateParam(searchParams.get('status'), VALID_STATUSES);
   const sort = validateParam(searchParams.get('sort'), VALID_SORTS);
 
   try {
-    const cacheKey = request.url;
+    const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
       let html: string;
 
@@ -115,10 +112,10 @@ export async function GET(request: NextRequest) {
       return parseMangaList(html);
     });
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-    });
+    return NextResponse.json(
+      { success: true, data: result },
+      { headers: { 'Cache-Control': keyword ? CacheHeaders.SEARCH : CacheHeaders.SHORT } }
+    );
   } catch (error) {
     console.error('Manga list error:', error);
     return NextResponse.json(

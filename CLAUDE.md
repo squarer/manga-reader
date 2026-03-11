@@ -12,9 +12,11 @@
 | 前端 | React 19, TypeScript                 |
 | 樣式 | Tailwind CSS 4, shadcn/ui (new-york) |
 | 圖標 | Lucide React                         |
-| 爬蟲 | cheerio, axios                       |
+| 爬蟲 | cheerio                              |
+| HTTP | undici                               |
 | 解密 | lz-string                            |
 | 主題 | next-themes                          |
+| 測試 | Vitest 4, @vitest/coverage-v8        |
 
 ## 專案結構
 
@@ -35,7 +37,14 @@ src/
 ├── components/            # React 元件
 │   ├── ui/                # shadcn/ui 元件
 │   ├── Navbar/            # 導航列（多檔案目錄）
-│   ├── reader/            # 閱讀器（多檔案目錄）
+│   ├── reader/            # 閱讀器
+│   │   ├── index.ts       # 公開 export
+│   │   ├── Reader.tsx     # 主元件
+│   │   ├── ReaderSettings.tsx # 設定面板
+│   │   ├── ReaderToolbar.tsx  # 工具列
+│   │   ├── MobileToolbar.tsx  # 手機版工具列
+│   │   ├── useReaderHooks.ts  # 觸控/鍵盤/手勢 hooks
+│   │   └── types.ts       # 型別與常數
 │   ├── FavoritesSection.tsx
 │   ├── HistorySection.tsx
 │   ├── MangaCard.tsx      # 漫畫卡片
@@ -47,15 +56,19 @@ src/
 │   └── TiltCard.tsx       # 傾斜卡片效果
 └── lib/
     ├── cache.ts           # 快取工具
+    ├── chapter-utils.ts   # 章節前後章計算
     ├── constants.ts       # 常數定義
+    ├── filter-types.ts    # 篩選型別與選項常數
     ├── filter-utils.ts    # 篩選工具
     ├── image-utils.ts     # 圖片工具
     ├── utils.ts           # 通用工具
     ├── hooks/             # 自定義 Hooks
     │   ├── useFavorites.ts
+    │   ├── useFavoritesUpdateCheck.ts # 收藏新章節偵測
     │   ├── useFetch.ts    # API 請求（內建 AbortController）
     │   ├── useHistory.ts
-    │   └── useIsMobile.ts # 裝置偵測
+    │   ├── useIsMobile.ts # 裝置偵測
+    │   └── useLocalStorage.ts # 通用 localStorage hook
     └── scraper/           # 爬蟲模組
         ├── index.ts       # 主入口
         ├── fetcher.ts     # HTTP 請求
@@ -75,6 +88,12 @@ npm run build
 
 # 啟動（支援 PORT 環境變數，預設 3000）
 npm run start
+
+# 執行測試
+npm run test
+
+# 執行測試並產生覆蓋率報告
+npm run test -- --coverage
 
 # 檢查
 npm run lint

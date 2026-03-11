@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['undici'],
   // 開發環境代理 API 請求到 Vercel（避免 CORS 問題）
   async rewrites() {
     if (process.env.NODE_ENV === 'development' && process.env.USE_VERCEL_API === 'true') {

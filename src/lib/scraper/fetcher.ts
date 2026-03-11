@@ -3,32 +3,24 @@
  * 處理對 manhuagui.com 的請求
  */
 
-import axios, { type AxiosInstance } from 'axios';
-
 const BASE_URL = 'https://www.manhuagui.com';
 
-// 代理配置（從環境變數讀取）
-const proxyConfig = process.env.PROXY_HOST && process.env.PROXY_PORT
-  ? {
-      host: process.env.PROXY_HOST,
-      port: parseInt(process.env.PROXY_PORT, 10),
-    }
-  : undefined;
+// 代理配置（從環境變數讀取，動態 import 避免 Turbopack 打包 node:net）
+if (process.env.PROXY_HOST && process.env.PROXY_PORT) {
+  const proxyUrl = `http://${process.env.PROXY_HOST}:${process.env.PROXY_PORT}`;
+  import('undici').then(({ ProxyAgent, setGlobalDispatcher }) => {
+    setGlobalDispatcher(new ProxyAgent(proxyUrl));
+  });
+}
 
-// 建立 axios 實例
-const client: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
-  timeout: 15000,
-  proxy: proxyConfig,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    Accept:
-      'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7',
-    Referer: BASE_URL,
-  },
-});
+// 預設請求標頭（不含 User-Agent，由 getRandomUserAgent() 動態注入）
+const DEFAULT_HEADERS: Record<string, string> = {
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+  'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7',
+  Referer: BASE_URL,
+};
+
+const DEFAULT_TIMEOUT = 15000;
 
 // User-Agent 輪換列表
 const userAgents = [
@@ -73,23 +65,34 @@ function getRandomUserAgent(): string {
 }
 
 /**
+ * 內部 HTML 請求 helper（含 timeout）
+ */
+async function fetchHtml(path: string, timeoutMs: number = DEFAULT_TIMEOUT): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      headers: { ...DEFAULT_HEADERS, 'User-Agent': getRandomUserAgent() },
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${path}`);
+    return res.text();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
  * 獲取漫畫列表頁
  */
 export async function fetchMangaList(
   category: string = 'japan',
   page: number = 1
 ): Promise<string> {
-  const url = page === 1
-    ? `/list/${category}/`
-    : `/list/${category}/index_p${page}.html`;
-
-  const response = await client.get(url, {
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-    },
-  });
-
-  return response.data;
+  const url =
+    page === 1 ? `/list/${category}/` : `/list/${category}/index_p${page}.html`;
+  return fetchHtml(url);
 }
 
 /** 重試配置 */
@@ -107,13 +110,7 @@ export async function fetchMangaDetail(mangaId: number): Promise<string> {
 
   for (let attempt = 1; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
     try {
-      const response = await client.get(url, {
-        headers: {
-          'User-Agent': getRandomUserAgent(),
-        },
-      });
-
-      const html = response.data as string;
+      const html = await fetchHtml(url);
 
       // 驗證是否為完整的詳情頁（檢查關鍵元素和內容）
       const isValidDetailPage =
@@ -129,6 +126,7 @@ export async function fetchMangaDetail(mangaId: number): Promise<string> {
           await delay(RETRY_CONFIG.baseDelay * attempt);
           continue;
         }
+        throw new Error(`Invalid detail page structure for manga ${mangaId}`);
       }
 
       return html;
@@ -155,13 +153,7 @@ export async function fetchChapterPage(
 
   for (let attempt = 1; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
     try {
-      const response = await client.get(url, {
-        headers: {
-          'User-Agent': getRandomUserAgent(),
-        },
-      });
-
-      const html = response.data as string;
+      const html = await fetchHtml(url);
 
       // 驗證是否為有效的章節頁面（包含加密腳本）
       if (!html.includes('function(p,a,c,k,e,d)')) {
@@ -169,6 +161,7 @@ export async function fetchChapterPage(
           await delay(RETRY_CONFIG.baseDelay * attempt);
           continue;
         }
+        throw new Error(`Invalid chapter page structure for manga ${mangaId}, chapter ${chapterId}`);
       }
 
       return html;
@@ -189,20 +182,25 @@ export async function fetchChapterPage(
 export async function fetchImage(
   imageUrl: string
 ): Promise<{ data: Buffer; contentType: string }> {
-  const response = await axios.get(imageUrl, {
-    responseType: 'arraybuffer',
-    timeout: 30000,
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-      Referer: 'https://www.manhuagui.com/',
-      Accept: 'image/webp,image/apng,image/*,*/*;q=0.8',
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
 
-  return {
-    data: Buffer.from(response.data),
-    contentType: response.headers['content-type'] || 'image/jpeg',
-  };
+  try {
+    const res = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': getRandomUserAgent(),
+        Referer: 'https://www.manhuagui.com/',
+        Accept: 'image/webp,image/apng,image/*,*/*;q=0.8',
+      },
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching image: ${imageUrl}`);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const contentType = res.headers.get('content-type') ?? 'image/jpeg';
+    return { data: buffer, contentType };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
@@ -210,14 +208,7 @@ export async function fetchImage(
  */
 export async function searchManga(keyword: string, page: number = 1): Promise<string> {
   const url = `/s/${encodeURIComponent(keyword)}_p${page}.html`;
-
-  const response = await client.get(url, {
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-    },
-  });
-
-  return response.data;
+  return fetchHtml(url);
 }
 
 /**
@@ -273,14 +264,7 @@ export async function fetchMangaListWithFilters(
   options: import('./types').FilterOptions
 ): Promise<string> {
   const url = buildFilterPath(options);
-
-  const response = await client.get(url, {
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-    },
-  });
-
-  return response.data;
+  return fetchHtml(url);
 }
 
 /**
@@ -301,14 +285,7 @@ export async function fetchRankList(
     total: '/rank/total.html',
   };
   const url = urlMap[type] || '/rank/';
-
-  const response = await client.get(url, {
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-    },
-  });
-
-  return response.data;
+  return fetchHtml(url);
 }
 
 /**
@@ -316,15 +293,6 @@ export async function fetchRankList(
  * URL 結構：/update/（第一頁）或 /update/d{page}.html（其他頁）
  */
 export async function fetchUpdateList(page: number = 1): Promise<string> {
-  const url = page === 1
-    ? '/update/'
-    : `/update/d${page}.html`;
-
-  const response = await client.get(url, {
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-    },
-  });
-
-  return response.data;
+  const url = page === 1 ? '/update/' : `/update/d${page}.html`;
+  return fetchHtml(url);
 }

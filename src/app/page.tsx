@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MangaCard from '@/components/MangaCard';
-import type { FilterState } from '@/components/MangaFilter';
+import type { FilterState } from '@/lib/filter-types';
 import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
 import { Button } from '@/components/ui/button';
@@ -66,9 +66,9 @@ function HomeContent() {
           params.set('region', f.region);
         }
 
-        // 劇情分類（多選）
-        if (f.genres.length > 0) {
-          params.set('genre', f.genres.join(','));
+        // 劇情分類（單選）
+        if (f.genre) {
+          params.set('genre', f.genre);
         }
 
         // 年份

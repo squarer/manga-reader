@@ -6,6 +6,8 @@
 export interface ReaderProps {
   mangaId: number;
   chapterId: number;
+  /** Server Component 預取資料，有值時略過 Client fetch */
+  initialData?: ChapterData | null;
 }
 
 /** 章節資料 */

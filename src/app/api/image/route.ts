@@ -28,6 +28,15 @@ export async function GET(request: NextRequest) {
     ];
 
     const urlObj = new URL(url);
+
+    // SSRF 防護：僅允許 HTTPS protocol
+    if (urlObj.protocol !== 'https:') {
+      return NextResponse.json(
+        { error: 'Only HTTPS protocol is allowed' },
+        { status: 400 }
+      );
+    }
+
     const isAllowed = allowedDomains.some(
       (domain) =>
         urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain)

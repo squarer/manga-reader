@@ -27,6 +27,21 @@ export function SnowEffect() {
   const snowflakesRef = useRef<Snowflake[]>([]);
   const animationFrameRef = useRef<number>(0);
   const { resolvedTheme } = useTheme();
+  const themeRef = useRef(resolvedTheme);
+  const colorRef = useRef<string>("218, 165, 32");
+
+  useEffect(() => {
+    themeRef.current = resolvedTheme ?? (document.documentElement.classList.contains("dark") ? "dark" : "light");
+    const temp = document.createElement("div");
+    temp.style.color = "var(--primary)";
+    document.documentElement.appendChild(temp);
+    const computed = getComputedStyle(temp).color;
+    document.documentElement.removeChild(temp);
+    const match = computed.match(/(\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      colorRef.current = `${match[1]}, ${match[2]}, ${match[3]}`;
+    }
+  }, [resolvedTheme]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -36,22 +51,6 @@ export function SnowEffect() {
     if (!ctx) return;
 
     const SNOWFLAKE_COUNT = 300;
-
-    /**
-     * 從 CSS 變數取得 primary 色的 RGB 值
-     */
-    const getPrimaryColor = (): string => {
-      const temp = document.createElement("div");
-      temp.style.color = "var(--primary)";
-      document.body.appendChild(temp);
-      const computed = getComputedStyle(temp).color;
-      document.body.removeChild(temp);
-      // 解析 rgb(r, g, b) 格式
-      const match = computed.match(/(\d+),\s*(\d+),\s*(\d+)/);
-      return match ? `${match[1]}, ${match[2]}, ${match[3]}` : "218, 165, 32";
-    };
-
-    const primaryColor = getPrimaryColor();
 
     /**
      * 調整 Canvas 尺寸
@@ -103,7 +102,7 @@ export function SnowEffect() {
         // 繪製雪花（dark: 白色, light: primary 色）
         ctx.beginPath();
         ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
-        const color = resolvedTheme === "dark" ? "255, 255, 255" : primaryColor;
+        const color = themeRef.current === "dark" ? "255, 255, 255" : colorRef.current;
         ctx.fillStyle = `rgba(${color}, ${flake.opacity})`;
         ctx.fill();
       });
@@ -121,7 +120,8 @@ export function SnowEffect() {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [resolvedTheme]);
+   
+  }, []);
 
   return (
     <canvas

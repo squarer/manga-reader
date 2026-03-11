@@ -1,16 +1,19 @@
 'use client';
 
 import Reader from '@/components/reader';
+import type { ChapterData } from '@/components/reader/types';
 
 interface ReaderContentProps {
   bid: string;
   cid: string;
+  /** Server Component 預取資料，有值時略過 Client fetch */
+  initialData?: ChapterData | null;
 }
 
 /**
  * 閱讀器內容（Client Component）
  */
-export default function ReaderContent({ bid, cid }: ReaderContentProps) {
+export default function ReaderContent({ bid, cid, initialData }: ReaderContentProps) {
   const mangaId = parseInt(bid, 10);
   const chapterId = parseInt(cid, 10);
 
@@ -22,5 +25,5 @@ export default function ReaderContent({ bid, cid }: ReaderContentProps) {
     );
   }
 
-  return <Reader mangaId={mangaId} chapterId={chapterId} />;
+  return <Reader mangaId={mangaId} chapterId={chapterId} initialData={initialData} />;
 }
