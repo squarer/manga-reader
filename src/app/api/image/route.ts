@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   if (!url) {
     return NextResponse.json(
-      { error: 'Missing url parameter' },
+      { success: false, error: 'Missing url parameter' },
       { status: 400 }
     );
   }
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // SSRF 防護：僅允許 HTTPS protocol
     if (urlObj.protocol !== 'https:') {
       return NextResponse.json(
-        { error: 'Only HTTPS protocol is allowed' },
+        { success: false, error: 'Only HTTPS protocol is allowed' },
         { status: 400 }
       );
     }
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     );
     if (!isAllowed) {
       return NextResponse.json(
-        { error: 'Domain not allowed' },
+        { success: false, error: 'Domain not allowed' },
         { status: 403 }
       );
     }
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Image proxy error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch image' },
+      { success: false, error: 'Failed to fetch image' },
       { status: 500 }
     );
   }

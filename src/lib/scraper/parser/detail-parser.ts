@@ -13,7 +13,10 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
 
   // 基本資訊 - 標題
   const name = $('.book-title h1').text().trim() || $('h1').first().text().trim();
-  if (!name) return null;
+  if (!name) {
+    console.warn('[parseMangaDetail] Failed to parse: no title found for manga ID %d', mangaId);
+    return null;
+  }
 
   // 封面 - 多種選擇器 fallback
   let cover = '';

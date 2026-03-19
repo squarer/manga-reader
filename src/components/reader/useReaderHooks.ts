@@ -127,13 +127,16 @@ function getServerSnapshot(): ReaderSettings {
 export function useReaderSettings() {
   const settings = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  const updateSettings = useCallback((updates: Partial<ReaderSettings>) => {
-    const next = { ...cachedSettings, ...updates };
-    cachedSettings = next;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    // 通知所有訂閱者
-    listeners.forEach((listener) => listener());
-  }, []);
+  const updateSettings = useCallback(
+    (updates: Partial<ReaderSettings> | ((prev: ReaderSettings) => Partial<ReaderSettings>)) => {
+      const partial = typeof updates === 'function' ? updates(cachedSettings) : updates;
+      const next = { ...cachedSettings, ...partial };
+      cachedSettings = next;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      listeners.forEach((listener) => listener());
+    },
+    []
+  );
 
   return { settings, updateSettings };
 }

@@ -19,10 +19,10 @@ export async function GET(
   { params }: { params: Promise<{ bid: string; cid: string }> }
 ) {
   const { bid, cid } = await params;
-  const mangaId = parseInt(bid, 10);
-  const chapterId = parseInt(cid, 10);
+  const mangaId = Number(bid);
+  const chapterId = Number(cid);
 
-  if (isNaN(mangaId) || isNaN(chapterId)) {
+  if (!Number.isSafeInteger(mangaId) || mangaId < 1 || !Number.isSafeInteger(chapterId) || chapterId < 1) {
     return NextResponse.json(
       { success: false, error: 'Invalid manga or chapter ID' },
       { status: 400 }

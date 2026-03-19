@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { parseMangaDetail, naturalSort } from '../parser/detail-parser';
 
 describe('naturalSort', () => {
@@ -67,6 +67,19 @@ function makeHtml({
 }
 
 describe('parseMangaDetail', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('無標題時觸發 console.warn', () => {
+    const warnSpy = vi.spyOn(console, 'warn');
+    parseMangaDetail('<html><body><div>no title</div></body></html>', 99);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('no title found'),
+      expect.anything()
+    );
+  });
+
   it('解析標題、封面、作者，回傳正確 MangaInfo', () => {
     const result = parseMangaDetail(makeHtml(), 12345);
     expect(result).not.toBeNull();

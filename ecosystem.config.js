@@ -6,7 +6,7 @@ module.exports = {
       args: 'run dev',
       cwd: __dirname,
       env: {
-        PORT: 3500,
+        PORT: process.env.PORT || 3500,
       },
     },
   ],

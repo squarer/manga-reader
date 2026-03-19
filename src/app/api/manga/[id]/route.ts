@@ -11,9 +11,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const mangaId = parseInt(id, 10);
+  const mangaId = Number(id);
 
-  if (isNaN(mangaId)) {
+  if (!Number.isSafeInteger(mangaId) || mangaId < 1) {
     return NextResponse.json(
       { success: false, error: 'Invalid manga ID' },
       { status: 400 }
