@@ -1,0 +1,88 @@
+/* Airbnb Design System */
+
+html[data-design-theme="airbnb"] {
+  --background: #ffffff;
+  --foreground: #222222;
+  --card: #ffffff;
+  --card-foreground: #222222;
+  --popover: #ffffff;
+  --popover-foreground: #222222;
+  --primary: #ff385c;
+  --primary-foreground: #ffffff;
+  --secondary: #222222;
+  --secondary-foreground: #ffffff;
+  --muted: #f2f2f2;
+  --muted-foreground: #6a6a6a;
+  --accent: #f2f2f2;
+  --accent-foreground: #222222;
+  --destructive: #c13515;
+  --destructive-foreground: #ffffff;
+  --border: #c1c1c1;
+  --input: #c1c1c1;
+  --ring: #ff385c;
+  --chart-1: #ff385c;
+  --chart-2: #460479;
+  --chart-3: #92174d;
+  --chart-4: #428bff;
+  --chart-5: #3f3f3f;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #222222;
+  --sidebar-primary: #ff385c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f2f2f2;
+  --sidebar-accent-foreground: #222222;
+  --sidebar-border: #c1c1c1;
+  --sidebar-ring: #ff385c;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --shadow-2xs: rgba(0,0,0,0.02) 0px 0px 0px 1px;
+  --shadow-xs: rgba(0,0,0,0.04) 0px 2px 6px;
+  --shadow-sm: rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 6px;
+  --shadow: rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 6px, rgba(0,0,0,0.1) 0px 4px 8px;
+  --shadow-md: rgba(0,0,0,0.08) 0px 4px 12px;
+  --shadow-lg: rgba(0,0,0,0.1) 0px 8px 24px;
+  --shadow-xl: rgba(0,0,0,0.12) 0px 16px 40px;
+  --shadow-2xl: rgba(0,0,0,0.16) 0px 24px 64px;
+}
+
+html[data-design-theme="airbnb"].dark {
+  --background: #111111;
+  --foreground: #f2f2f2;
+  --card: #1c1c1c;
+  --card-foreground: #f2f2f2;
+  --popover: #1c1c1c;
+  --popover-foreground: #f2f2f2;
+  --primary: #ff385c;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f2f2;
+  --secondary-foreground: #222222;
+  --muted: #2a2a2a;
+  --muted-foreground: #929292;
+  --accent: #2a2a2a;
+  --accent-foreground: #f2f2f2;
+  --destructive: #c13515;
+  --destructive-foreground: #ffffff;
+  --border: #3f3f3f;
+  --input: #3f3f3f;
+  --ring: #ff385c;
+  --chart-1: #ff385c;
+  --chart-2: #7b2bcc;
+  --chart-3: #c42870;
+  --chart-4: #428bff;
+  --chart-5: #929292;
+  --sidebar: #1c1c1c;
+  --sidebar-foreground: #f2f2f2;
+  --sidebar-primary: #ff385c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #f2f2f2;
+  --sidebar-border: #3f3f3f;
+  --sidebar-ring: #ff385c;
+  --shadow-2xs: rgba(0,0,0,0.4) 0px 0px 0px 1px;
+  --shadow-xs: rgba(0,0,0,0.5) 0px 2px 6px;
+  --shadow-sm: rgba(0,0,0,0.4) 0px 0px 0px 1px, rgba(0,0,0,0.5) 0px 2px 6px;
+  --shadow: rgba(0,0,0,0.4) 0px 0px 0px 1px, rgba(0,0,0,0.5) 0px 2px 6px, rgba(0,0,0,0.6) 0px 4px 8px;
+  --shadow-md: rgba(0,0,0,0.6) 0px 4px 12px;
+  --shadow-lg: rgba(0,0,0,0.65) 0px 8px 24px;
+  --shadow-xl: rgba(0,0,0,0.7) 0px 16px 40px;
+  --shadow-2xl: rgba(0,0,0,0.75) 0px 24px 64px;
+}

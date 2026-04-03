@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { DesignThemeToggle } from '@/components/DesignThemeToggle';
 import { FilterContent } from '@/components/MangaFilter';
 import { type FilterState, getActiveFilterCount } from '@/lib/filter-types';
 import { cn } from '@/lib/utils';
@@ -275,7 +276,10 @@ function NavbarContent() {
               {/* 桌面版搜尋框 */}
               <DesktopSearch onSearch={handleSearch} keyword={keyword} />
 
-              {/* 主題切換 */}
+              {/* 設計主題切換 */}
+              <DesignThemeToggle />
+
+              {/* 明暗模式切換 */}
               <ThemeToggle />
 
               {/* 手機版選單按鈕 */}
@@ -336,6 +340,7 @@ function NavbarFallback() {
             <BookOpen className="h-5 w-5 text-primary" />
             <span className="hidden sm:inline font-serif">Manga</span>
           </Link>
+          <DesignThemeToggle />
           <ThemeToggle />
         </nav>
       </div>

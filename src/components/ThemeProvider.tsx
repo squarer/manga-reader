@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { DesignThemeProvider } from "@/components/DesignThemeProvider";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -8,17 +9,20 @@ interface ThemeProviderProps {
 
 /**
  * 主題提供者組件
- * 包裝 next-themes 的 ThemeProvider，提供 light/dark/system 三種模式
+ * DesignThemeProvider: 設計主題切換（Claude, Cursor, ...）
+ * NextThemesProvider: light/dark/system 模式
  */
 export function ThemeProvider({ children }: ThemeProviderProps) {
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      {children}
-    </NextThemesProvider>
+    <DesignThemeProvider>
+      <NextThemesProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </NextThemesProvider>
+    </DesignThemeProvider>
   );
 }

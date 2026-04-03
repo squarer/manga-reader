@@ -1,0 +1,88 @@
+/* Stripe Design System */
+
+html[data-design-theme="stripe"] {
+  --background: #ffffff;
+  --foreground: #061b31;
+  --card: #ffffff;
+  --card-foreground: #061b31;
+  --popover: #ffffff;
+  --popover-foreground: #061b31;
+  --primary: #533afd;
+  --primary-foreground: #ffffff;
+  --secondary: #e5edf5;
+  --secondary-foreground: #273951;
+  --muted: #f6f9fc;
+  --muted-foreground: #64748d;
+  --accent: #e5edf5;
+  --accent-foreground: #061b31;
+  --destructive: #ea2261;
+  --destructive-foreground: #ffffff;
+  --border: #e5edf5;
+  --input: #e5edf5;
+  --ring: #533afd;
+  --chart-1: #533afd;
+  --chart-2: #15be53;
+  --chart-3: #ea2261;
+  --chart-4: #f96bee;
+  --chart-5: #9b6829;
+  --sidebar: #f6f9fc;
+  --sidebar-foreground: #061b31;
+  --sidebar-primary: #533afd;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e5edf5;
+  --sidebar-accent-foreground: #273951;
+  --sidebar-border: #e5edf5;
+  --sidebar-ring: #533afd;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --shadow-2xs: rgba(23,23,23,0.06) 0px 1px 2px;
+  --shadow-xs: rgba(23,23,23,0.06) 0px 3px 6px;
+  --shadow-sm: rgba(23,23,23,0.08) 0px 8px 18px;
+  --shadow: rgba(23,23,23,0.08) 0px 15px 35px;
+  --shadow-md: rgba(50,50,93,0.25) 0px 30px 45px -30px, rgba(0,0,0,0.1) 0px 18px 36px -18px;
+  --shadow-lg: rgba(50,50,93,0.25) 0px 30px 45px -30px, rgba(0,0,0,0.1) 0px 18px 36px -18px;
+  --shadow-xl: rgba(3,3,39,0.25) 0px 14px 21px -14px, rgba(0,0,0,0.1) 0px 8px 17px -8px;
+  --shadow-2xl: rgba(3,3,39,0.25) 0px 28px 42px -14px, rgba(0,0,0,0.15) 0px 16px 34px -8px;
+}
+
+html[data-design-theme="stripe"].dark {
+  --background: #0d253d;
+  --foreground: #ffffff;
+  --card: #1c1e54;
+  --card-foreground: #ffffff;
+  --popover: #1c1e54;
+  --popover-foreground: #ffffff;
+  --primary: #665efd;
+  --primary-foreground: #ffffff;
+  --secondary: #273951;
+  --secondary-foreground: #b9b9f9;
+  --muted: #1c1e54;
+  --muted-foreground: #b9b9f9;
+  --accent: #362baa;
+  --accent-foreground: #d6d9fc;
+  --destructive: #ea2261;
+  --destructive-foreground: #ffffff;
+  --border: #273951;
+  --input: #273951;
+  --ring: #665efd;
+  --chart-1: #665efd;
+  --chart-2: #15be53;
+  --chart-3: #ea2261;
+  --chart-4: #f96bee;
+  --chart-5: #9b6829;
+  --sidebar: #1c1e54;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #665efd;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #273951;
+  --sidebar-accent-foreground: #b9b9f9;
+  --sidebar-border: #273951;
+  --sidebar-ring: #665efd;
+  --shadow-2xs: rgba(0,0,0,0.3) 0px 1px 2px;
+  --shadow-xs: rgba(0,0,0,0.35) 0px 3px 6px;
+  --shadow-sm: rgba(0,0,0,0.4) 0px 8px 18px;
+  --shadow: rgba(0,0,0,0.4) 0px 15px 35px;
+  --shadow-md: rgba(0,0,0,0.5) 0px 30px 45px -30px, rgba(0,0,0,0.3) 0px 18px 36px -18px;
+  --shadow-lg: rgba(0,0,0,0.5) 0px 30px 45px -30px, rgba(0,0,0,0.3) 0px 18px 36px -18px;
+  --shadow-xl: rgba(0,0,0,0.5) 0px 14px 21px -14px, rgba(0,0,0,0.3) 0px 8px 17px -8px;
+  --shadow-2xl: rgba(0,0,0,0.5) 0px 28px 42px -14px, rgba(0,0,0,0.35) 0px 16px 34px -8px;
+}

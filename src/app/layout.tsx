@@ -23,6 +23,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-TW" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('manga-reader-design-theme');document.documentElement.setAttribute('data-design-theme',t||'claude')}catch(e){document.documentElement.setAttribute('data-design-theme','claude')}})()`,
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} antialiased`}
         suppressHydrationWarning
