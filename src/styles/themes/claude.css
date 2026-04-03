@@ -19,7 +19,7 @@ html[data-design-theme="claude"] {
   --accent-foreground: #141413;
   --destructive: #b53333;
   --destructive-foreground: #ffffff;
-  --border: #f0eee6;
+  --border: #d9d6c9;
   --input: #e8e6dc;
   --ring: #3898ec;
   --chart-1: #c96442;
@@ -83,7 +83,7 @@ html[data-design-theme="claude"].dark {
   --accent-foreground: #faf9f5;
   --destructive: #b53333;
   --destructive-foreground: #ffffff;
-  --border: #30302e;
+  --border: #4d4c48;
   --input: #30302e;
   --ring: #3898ec;
   --chart-1: #d97757;
