@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // PM2 config (must use CommonJS)
     "ecosystem.config.js",
+    // Coverage report (auto-generated)
+    "coverage/**",
   ]),
 ]);
 

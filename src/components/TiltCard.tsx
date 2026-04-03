@@ -29,8 +29,7 @@ export default function TiltCard({
   className = '',
 }: TiltCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [transform, setTransform] = useState('perspective(1000px) rotateX(0deg) rotateY(0deg)');
-  const [shineStyle, setShineStyle] = useState({ backgroundPosition: '0% 0%', opacity: 0 });
+  const shineRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -45,15 +44,14 @@ export default function TiltCard({
     const rotateX = ((y - centerY) / centerY) * -MAX_TILT_ANGLE;
     const rotateY = ((x - centerX) / centerX) * MAX_TILT_ANGLE;
 
-    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${HOVER_SCALE})`);
+    cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${HOVER_SCALE})`;
 
-    // 計算反光位置（根據滑鼠位置移動）
-    const shineX = (x / rect.width) * 100;
-    const shineY = (y / rect.height) * 100;
-    setShineStyle({
-      backgroundPosition: `${shineX}% ${shineY}%`,
-      opacity: 1,
-    });
+    if (shineRef.current) {
+      const percentX = (x / rect.width) * 100;
+      const percentY = (y / rect.height) * 100;
+      shineRef.current.style.background = `radial-gradient(circle at ${percentX}% ${percentY}%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 20%, transparent 50%)`;
+      shineRef.current.style.opacity = '1';
+    }
   }, []);
 
   const handleMouseEnter = useCallback(() => {
@@ -62,8 +60,12 @@ export default function TiltCard({
 
   const handleMouseLeave = useCallback(() => {
     setIsHovering(false);
-    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)');
-    setShineStyle({ backgroundPosition: '50% 50%', opacity: 0 });
+    if (cardRef.current) {
+      cardRef.current.style.transform = '';
+    }
+    if (shineRef.current) {
+      shineRef.current.style.opacity = '0';
+    }
   }, []);
 
   const entranceClass = enableEntrance
@@ -78,7 +80,6 @@ export default function TiltCard({
       onMouseLeave={handleMouseLeave}
       className={`${entranceClass} ${className}`}
       style={{
-        transform,
         transition: isHovering ? 'none' : 'transform 0.3s ease-out',
         transformStyle: 'preserve-3d',
         animationDelay: enableEntrance ? `${animationDelay}ms` : undefined,
@@ -86,13 +87,9 @@ export default function TiltCard({
     >
       {/* 3D 傾斜反光效果 */}
       <div
+        ref={shineRef}
         className="pointer-events-none absolute inset-0 z-10 rounded-lg transition-opacity duration-200"
-        style={{
-          background: 'radial-gradient(circle at var(--shine-x, 50%) var(--shine-y, 50%), rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 20%, transparent 50%)',
-          backgroundSize: '150% 150%',
-          backgroundPosition: shineStyle.backgroundPosition,
-          opacity: shineStyle.opacity,
-        }}
+        style={{ opacity: 0 }}
       />
       {children}
     </div>

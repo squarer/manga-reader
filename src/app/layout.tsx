@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
-import { SnowEffect } from "@/components/SnowEffect";
+import { SnowEffectLoader } from "@/components/SnowEffectLoader";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,9 +35,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <SnowEffect />
+          <SnowEffectLoader />
           <Navbar />
-          {children}
+          <main className="min-h-screen bg-background text-foreground pt-20">{children}</main>
         </ThemeProvider>
       </body>
     </html>

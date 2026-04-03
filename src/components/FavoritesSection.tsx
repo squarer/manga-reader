@@ -24,5 +24,5 @@ export default function FavoritesSection() {
     return null;
   }
 
-  return <StackedCardList items={items} title="我的收藏" />;
+  return <StackedCardList items={items} title="我的收藏" viewAllHref="/favorites" />;
 }

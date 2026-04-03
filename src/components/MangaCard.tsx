@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star, Clock } from 'lucide-react';
@@ -18,7 +19,7 @@ interface MangaCardProps {
  * 漫畫卡片元件
  * 精緻暗色風格，支援 3D 傾斜效果、微光邊框和滑入動畫
  */
-export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps) {
+const MangaCard = memo(function MangaCard({ manga, animationDelay = 0 }: MangaCardProps) {
   const coverUrl = getProxiedImageUrl(manga.cover);
 
   return (
@@ -27,10 +28,10 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
       className="group block outline-none"
       aria-label={`閱讀 ${manga.name}，最新章節：${manga.latestChapter}`}
     >
-      {/* 卡片容器：微光邊框效果 */}
-      <div className="relative rounded-xl p-[1px] transition-all duration-300 bg-gradient-to-br from-border/50 via-border/20 to-border/50 group-hover:from-primary/60 group-hover:via-primary/30 group-hover:to-primary/60 group-focus-visible:from-primary/60 group-focus-visible:via-primary/30 group-focus-visible:to-primary/60 group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background">
+      {/* 卡片容器：ring 邊框效果 */}
+      <div className="relative rounded-xl transition-all duration-300 ring-1 ring-border/30 group-hover:ring-primary/50 group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background">
         {/* 3D 傾斜效果 */}
-        <TiltCard animationDelay={animationDelay} className="aspect-[3/4] overflow-hidden rounded-[11px]">
+        <TiltCard animationDelay={animationDelay} className="aspect-[3/4] overflow-hidden rounded-xl">
           <div className="relative h-full w-full overflow-hidden">
             {/* 封面圖片 */}
             <Image
@@ -53,33 +54,17 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
               </div>
             )}
 
-            {/* 底部漸層遮罩 + 資訊區 */}
-            <div className="absolute inset-x-0 bottom-0 z-20 translate-y-2 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
-              {/* 漸層背景 */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
-
-              {/* 資訊內容 */}
-              <div className="relative space-y-1.5 p-3 pt-8">
-                {/* 最新章節 */}
-                <p className="truncate text-sm font-medium text-white">
-                  {manga.latestChapter}
-                </p>
-
-                {/* 更新時間 */}
-                {manga.updateTime && (
-                  <div className="flex items-center gap-1 text-white/60">
-                    <Clock className="h-3 w-3" />
-                    <span className="text-xs">{manga.updateTime}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 預設顯示的漸層（hover 前） */}
-            <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/60 to-transparent p-3 transition-opacity duration-300 group-hover:opacity-0">
-              <p className="truncate text-xs text-white/80">
+            {/* 底部資訊 — 章節名永遠可見，更新時間 hover 展開 */}
+            <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 pt-8">
+              <p className="truncate text-sm font-medium text-white">
                 {manga.latestChapter}
               </p>
+              {manga.updateTime && (
+                <div className="flex items-center gap-1 text-white/60 max-h-0 overflow-hidden transition-all duration-300 group-hover:max-h-8 group-hover:mt-1">
+                  <Clock className="h-3 w-3" />
+                  <span className="text-xs">{manga.updateTime}</span>
+                </div>
+              )}
             </div>
           </div>
         </TiltCard>
@@ -91,4 +76,6 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
       </h3>
     </Link>
   );
-}
+});
+
+export default MangaCard;

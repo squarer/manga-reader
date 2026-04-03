@@ -2,15 +2,21 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Clock, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import TiltCard from '@/components/TiltCard';
+import { PageHeader } from '@/components/PageHeader';
+import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
+const TiltCard = dynamic(() => import('@/components/TiltCard'), { ssr: false });
 import { useHistory } from '@/lib/hooks/useHistory';
 import { getProxiedImageUrl } from '@/lib/image-utils';
-import { STAGGER_DELAY } from '@/lib/constants';
+import { STAGGER_DELAY, DENSE_GRID_CLASS } from '@/lib/constants';
+import { EmptyState } from '@/components/EmptyState';
+import { Spinner } from '@/components/Spinner';
 
 export default function HistoryContent() {
+  const [editMode, setEditMode] = useState(false);
   const { history, isLoaded, removeHistory, clearHistory } = useHistory();
 
   // 每部漫畫只顯示最新一筆（history 已按 timestamp desc 排序）
@@ -24,40 +30,35 @@ export default function HistoryContent() {
   }, [history]);
 
   return (
-    <div className="min-h-screen bg-background">
-
-      <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Clock className="h-6 w-6 text-foreground" />
-            <h1 className="text-2xl font-serif font-medium">閱讀歷史</h1>
-            {isLoaded && deduped.length > 0 && (
-              <span className="text-sm text-muted-foreground">
-                ({deduped.length} 部)
-              </span>
-            )}
-          </div>
-          {isLoaded && deduped.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearHistory}>
-              清除全部
-            </Button>
-          )}
-        </div>
+    <main className="mx-auto max-w-7xl px-4 pb-8">
+        <PageHeader
+          icon={Clock}
+          title="閱讀歷史"
+          count={isLoaded ? deduped.length : undefined}
+          actions={
+            isLoaded && deduped.length > 0 ? (
+              <>
+                <Button
+                  variant={editMode ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setEditMode(!editMode)}
+                >
+                  {editMode ? '完成' : '管理'}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={clearHistory}>
+                  清除全部
+                </Button>
+              </>
+            ) : undefined
+          }
+        />
 
         {!isLoaded ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-          </div>
+          <Spinner />
         ) : deduped.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-            <Clock className="h-16 w-16 text-muted-foreground/30" />
-            <p className="text-lg text-muted-foreground">尚無閱讀記錄</p>
-            <Button asChild variant="outline">
-              <Link href="/">探索漫畫</Link>
-            </Button>
-          </div>
+          <EmptyState icon={Clock} message="尚無閱讀記錄" actionLabel="探索漫畫" actionHref="/" />
         ) : (
-          <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+          <div className={DENSE_GRID_CLASS}>
             {deduped.map((item, index) => (
               <div key={`${item.mangaId}-${item.chapterId}`} className="group relative">
                 <Link
@@ -92,19 +93,21 @@ export default function HistoryContent() {
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute right-1 top-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                  className={cn(
+                    'absolute right-1 top-1 h-7 w-7 transition-opacity',
+                    editMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  )}
                   onClick={(e) => {
                     e.preventDefault();
                     removeHistory(item.mangaId);
                   }}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             ))}
           </div>
         )}
       </main>
-    </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import Reader from '@/components/reader';
+import dynamic from 'next/dynamic';
+const Reader = dynamic(() => import('@/components/reader'), { ssr: false });
 import type { ChapterData } from '@/components/reader/types';
 
 interface ReaderContentProps {

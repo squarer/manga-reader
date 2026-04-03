@@ -28,7 +28,7 @@ import { getProxiedImageUrl } from '@/lib/image-utils';
  */
 function LoadingState() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex min-h-screen items-center justify-center">
       <div className="space-y-4 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
         <p className="text-sm text-muted-foreground">載入中...</p>
@@ -42,7 +42,7 @@ function LoadingState() {
  */
 function ErrorState({ mangaId, error }: { mangaId: number; error: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <div className="text-xl text-destructive">{error}</div>
       <Button asChild variant="secondary">
         <Link href={`/manga/${mangaId}`}>返回漫畫詳情</Link>
@@ -608,7 +608,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       {/* 頂部工具列 */}
       <TopToolbar mangaId={mangaId} data={data} isVisible={isVisible} />
 
@@ -661,6 +661,6 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
         isOpen={showShortcuts}
         onClose={() => setShowShortcuts(false)}
       />
-    </div>
+    </>
   );
 }

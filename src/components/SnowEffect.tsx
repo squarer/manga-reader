@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
+import { usePathname } from "next/navigation";
 
 /**
  * 雪花粒子介面
@@ -29,6 +30,7 @@ export function SnowEffect() {
   const { resolvedTheme } = useTheme();
   const themeRef = useRef(resolvedTheme);
   const colorRef = useRef<string>("218, 165, 32");
+  const pathname = usePathname();
 
   useEffect(() => {
     themeRef.current = resolvedTheme ?? (document.documentElement.classList.contains("dark") ? "dark" : "light");
@@ -47,10 +49,13 @@ export function SnowEffect() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mql.matches) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const SNOWFLAKE_COUNT = 300;
+    const SNOWFLAKE_COUNT = 100;
 
     /**
      * 調整 Canvas 尺寸
@@ -120,8 +125,9 @@ export function SnowEffect() {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrameRef.current);
     };
-   
   }, []);
+
+  if (pathname.startsWith("/read/")) return null;
 
   return (
     <canvas

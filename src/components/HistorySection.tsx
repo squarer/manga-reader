@@ -34,6 +34,7 @@ export default function HistorySection() {
     <StackedCardList
       items={items}
       title="最近閱讀"
+      viewAllHref="/history"
       titleExtra={
         <button
           onClick={clearHistory}
