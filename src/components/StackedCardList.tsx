@@ -60,7 +60,7 @@ function CardImage({ item, showShadow = false }: { item: StackedCardItem; showSh
       />
       <div
         className="absolute inset-0 overflow-hidden rounded-lg bg-muted ring-1 ring-black/10 shadow-xl transition-shadow duration-300"
-        style={showShadow ? { boxShadow: '0 0 12px 2px oklch(0.62 0.14 39 / 0.5)' } : undefined}
+        style={showShadow ? { boxShadow: '0 0 12px 2px rgba(201, 100, 66, 0.5)' } : undefined}
       >
         <Image
           src={item.cover}
@@ -173,7 +173,7 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
     <div>
       {/* 標題 */}
       <div className="mb-1 flex items-center gap-2">
-        <h2 className="text-lg font-bold">{title}</h2>
+        <h2 className="text-lg font-serif font-medium">{title}</h2>
         {titleExtra}
       </div>
 

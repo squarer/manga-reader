@@ -202,7 +202,7 @@ function NavbarContent() {
               )}
             >
               <BookOpen className="h-5 w-5 text-primary" />
-              <span className="hidden sm:inline">Manga</span>
+              <span className="hidden sm:inline font-serif">Manga</span>
             </Link>
 
             {/* 分隔線 */}
@@ -334,7 +334,7 @@ function NavbarFallback() {
             )}
           >
             <BookOpen className="h-5 w-5 text-primary" />
-            <span className="hidden sm:inline">Manga</span>
+            <span className="hidden sm:inline font-serif">Manga</span>
           </Link>
           <ThemeToggle />
         </nav>

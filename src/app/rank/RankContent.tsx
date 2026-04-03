@@ -59,7 +59,7 @@ function RankBadge({ rank }: { rank: number }) {
 
   if (rank === 2) {
     return (
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 shadow-lg shadow-slate-400/30">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#b0aea5] to-[#87867f] shadow-lg shadow-[#87867f]/30">
         <Medal className="h-6 w-6 text-white" />
       </div>
     );
@@ -146,7 +146,7 @@ function RankItemCard({ item, animationDelay = 0 }: RankItemCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3
-              className={`truncate font-semibold transition-colors group-hover:text-primary ${
+              className={`truncate font-serif font-medium transition-colors group-hover:text-primary ${
                 isTopThree ? 'text-lg' : 'text-base'
               }`}
             >
@@ -235,7 +235,7 @@ export default function RankContent() {
               >
                 <span className="text-lg">&larr;</span>
               </Link>
-              <h1 className="flex items-center gap-2 text-2xl font-bold">
+              <h1 className="flex items-center gap-2 text-2xl font-serif font-medium">
                 <Trophy className="h-6 w-6 text-primary" />
                 排行榜
               </h1>

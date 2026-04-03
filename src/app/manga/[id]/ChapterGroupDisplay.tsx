@@ -57,7 +57,7 @@ export default function ChapterGroupDisplay({
       <CollapsibleTrigger asChild>
         <button className="flex w-full items-center justify-between rounded-lg bg-muted/50 px-4 py-3 transition-colors hover:bg-muted">
           <div className="flex items-center gap-3">
-            <h3 className="text-lg font-medium">{group.title}</h3>
+            <h3 className="text-lg font-serif font-medium">{group.title}</h3>
             <span className="text-sm text-muted-foreground">
               {readCount > 0 && <span className="text-primary">{readCount} / </span>}
               {group.chapters.length} 章

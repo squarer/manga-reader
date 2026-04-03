@@ -14,7 +14,7 @@ interface MangaInfoHeaderProps {
 export default function MangaInfoHeader({ manga }: MangaInfoHeaderProps) {
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{manga.name}</h1>
+      <h1 className="text-3xl font-serif font-medium tracking-tight md:text-4xl">{manga.name}</h1>
 
       <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-muted-foreground md:justify-start">
         {manga.score && (

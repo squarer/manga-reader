@@ -76,7 +76,7 @@ export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
       </Button>
 
       <div className="text-center drop-shadow-md">
-        <h1 className="text-sm font-semibold">{data.bname}</h1>
+        <h1 className="text-sm font-serif font-medium">{data.bname}</h1>
         <p className="text-xs text-foreground/70">{data.cname}</p>
       </div>
 

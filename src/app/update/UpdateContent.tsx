@@ -163,7 +163,7 @@ function DateGroupSection({
           <Icon className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-foreground">{config.label}</h2>
+          <h2 className="text-lg font-serif font-medium text-foreground">{config.label}</h2>
           <p className="text-sm text-muted-foreground">{mangas.length} 部漫畫</p>
         </div>
         {/* 時間線裝飾 */}
@@ -313,7 +313,7 @@ export default function UpdateContent() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-foreground">最新更新</h1>
+              <h1 className="text-xl font-serif font-medium text-foreground">最新更新</h1>
               <p className="text-sm text-muted-foreground">
                 追蹤最新漫畫章節
               </p>

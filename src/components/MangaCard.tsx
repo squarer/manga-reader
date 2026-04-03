@@ -86,7 +86,7 @@ export default function MangaCard({ manga, animationDelay = 0 }: MangaCardProps)
       </div>
 
       {/* 標題 */}
-      <h3 className="mt-3 truncate text-sm font-medium text-foreground/90 transition-colors duration-200 group-hover:text-primary group-focus-visible:text-primary">
+      <h3 className="mt-3 truncate text-sm font-serif font-medium text-foreground/90 transition-colors duration-200 group-hover:text-primary group-focus-visible:text-primary">
         {manga.name}
       </h3>
     </Link>

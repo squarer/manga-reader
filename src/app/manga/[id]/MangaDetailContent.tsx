@@ -158,7 +158,7 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
       </div>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <h2 className="text-xl font-bold">章節列表</h2>
+        <h2 className="text-xl font-serif font-medium">章節列表</h2>
         {manga.chapters.length === 0 ? (
           <p className="mt-4 text-muted-foreground">沒有章節</p>
         ) : (

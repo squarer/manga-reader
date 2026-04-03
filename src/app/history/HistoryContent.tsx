@@ -30,7 +30,7 @@ export default function HistoryContent() {
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Clock className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">閱讀歷史</h1>
+            <h1 className="text-2xl font-serif font-medium">閱讀歷史</h1>
             {isLoaded && deduped.length > 0 && (
               <span className="text-sm text-muted-foreground">
                 ({deduped.length} 部)

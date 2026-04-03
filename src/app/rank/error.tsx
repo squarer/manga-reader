@@ -18,7 +18,7 @@ export default function RankError({ error, reset }: ErrorProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4">
       <AlertCircle className="h-12 w-12 text-destructive" />
-      <h2 className="text-xl font-semibold">載入排行榜失敗</h2>
+      <h2 className="text-xl font-serif font-medium">載入排行榜失敗</h2>
       <p className="max-w-md text-center text-sm text-muted-foreground">{error.message}</p>
       <div className="flex gap-3">
         <Button onClick={reset}>重試</Button>

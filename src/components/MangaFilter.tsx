@@ -133,7 +133,7 @@ export function FilterContent({
       {/* 標題與清除按鈕 */}
       {showHeader && (
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold">篩選條件</h3>
+          <h3 className="text-base font-serif font-medium">篩選條件</h3>
           {isActive && (
             <Button
               variant="ghost"

@@ -32,7 +32,7 @@ export function ShortcutsPanel({ isOpen, onClose }: ShortcutsPanelProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-medium">快捷鍵</h3>
+          <h3 className="text-lg font-serif font-medium">快捷鍵</h3>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
