@@ -5,6 +5,8 @@ export enum DesignTheme {
   Apple = 'apple',
   Airbnb = 'airbnb',
   Stripe = 'stripe',
+  XAI = 'xai',
+  Raycast = 'raycast',
 }
 
 /** Theme metadata for UI display */
@@ -68,6 +70,26 @@ export const DESIGN_THEMES: DesignThemeInfo[] = [
       primary: '#533afd',
       background: '#ffffff',
       foreground: '#061b31',
+    },
+  },
+  {
+    id: DesignTheme.XAI,
+    label: 'xAI',
+    description: 'Monochrome, zero shadow',
+    colors: {
+      primary: '#1f2228',
+      background: '#ffffff',
+      foreground: '#1f2228',
+    },
+  },
+  {
+    id: DesignTheme.Raycast,
+    label: 'Raycast',
+    description: 'Near-black, coral red',
+    colors: {
+      primary: '#ff6363',
+      background: '#f9f9f9',
+      foreground: '#07080a',
     },
   },
 ];

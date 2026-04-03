@@ -68,7 +68,7 @@ function HoverExpandButton({
     'transition-all duration-200',
     isActive
       ? NAV_ACTIVE_CLASS
-      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+      : 'text-foreground/70 hover:bg-accent hover:text-foreground'
   );
 
   const content = (
@@ -199,11 +199,11 @@ function NavbarContent() {
                 'flex items-center gap-2 px-3 py-1.5',
                 'rounded-full',
                 'text-lg font-bold text-foreground',
-                'transition-colors duration-200 hover:text-primary hover:bg-accent'
+                'transition-colors duration-200 hover:bg-accent'
               )}
             >
               <BookOpen className="h-5 w-5 text-primary" />
-              <span className="hidden sm:inline font-serif">Manga</span>
+              <span className="hidden sm:inline font-serif text-primary">Manga</span>
             </Link>
 
             {/* 分隔線 */}
@@ -252,7 +252,7 @@ function NavbarContent() {
                       size="icon"
                       className={cn(
                         'relative h-8 w-8 rounded-full',
-                        activeFilterCount > 0 && 'text-primary'
+                        activeFilterCount > 0 && 'text-foreground'
                       )}
                       title="篩選"
                     >
@@ -338,7 +338,7 @@ function NavbarFallback() {
             )}
           >
             <BookOpen className="h-5 w-5 text-primary" />
-            <span className="hidden sm:inline font-serif">Manga</span>
+            <span className="hidden sm:inline font-serif text-primary">Manga</span>
           </Link>
           <DesignThemeToggle />
           <ThemeToggle />

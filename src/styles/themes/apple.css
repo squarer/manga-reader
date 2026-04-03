@@ -1,6 +1,8 @@
 /* Apple Design System */
 
 html[data-design-theme="apple"] {
+  --font-sans: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif;
+  --radius: 0.75rem;
   --background: #f5f5f7;
   --foreground: #1d1d1f;
   --card: #ffffff;
@@ -44,6 +46,22 @@ html[data-design-theme="apple"] {
   --shadow-2xl: 0px 24px 60px 0px rgba(0,0,0,0.30);
 }
 
+/* Apple: tight tracking, pill buttons, glass cards, saturated blur nav */
+html[data-design-theme="apple"] body { font-size: 17px; line-height: 1.47; letter-spacing: -0.374px; color: rgba(0,0,0,0.8); }
+html[data-design-theme="apple"] h1 { font-weight: 700; letter-spacing: -0.04em; line-height: 1.07; }
+html[data-design-theme="apple"] h2 { font-weight: 600; line-height: 1.1; }
+html[data-design-theme="apple"] h3 { font-weight: 400; letter-spacing: 0.012em; line-height: 1.14; }
+html[data-design-theme="apple"] p:not([data-slot] p) { line-height: 1.47; letter-spacing: -0.374px; }
+html[data-design-theme="apple"] [data-slot="button"] { border-radius: 980px; font-size: 17px; padding: 8px 22px; }
+html[data-design-theme="apple"] [data-slot="card"] { border: none; border-radius: 16px; backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); background: color-mix(in srgb, var(--card) 80%, transparent); box-shadow: 3px 5px 30px 0px rgba(0,0,0,0.22); }
+html[data-design-theme="apple"] [data-slot="badge"] { border-radius: 980px; font-size: 0.75rem; letter-spacing: -0.12px; border: 1px solid rgba(0,0,0,0.1); }
+html[data-design-theme="apple"] [data-slot="input"] { border-radius: 11px; border: 3px solid rgba(0,0,0,0.04); letter-spacing: -0.374px; }
+html[data-design-theme="apple"] [data-slot="input"]:focus { outline: 2px solid #0071e3; outline-offset: 0px; }
+html[data-design-theme="apple"] [data-slot="popover-content"],
+html[data-design-theme="apple"] [data-slot="select-content"] { border: none; border-radius: 12px; box-shadow: 3px 5px 30px 0px rgba(0,0,0,0.22); }
+html[data-design-theme="apple"] img { border-radius: 8px; }
+html[data-design-theme="apple"] :focus-visible { outline: 2px solid #0071e3; outline-offset: 2px; }
+
 html[data-design-theme="apple"].dark {
   --background: #000000;
   --foreground: #ffffff;
@@ -86,3 +104,4 @@ html[data-design-theme="apple"].dark {
   --shadow-xl: 0px 12px 40px 0px rgba(0,0,0,0.75);
   --shadow-2xl: 0px 24px 60px 0px rgba(0,0,0,0.80);
 }
+html[data-design-theme="apple"].dark body { color: #ffffff; }

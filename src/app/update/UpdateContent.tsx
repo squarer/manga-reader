@@ -160,7 +160,7 @@ function DateGroupSection({
       {/* 時間線標題 */}
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
+          <Icon className="h-5 w-5 text-foreground" />
         </div>
         <div>
           <h2 className="text-lg font-serif font-medium text-foreground">{config.label}</h2>

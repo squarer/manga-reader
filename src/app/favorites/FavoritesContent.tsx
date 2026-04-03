@@ -21,7 +21,7 @@ export default function FavoritesContent() {
 
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-6 flex items-center gap-3">
-          <Heart className="h-6 w-6 text-primary" />
+          <Heart className="h-6 w-6 text-foreground" />
           <h1 className="text-2xl font-serif font-medium">我的收藏</h1>
           {isLoaded && favorites.length > 0 && (
             <span className="text-sm text-muted-foreground">

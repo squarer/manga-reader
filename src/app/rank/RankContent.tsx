@@ -236,7 +236,7 @@ export default function RankContent() {
                 <span className="text-lg">&larr;</span>
               </Link>
               <h1 className="flex items-center gap-2 text-2xl font-serif font-medium">
-                <Trophy className="h-6 w-6 text-primary" />
+                <Trophy className="h-6 w-6 text-foreground" />
                 排行榜
               </h1>
             </div>
@@ -264,7 +264,7 @@ export default function RankContent() {
                 size="sm"
                 className={`flex-1 rounded-lg transition-all duration-200 sm:flex-none sm:px-6 ${
                   rankType === type.id
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-accent text-foreground'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >

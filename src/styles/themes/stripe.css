@@ -1,6 +1,8 @@
 /* Stripe Design System */
 
 html[data-design-theme="stripe"] {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --radius: 0.375rem;
   --background: #ffffff;
   --foreground: #061b31;
   --card: #ffffff;
@@ -44,6 +46,27 @@ html[data-design-theme="stripe"] {
   --shadow-2xl: rgba(3,3,39,0.25) 0px 28px 42px -14px, rgba(0,0,0,0.15) 0px 16px 34px -8px;
 }
 
+/* Stripe: ultra-light weight 300, tight tracking, gradient CTA, blue-tinted shadows, sharp radius */
+html[data-design-theme="stripe"] body { font-weight: 300; line-height: 1.4; font-feature-settings: "ss01" 1; color: #64748d; }
+html[data-design-theme="stripe"] h1 { font-weight: 300; letter-spacing: -0.05em; line-height: 1.03; font-feature-settings: "ss01" 1; color: #061b31; }
+html[data-design-theme="stripe"] h2 { font-weight: 300; letter-spacing: -0.04em; line-height: 1.15; font-feature-settings: "ss01" 1; color: #061b31; }
+html[data-design-theme="stripe"] h3 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; font-feature-settings: "ss01" 1; color: #061b31; }
+html[data-design-theme="stripe"] p:not([data-slot] p) { font-weight: 300; line-height: 1.4; font-feature-settings: "ss01" 1; }
+html[data-design-theme="stripe"] [data-slot="button"] { border-radius: 4px; font-weight: 400; font-feature-settings: "ss01" 1; }
+html[data-design-theme="stripe"] [data-slot="button"][data-variant="default"] { background: linear-gradient(180deg, #635bff 0%, #533afd 100%); border: none; }
+html[data-design-theme="stripe"] [data-slot="card"] { border: 1px solid #e5edf5; border-radius: 6px; box-shadow: rgba(50,50,93,0.25) 0px 30px 45px -30px, rgba(0,0,0,0.1) 0px 18px 36px -18px; }
+html[data-design-theme="stripe"] [data-slot="card"]:hover { box-shadow: rgba(50,50,93,0.35) 0px 30px 45px -30px, rgba(0,0,0,0.15) 0px 18px 36px -18px; }
+html[data-design-theme="stripe"] [data-slot="badge"] { border-radius: 4px; font-size: 0.625rem; font-weight: 300; font-feature-settings: "ss01" 1; }
+html[data-design-theme="stripe"] [data-slot="input"] { border: 1px solid #e5edf5; border-radius: 4px; font-weight: 300; font-feature-settings: "ss01" 1; }
+html[data-design-theme="stripe"] [data-slot="input"]:focus { border-color: #533afd; box-shadow: 0 0 0 2px rgba(83,58,253,0.25); }
+html[data-design-theme="stripe"] [data-slot="popover-content"],
+html[data-design-theme="stripe"] [data-slot="select-content"] { border: 1px solid #e5edf5; border-radius: 6px; box-shadow: rgba(50,50,93,0.25) 0px 30px 45px -30px, rgba(0,0,0,0.1) 0px 18px 36px -18px; }
+html[data-design-theme="stripe"] img { border-radius: 6px; }
+html[data-design-theme="stripe"] :focus-visible { outline: 2px solid #533afd; outline-offset: 2px; }
+/* Stripe: tabular numbers for data */
+html[data-design-theme="stripe"] td,
+html[data-design-theme="stripe"] [data-numeric] { font-feature-settings: "tnum" 1; letter-spacing: -0.36px; }
+
 html[data-design-theme="stripe"].dark {
   --background: #0d253d;
   --foreground: #ffffff;
@@ -86,3 +109,4 @@ html[data-design-theme="stripe"].dark {
   --shadow-xl: rgba(0,0,0,0.5) 0px 14px 21px -14px, rgba(0,0,0,0.3) 0px 8px 17px -8px;
   --shadow-2xl: rgba(0,0,0,0.5) 0px 28px 42px -14px, rgba(0,0,0,0.35) 0px 16px 34px -8px;
 }
+html[data-design-theme="stripe"].dark [data-slot="button"][data-variant="default"] { background: linear-gradient(180deg, #7a73ff 0%, #665efd 100%); }

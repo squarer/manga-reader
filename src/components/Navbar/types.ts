@@ -15,7 +15,7 @@ export interface NavItem {
 }
 
 /** 導航項目 active 狀態樣式 */
-export const NAV_ACTIVE_CLASS = 'bg-primary/20 text-primary ring-1 ring-primary/30';
+export const NAV_ACTIVE_CLASS = 'bg-accent text-foreground ring-1 ring-border';
 
 /** 導航選單項目 */
 export const NAV_ITEMS: NavItem[] = [
