@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { MangaInfo } from '@/lib/scraper/types';
@@ -18,11 +19,11 @@ import MangaActions from './MangaActions';
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="-mt-20">
       <div className="relative h-[60vh] min-h-[500px]">
         <div className="absolute inset-0 bg-muted" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-        <div className="relative mx-auto flex h-full max-w-7xl flex-col items-center gap-8 px-4 pt-20 md:flex-row md:items-end md:pb-12">
+        <div className="relative mx-auto flex h-full max-w-7xl flex-col items-center gap-8 px-4 pt-40 md:flex-row md:items-end md:pb-12">
           <Skeleton className="h-72 w-48 flex-shrink-0 rounded-lg md:h-80 md:w-56" />
           <div className="flex-1 space-y-4 pb-8">
             <Skeleton className="h-10 w-3/4" />
@@ -57,6 +58,7 @@ interface MangaDetailContentProps {
  * 漫畫詳情頁內容（Client Component）
  */
 export default function MangaDetailContent({ id, initialData }: MangaDetailContentProps) {
+  const router = useRouter();
   const { data: manga, loading, error } = useFetch<MangaInfo>(
     initialData ? null : `/api/manga/${id}`,
     [id],
@@ -97,10 +99,10 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
   const coverUrl = getProxiedImageUrl(manga.cover);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
       {/* Hero 區域 - 負 margin 讓背景延伸到 navbar 後方 */}
-      <div className="relative -mt-20 min-h-[60vh] overflow-hidden pt-20">
-        <div className="absolute inset-0 -top-20">
+      <div className="relative -mt-40 min-h-[60vh] overflow-hidden pt-40">
+        <div className="absolute inset-0 -top-40">
           <Image
             src={coverUrl}
             alt=""
@@ -109,16 +111,14 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
             unoptimized
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/60" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-transparent to-background/50" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 pt-6">
-          <Button asChild variant="ghost" size="sm" className="gap-2">
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4" />
-              返回首頁
-            </Link>
+          <Button variant="ghost" size="sm" className="gap-2" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+            返回
           </Button>
         </div>
 
@@ -158,7 +158,7 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
       </div>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <h2 className="text-xl font-serif font-medium">章節列表</h2>
+        <h2 className="text-2xl font-serif font-medium">章節列表</h2>
         {manga.chapters.length === 0 ? (
           <p className="mt-4 text-muted-foreground">沒有章節</p>
         ) : (
@@ -173,6 +173,6 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
           ))
         )}
       </main>
-    </div>
+    </>
   );
 }

@@ -11,8 +11,8 @@ const VISIBLE_RATIO = 0.4;
 /** 計算每張卡片的偏移量 */
 const CARD_OFFSET = CARD_WIDTH * VISIBLE_RATIO;
 /** 卡片旋轉角度範圍 */
-const MIN_ROTATE = -2;
-const MAX_ROTATE = 7;
+const MIN_ROTATE = -1;
+const MAX_ROTATE = 4;
 /** hover 時左右讓開的距離 */
 const SPREAD_DISTANCE = CARD_WIDTH * 0.5;
 
@@ -43,6 +43,8 @@ interface StackedCardListProps {
   title: string;
   /** 標題右側額外元素 */
   titleExtra?: React.ReactNode;
+  /** 查看全部連結 */
+  viewAllHref?: string;
 }
 
 /** 單張卡片圖片元件 */
@@ -133,9 +135,7 @@ function DesktopStackedCards({ items }: { items: StackedCardItem[] }) {
                 left: `${index * CARD_OFFSET}px`,
                 zIndex: isHovered ? 50 : index,
                 transform: `translateX(${translateX}px) rotate(${isHovered ? 0 : getRotateAngle(index)}deg)`,
-                filter: hoveredIndex !== null && index > hoveredIndex
-                  ? 'brightness(1.35) saturate(0.4) grayscale(0.3)'
-                  : undefined,
+                filter: undefined,
               }}
               onMouseEnter={() => setHoveredIndex(index)}
             >
@@ -164,7 +164,7 @@ function DesktopStackedCards({ items }: { items: StackedCardItem[] }) {
  * 桌面版：卡片像書本一樣堆疊，hover 時左右讓開
  * 手機版：水平滾動 carousel
  */
-export default function StackedCardList({ items, title, titleExtra }: StackedCardListProps) {
+export default function StackedCardList({ items, title, titleExtra, viewAllHref }: StackedCardListProps) {
   if (items.length === 0) {
     return null;
   }
@@ -175,6 +175,11 @@ export default function StackedCardList({ items, title, titleExtra }: StackedCar
       <div className="mb-1 flex items-center gap-2">
         <h2 className="text-lg font-serif font-medium">{title}</h2>
         {titleExtra}
+        {viewAllHref && (
+          <Link href={viewAllHref} className="ml-auto text-sm text-muted-foreground hover:text-primary transition-colors">
+            查看全部 ›
+          </Link>
+        )}
       </div>
 
       {/* 手機版 Carousel */}

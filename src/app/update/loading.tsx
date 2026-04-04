@@ -2,8 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function UpdateLoading() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
         {/* 標題骨架 */}
         <Skeleton className="mb-6 h-8 w-32" />
 
@@ -23,6 +22,5 @@ export default function UpdateLoading() {
           </div>
         ))}
       </div>
-    </div>
   );
 }

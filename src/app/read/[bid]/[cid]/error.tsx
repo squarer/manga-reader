@@ -20,7 +20,7 @@ export default function ReaderError({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-950 px-4 text-white">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-950 px-4 text-white" role="alert">
       <AlertCircle className="h-12 w-12 text-red-500" />
       <h2 className="text-xl font-serif font-medium">載入章節失敗</h2>
       <p className="max-w-md text-center text-sm text-zinc-400">{error.message}</p>

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useRef, useLayoutEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useRef, useLayoutEffect, memo } from 'react';
 import Image from 'next/image';
 import { ArrowUp, ArrowDown, Minus, Eye, Trophy, Crown, Medal } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { RankItem } from '@/lib/scraper/types';
 import { RankTrend } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
 import { useFetch } from '@/lib/hooks/useFetch';
+import { EmptyState } from '@/components/EmptyState';
 
 /** 榜單類型 */
 enum RankType {
@@ -109,7 +111,7 @@ function TrendIndicator({ trend }: { trend?: RankTrend }) {
 /**
  * 排行榜項目卡片元件
  */
-function RankItemCard({ item, animationDelay = 0 }: RankItemCardProps) {
+const RankItemCard = memo(function RankItemCard({ item, animationDelay = 0 }: RankItemCardProps) {
   const coverUrl = getProxiedImageUrl(item.cover);
 
   const isTopThree = item.rank <= 3;
@@ -184,7 +186,7 @@ function RankItemCard({ item, animationDelay = 0 }: RankItemCardProps) {
       </div>
     </Link>
   );
-}
+});
 
 /**
  * 排行榜互動內容
@@ -223,25 +225,11 @@ export default function RankContent() {
   }, [rankType]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
       {/* Header */}
-      <header className="border-b border-border bg-background">
-        <div className="mx-auto max-w-4xl px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <span className="text-lg">&larr;</span>
-              </Link>
-              <h1 className="flex items-center gap-2 text-2xl font-serif font-medium">
-                <Trophy className="h-6 w-6 text-foreground" />
-                排行榜
-              </h1>
-            </div>
-          </div>
-
+      <div className="border-b border-border bg-background">
+        <div className="mx-auto max-w-5xl px-4 py-4">
+          <PageHeader icon={Trophy} title="排行榜" />
           {/* 榜單類型切換 */}
           <div className="relative mt-4 flex gap-1">
             {/* 滑動指示器 */}
@@ -264,8 +252,8 @@ export default function RankContent() {
                 size="sm"
                 className={`flex-1 rounded-lg transition-all duration-200 sm:flex-none sm:px-6 ${
                   rankType === type.id
-                    ? 'bg-accent text-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {type.name}
@@ -273,41 +261,44 @@ export default function RankContent() {
             ))}
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-4xl px-4 py-6">
-        {loading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 rounded-xl p-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <Skeleton className="h-20 w-14 rounded-lg" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-5 w-1/3" />
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-4 w-1/2" />
+      <main className="mx-auto max-w-5xl px-4 py-6">
+        <div aria-live="polite">
+          {loading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 rounded-xl p-4">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <Skeleton className="h-20 w-14 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-1/3" />
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : rankList.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-4">
-            <Trophy className="h-16 w-16 text-muted-foreground/50" />
-            <p className="text-xl text-muted-foreground">暫無排行數據</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {rankList.map((item, index) => (
-              <RankItemCard
-                key={item.id}
-                item={item}
-                animationDelay={index * 50}
-              />
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          ) : rankList.length === 0 ? (
+            <EmptyState icon={Trophy} message="暫無排行數據" />
+          ) : (
+            <div className="space-y-2">
+              {rankList.map((item, index) => (
+                <React.Fragment key={item.id}>
+                  {item.rank === 4 && (
+                    <div className="my-4 border-t border-border/50" />
+                  )}
+                  <RankItemCard
+                    item={item}
+                    animationDelay={index * 50}
+                  />
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
-    </div>
+    </>
   );
 }

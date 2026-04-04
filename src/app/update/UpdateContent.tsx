@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Clock, Calendar, Loader2 } from 'lucide-react';
+import { Clock, Calendar, Loader2, Sparkles } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import TiltCard from '@/components/TiltCard';
+import dynamic from 'next/dynamic';
+const TiltCard = dynamic(() => import('@/components/TiltCard'), { ssr: false });
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
 import { STAGGER_DELAY } from '@/lib/constants';
@@ -302,71 +304,61 @@ export default function UpdateContent() {
   let runningIndex = 0;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
       {/* Header */}
-      <header className="border-b border-border bg-background">
+      <div className="border-b border-border bg-background">
         <div className="mx-auto max-w-7xl px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="icon" className="shrink-0">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-xl font-serif font-medium text-foreground">最新更新</h1>
-              <p className="text-sm text-muted-foreground">
-                追蹤最新漫畫章節
-              </p>
-            </div>
-          </div>
+          <PageHeader icon={Sparkles} title="最新更新" subtitle="追蹤最新漫畫章節" />
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8">
-        {loading ? (
-          <LoadingSkeleton />
-        ) : error ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-4">
-            <p className="text-lg text-muted-foreground">{error}</p>
-            <Button onClick={() => fetchMangas(1, false)}>重試</Button>
-          </div>
-        ) : mangas.length === 0 ? (
-          <div className="flex h-64 items-center justify-center">
-            <p className="text-lg text-muted-foreground">沒有更新資料</p>
-          </div>
-        ) : (
-          <>
-            {/* 日期分組列表 */}
-            {[DateGroup.TODAY, DateGroup.YESTERDAY, DateGroup.EARLIER].map((group) => {
-              const groupMangas = groupedMangas.get(group) || [];
-              const section = (
-                <DateGroupSection
-                  key={group}
-                  group={group}
-                  mangas={groupMangas}
-                  baseIndex={runningIndex}
-                />
-              );
-              runningIndex += groupMangas.length;
-              return section;
-            })}
-
-            {/* 無限滾動觸發器 */}
-            <div ref={loaderRef} className="flex h-20 items-center justify-center">
-              {loadingMore && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>載入更多...</span>
-                </div>
-              )}
-              {pagination && page >= pagination.total && mangas.length > 0 && (
-                <p className="text-sm text-muted-foreground">已載入全部更新</p>
-              )}
+        <div aria-live="polite">
+          {loading ? (
+            <LoadingSkeleton />
+          ) : error ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-4">
+              <p className="text-lg text-muted-foreground">{error}</p>
+              <Button onClick={() => fetchMangas(1, false)}>重試</Button>
             </div>
-          </>
-        )}
+          ) : mangas.length === 0 ? (
+            <div className="flex h-64 items-center justify-center">
+              <p className="text-lg text-muted-foreground">沒有更新資料</p>
+            </div>
+          ) : (
+            <>
+              {/* 日期分組列表 */}
+              {[DateGroup.TODAY, DateGroup.YESTERDAY, DateGroup.EARLIER].map((group) => {
+                const groupMangas = groupedMangas.get(group) || [];
+                const section = (
+                  <DateGroupSection
+                    key={group}
+                    group={group}
+                    mangas={groupMangas}
+                    baseIndex={runningIndex}
+                  />
+                );
+                runningIndex += groupMangas.length;
+                return section;
+              })}
+
+              {/* 無限滾動觸發器 */}
+              <div ref={loaderRef} className="flex h-20 items-center justify-center">
+                {loadingMore && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>載入更多...</span>
+                  </div>
+                )}
+                {pagination && page >= pagination.total && mangas.length > 0 && (
+                  <p className="text-sm text-muted-foreground">已載入全部更新</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </main>
-    </div>
+    </>
   );
 }

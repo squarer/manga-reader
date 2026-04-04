@@ -6,7 +6,7 @@
  * 響應式設計：桌面版水平導航，手機版漢堡選單
  */
 
-import { useState, useCallback, useEffect, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense, startTransition } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { BookOpen, SlidersHorizontal, Menu, X, Heart, Clock } from 'lucide-react';
@@ -22,7 +22,6 @@ import { DesignThemeToggle } from '@/components/DesignThemeToggle';
 import { FilterContent } from '@/components/MangaFilter';
 import { type FilterState, getActiveFilterCount } from '@/lib/filter-types';
 import { cn } from '@/lib/utils';
-import { useHistory } from '@/lib/hooks/useHistory';
 import { NAV_ITEMS, NAV_ACTIVE_CLASS, type NavItem } from './types';
 import { parseFiltersFromParams, filtersToParams } from './utils';
 import { DesktopSearch } from './DesktopSearch';
@@ -77,7 +76,8 @@ function HoverExpandButton({
       <span
         className={cn(
           'text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-200',
-          isHovered ? 'w-16 ml-1.5' : 'w-0'
+          'hidden md:inline',
+          isHovered ? 'md:w-16 md:ml-1.5' : 'md:w-0'
         )}
       >
         {label}
@@ -126,9 +126,6 @@ function NavbarContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // 閱讀歷史
-  const { history, isLoaded: isHistoryLoaded } = useHistory();
-
   // 從 URL 解析 filter 狀態
   const filters = parseFiltersFromParams(searchParams);
   const activeFilterCount = getActiveFilterCount(filters);
@@ -153,7 +150,9 @@ function NavbarContent() {
   /** 處理搜尋 */
   const handleSearch = useCallback(
     (keyword: string) => {
-      router.push(`/?keyword=${encodeURIComponent(keyword)}`);
+      startTransition(() => {
+        router.push(`/?keyword=${encodeURIComponent(keyword)}`);
+      });
       setIsMobileMenuOpen(false);
     },
     [router]
@@ -173,7 +172,9 @@ function NavbarContent() {
     (newFilters: FilterState) => {
       const params = filtersToParams(newFilters);
       const queryString = params.toString();
-      router.push(queryString ? `/?${queryString}` : '/');
+      startTransition(() => {
+        router.push(queryString ? `/?${queryString}` : '/');
+      });
     },
     [router]
   );
@@ -183,7 +184,7 @@ function NavbarContent() {
       <div className="mx-auto max-w-7xl px-4">
         <nav
           className={cn(
-            'inline-flex items-center gap-1',
+            'flex md:inline-flex items-center gap-1',
             'rounded-full px-2 py-1.5',
             'border border-border/50',
             'bg-background/80 backdrop-blur-xl',
@@ -191,7 +192,7 @@ function NavbarContent() {
             'shadow-lg shadow-black/5'
           )}
         >
-          <div className="flex items-center">
+          <div className="flex flex-1 items-center md:flex-initial">
             {/* Logo */}
             <Link
               href="/"
@@ -207,10 +208,10 @@ function NavbarContent() {
             </Link>
 
             {/* 分隔線 */}
-            <div className="hidden h-6 w-px bg-border/50 md:block" />
+            <div className="h-6 w-px bg-border/50" />
 
-            {/* 桌面版導航 */}
-            <div className="relative hidden items-center md:flex">
+            {/* 導航項目 */}
+            <div className="relative flex items-center">
               {NAV_ITEMS.map((item) => (
                 <HoverExpandButton
                   key={item.href}
@@ -222,26 +223,26 @@ function NavbarContent() {
               ))}
             </div>
 
-            {/* 操作區 */}
-            <div className="flex items-center">
-              {/* 閱讀歷史 */}
-              <HoverExpandButton
-                icon={Clock}
-                label="閱讀歷史"
-                href="/history"
-                isActive={pathname.startsWith('/history')}
-              />
+            {/* 閱讀歷史 */}
+            <HoverExpandButton
+              icon={Clock}
+              label="閱讀歷史"
+              href="/history"
+              isActive={pathname.startsWith('/history')}
+            />
 
-              {/* 我的收藏 */}
-              <HoverExpandButton
-                icon={Heart}
-                label="我的收藏"
-                href="/favorites"
-                isActive={pathname.startsWith('/favorites')}
-              />
+            {/* 我的收藏 */}
+            <HoverExpandButton
+              icon={Heart}
+              label="我的收藏"
+              href="/favorites"
+              isActive={pathname.startsWith('/favorites')}
+            />
 
+            {/* 操作區 — 推到右側 */}
+            <div className="ml-auto flex items-center">
               {/* 分隔線 */}
-              <div className="hidden h-6 w-px bg-border/50 md:block" />
+              <div className="hidden sm:block h-6 w-px bg-border/50" />
 
               {/* 篩選按鈕（僅首頁非搜尋模式顯示） */}
               {isHomePage && !isSearchMode && (
@@ -251,7 +252,7 @@ function NavbarContent() {
                       variant="ghost"
                       size="icon"
                       className={cn(
-                        'relative h-8 w-8 rounded-full',
+                        'relative h-10 w-10 rounded-full',
                         activeFilterCount > 0 && 'text-foreground'
                       )}
                       title="篩選"
@@ -267,7 +268,7 @@ function NavbarContent() {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[360px] p-4" align="end" sideOffset={8}>
+                  <PopoverContent className="w-[min(360px,calc(100vw-2rem))] p-4" align="end" sideOffset={8}>
                     <FilterContent filters={filters} onChange={handleFilterChange} />
                   </PopoverContent>
                 </Popover>
@@ -286,7 +287,7 @@ function NavbarContent() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full md:hidden"
+                className="h-10 w-10 rounded-full md:hidden"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 title={isMobileMenuOpen ? '關閉選單' : '開啟選單'}
               >
@@ -299,13 +300,10 @@ function NavbarContent() {
         {/* 手機版選單 */}
         <MobileMenu
           isOpen={isMobileMenuOpen}
-          pathname={pathname}
           searchValue={searchValue}
-          historyCount={isHistoryLoaded ? history.length : 0}
           onSearchChange={setSearchValue}
           onSearchSubmit={handleMobileSearchSubmit}
           onClose={() => setIsMobileMenuOpen(false)}
-          isActiveNavItem={isActiveNavItem}
         />
       </div>
     </header>
@@ -321,7 +319,7 @@ function NavbarFallback() {
       <div className="mx-auto max-w-7xl px-4">
         <nav
           className={cn(
-            'inline-flex items-center gap-1',
+            'flex md:inline-flex items-center gap-1',
             'rounded-full px-2 py-1.5',
             'border border-border/50',
             'bg-background/80 backdrop-blur-xl',
@@ -340,8 +338,10 @@ function NavbarFallback() {
             <BookOpen className="h-5 w-5 text-primary" />
             <span className="hidden sm:inline font-serif text-primary">Manga</span>
           </Link>
-          <DesignThemeToggle />
-          <ThemeToggle />
+          <div className="ml-auto flex items-center">
+            <DesignThemeToggle />
+            <ThemeToggle />
+          </div>
         </nav>
       </div>
     </header>

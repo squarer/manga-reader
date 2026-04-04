@@ -2,10 +2,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MangaDetailLoading() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
       {/* Hero 骨架 */}
-      <div className="relative -mt-20 min-h-[60vh] overflow-hidden pt-20">
-        <div className="absolute inset-0 -top-20 bg-muted" />
+      <div className="relative -mt-40 min-h-[60vh] overflow-hidden pt-40">
+        <div className="absolute inset-0 -top-40 bg-muted" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
 
         {/* 返回按鈕 */}
@@ -40,6 +40,6 @@ export default function MangaDetailLoading() {
         <Skeleton className="mb-4 h-8 w-24" />
         <Skeleton className="h-12 w-full rounded-lg" />
       </div>
-    </div>
+    </>
   );
 }

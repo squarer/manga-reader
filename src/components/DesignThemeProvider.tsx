@@ -9,23 +9,18 @@ import {
 import { DesignThemeContext } from '@/lib/hooks/useDesignTheme';
 
 export function DesignThemeProvider({ children }: { children: React.ReactNode }) {
-  const [designTheme, setDesignThemeState] = useState<DesignTheme>(DEFAULT_DESIGN_THEME);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
+  const [designTheme, setDesignThemeState] = useState<DesignTheme>(() => {
+    if (typeof window === 'undefined') return DEFAULT_DESIGN_THEME;
     const stored = localStorage.getItem(DESIGN_THEME_STORAGE_KEY);
     if (stored && Object.values(DesignTheme).includes(stored as DesignTheme)) {
-      setDesignThemeState(stored as DesignTheme);
+      return stored as DesignTheme;
     }
-    setIsLoaded(true);
-  }, []);
-
+    return DEFAULT_DESIGN_THEME;
+  });
   useEffect(() => {
     document.documentElement.setAttribute('data-design-theme', designTheme);
-    if (isLoaded) {
-      localStorage.setItem(DESIGN_THEME_STORAGE_KEY, designTheme);
-    }
-  }, [designTheme, isLoaded]);
+    localStorage.setItem(DESIGN_THEME_STORAGE_KEY, designTheme);
+  }, [designTheme]);
 
   const setDesignTheme = useCallback((theme: DesignTheme) => {
     setDesignThemeState(theme);
