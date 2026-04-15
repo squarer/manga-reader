@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import type { Metadata } from 'next';
 import {
   fetchChapterPage,
@@ -7,7 +7,6 @@ import {
   parseMangaDetail,
   buildImageUrl,
 } from '@/lib/scraper';
-import { getProxiedImageUrl } from '@/lib/image-utils';
 import { computePrevNextCid } from '@/lib/chapter-utils';
 import type { ChapterData } from '@/components/reader/types';
 import ReaderContent from './ReaderContent';
@@ -16,88 +15,60 @@ interface PageProps {
   params: Promise<{ bid: string; cid: string }>;
 }
 
-/**
- * 使用 React.cache 讓 generateMetadata 與 ReadPage 共享同一次爬取結果
- * 邏輯與 /api/chapter/[bid]/[cid]/route.ts 對齊：並行抓章節與漫畫詳情，補齊 prevCid/nextCid
- */
-const getChapterData = cache(async (mangaId: number, chapterId: number): Promise<ChapterData | null> => {
-  try {
-    const [chapterHtml, mangaHtml] = await Promise.all([
-      fetchChapterPage(mangaId, chapterId),
-      fetchMangaDetail(mangaId),
-    ]);
+/** 跨請求快取章節資料（60 分鐘，對齊 CDN CHAPTER cache policy） */
+const getChapterData = unstable_cache(
+  async (mangaId: number, chapterId: number): Promise<ChapterData | null> => {
+    try {
+      const [chapterHtml, mangaHtml] = await Promise.all([
+        fetchChapterPage(mangaId, chapterId),
+        fetchMangaDetail(mangaId),
+      ]);
 
-    const imageData = decryptChapterPage(chapterHtml);
-    if (!imageData) return null;
+      const imageData = decryptChapterPage(chapterHtml);
+      if (!imageData) return null;
 
-    const images = imageData.files.map((filename) =>
-      buildImageUrl(imageData.path, filename, imageData.sl)
-    );
+      const images = imageData.files.map((filename) =>
+        buildImageUrl(imageData.path, filename, imageData.sl)
+      );
 
-    let prevCid: number | null = imageData.prevcid ?? null;
-    let nextCid: number | null = imageData.nextcid ?? null;
+      let prevCid: number | null = imageData.prevcid ?? null;
+      let nextCid: number | null = imageData.nextcid ?? null;
 
-    if (prevCid === null || nextCid === null) {
-      const mangaInfo = parseMangaDetail(mangaHtml, mangaId);
-      if (mangaInfo) {
-        const allChapters = mangaInfo.chapters.flatMap((g) => g.chapters);
-        const computed = computePrevNextCid(allChapters, chapterId);
-        if (prevCid === null) prevCid = computed.prevCid;
-        if (nextCid === null) nextCid = computed.nextCid;
+      if (prevCid === null || nextCid === null) {
+        const mangaInfo = parseMangaDetail(mangaHtml, mangaId);
+        if (mangaInfo) {
+          const allChapters = mangaInfo.chapters.flatMap((g) => g.chapters);
+          const computed = computePrevNextCid(allChapters, chapterId);
+          if (prevCid === null) prevCid = computed.prevCid;
+          if (nextCid === null) nextCid = computed.nextCid;
+        }
       }
-    }
 
-    return {
-      bid: imageData.bid,
-      cid: imageData.cid,
-      bname: imageData.bname,
-      cname: imageData.cname,
-      images,
-      prevCid: prevCid ?? undefined,
-      nextCid: nextCid ?? undefined,
-      total: images.length,
-    };
-  } catch (err) {
-    console.error('getChapterData failed:', err);
-    return null;
-  }
-});
+      return {
+        bid: imageData.bid,
+        cid: imageData.cid,
+        bname: imageData.bname,
+        cname: imageData.cname,
+        images,
+        prevCid: prevCid ?? undefined,
+        nextCid: nextCid ?? undefined,
+        total: images.length,
+      };
+    } catch (err) {
+      console.error('getChapterData failed:', err);
+      return null;
+    }
+  },
+  ['chapter-data'],
+  { revalidate: 3600 }
+);
 
 /**
- * 動態生成頁面 metadata（漫畫名 - 章節名）
+ * 靜態 metadata — 不 call scraper，避免阻塞 TTFB、讓 loading.tsx 立即 stream
  */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { bid, cid } = await params;
-  const mangaId = parseInt(bid, 10);
-  const chapterId = parseInt(cid, 10);
-
-  if (isNaN(mangaId) || isNaN(chapterId)) {
-    return { title: '閱讀' };
-  }
-
-  const data = await getChapterData(mangaId, chapterId);
-  if (!data) return { title: '閱讀' };
-
-  const title = `${data.bname} - ${data.cname}`;
-  const description = `閱讀 ${data.bname} ${data.cname}`;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-  const coverUrl = `${baseUrl}${getProxiedImageUrl(`/cpic/b/${data.bid}.jpg`)}`;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      images: [{ url: coverUrl }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [coverUrl],
-    },
-  };
+  return { title: `閱讀 #${bid} - ${cid}` };
 }
 
 /**

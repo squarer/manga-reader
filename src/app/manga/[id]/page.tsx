@@ -1,62 +1,34 @@
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import type { Metadata } from 'next';
 import { fetchMangaDetail, parseMangaDetail } from '@/lib/scraper';
 import type { MangaInfo } from '@/lib/scraper/types';
-import { getProxiedImageUrl } from '@/lib/image-utils';
 import MangaDetailContent from './MangaDetailContent';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-/**
- * 使用 React.cache 讓 generateMetadata 與 MangaDetailPage 共享同一次爬取結果
- */
-const getMangaData = cache(async (mangaId: number): Promise<MangaInfo | null> => {
-  try {
-    const html = await fetchMangaDetail(mangaId);
-    return parseMangaDetail(html, mangaId);
-  } catch (err) {
-    console.error('getMangaData failed:', err);
-    return null;
-  }
-});
+/** 跨請求快取漫畫詳情（30 分鐘），避免每次 SSR 都重新爬取 */
+const getMangaData = unstable_cache(
+  async (mangaId: number): Promise<MangaInfo | null> => {
+    try {
+      const html = await fetchMangaDetail(mangaId);
+      return parseMangaDetail(html, mangaId);
+    } catch (err) {
+      console.error('getMangaData failed:', err);
+      return null;
+    }
+  },
+  ['manga-detail'],
+  { revalidate: 1800 }
+);
 
 /**
- * 動態生成頁面 metadata（漫畫名稱作為 title）
+ * 靜態 metadata — 不 call scraper，避免阻塞 TTFB、讓 loading.tsx 立即 stream
  */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const mangaId = parseInt(id, 10);
-
-  if (isNaN(mangaId)) {
-    return { title: '漫畫詳情' };
-  }
-
-  const manga = await getMangaData(mangaId);
-  if (!manga) {
-    return { title: '漫畫詳情' };
-  }
-
-  const description = manga.description || `閱讀 ${manga.name}`;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-  const coverUrl = `${baseUrl}${getProxiedImageUrl(manga.cover)}`;
-
-  return {
-    title: manga.name,
-    description,
-    openGraph: {
-      title: manga.name,
-      description,
-      images: [{ url: coverUrl }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: manga.name,
-      description,
-      images: [coverUrl],
-    },
-  };
+  return { title: `漫畫 #${id}` };
 }
 
 /**
