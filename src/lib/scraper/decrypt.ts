@@ -128,7 +128,11 @@ interface ReaderFormatData {
 /**
  * 將 SMH.reader 格式轉換為 ImageData
  */
-function convertReaderFormat(data: ReaderFormatData): ImageData {
+function convertReaderFormat(data: ReaderFormatData): ImageData | null {
+  if (data.images.length === 0) {
+    console.warn('[convertReaderFormat] Empty images array for book %d chapter %d', data.bookId, data.chapterId);
+    return null;
+  }
   const firstImage = data.images[0] || '';
   const pathParts = firstImage.split('/');
   pathParts.pop();
@@ -177,11 +181,17 @@ export function parseImageData(decrypted: string): ImageData | null {
 
         // 判斷是 reader 格式還是 imgData 格式
         if ('bookId' in parsed && 'images' in parsed) {
-          return convertReaderFormat(parsed as ReaderFormatData);
+          if (!Array.isArray(parsed.images)) continue;
+          const result = convertReaderFormat(parsed as ReaderFormatData);
+          if (result) return result;
+          continue;
         }
 
         // imgData 格式
         const imageData = parsed as ImageData;
+        if (!Array.isArray(imageData.files) || typeof imageData.bid !== 'number' || typeof imageData.cid !== 'number') {
+          continue;
+        }
         if (imageData.prevcid === undefined || imageData.nextcid === undefined) {
           const prevcidMatch = decrypted.match(/prevcid['":\s=]+(\d+)/i);
           const nextcidMatch = decrypted.match(/nextcid['":\s=]+(\d+)/i);
@@ -229,6 +239,8 @@ function extractFieldsManually(decrypted: string): ImageData | null {
       .split(',')
       .map((f) => f.trim().replace(/['"]/g, ''))
       .filter(Boolean);
+
+    if (images.length === 0) return null;
 
     // 從第一張圖片路徑提取 path
     const firstImage = images[0] || '';
@@ -296,21 +308,25 @@ function extractFieldsManually(decrypted: string): ImageData | null {
 export function decryptChapterPage(html: string): ImageData | null {
   // 檢查是否為錯誤頁面
   if (html.includes('404') && html.includes('找不到')) {
+    console.warn('[decryptChapterPage] 404 error page detected');
     return null;
   }
   if (html.includes('403') || html.includes('禁止訪問')) {
+    console.warn('[decryptChapterPage] 403 forbidden page detected');
     return null;
   }
 
   const packed = extractPackedScript(html);
   if (!packed) {
+    console.warn('[decryptChapterPage] No packed script found in HTML (length=%d)', html.length);
     return null;
   }
 
   try {
     const decrypted = unpack(packed);
     return parseImageData(decrypted);
-  } catch {
+  } catch (error) {
+    console.warn('[decryptChapterPage] Decrypt/parse failed:', error);
     return null;
   }
 }

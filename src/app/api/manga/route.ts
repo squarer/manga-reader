@@ -28,6 +28,7 @@ import {
 } from '@/lib/scraper';
 import type { FilterOptions } from '@/lib/scraper';
 import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
+import { parsePage } from '@/lib/utils';
 
 /** 有效的地區值 */
 const VALID_REGIONS = Object.values(RegionType);
@@ -71,8 +72,7 @@ export async function GET(request: NextRequest) {
       : null;
 
   // 頁碼驗證（含上限）
-  const pageParam = parseInt(searchParams.get('page') || '1', 10);
-  const page = isNaN(pageParam) ? 1 : Math.min(Math.max(1, pageParam), MAX_PAGE);
+  const page = parsePage(searchParams.get('page'), MAX_PAGE);
 
   // 篩選參數（加入驗證）
   const category = searchParams.get('category');

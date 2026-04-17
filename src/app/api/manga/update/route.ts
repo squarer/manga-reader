@@ -6,22 +6,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchUpdateList, parseUpdateList } from '@/lib/scraper';
 import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
+import { parsePage } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const pageParam = searchParams.get('page');
-  const page = pageParam ? parseInt(pageParam, 10) : 1;
-
-  // 驗證 page 參數必須是正整數
-  if (isNaN(page) || page < 1 || !Number.isInteger(page)) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Invalid page parameter. Must be a positive integer.',
-      },
-      { status: 400 }
-    );
-  }
+  const page = parsePage(searchParams.get('page'));
 
   try {
     const cacheKey = normalizeUrlCacheKey(request.url);

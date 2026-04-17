@@ -20,7 +20,10 @@ async function runWithConcurrency<T>(
       const i = index++;
       try {
         results[i] = await tasks[i]();
-      } catch {
+      } catch (err) {
+        if (!(err instanceof Error && err.name === 'AbortError')) {
+          console.error('[useFavoritesUpdateCheck] Task failed:', err);
+        }
         results[i] = null;
       }
     }
@@ -74,7 +77,10 @@ export function useFavoritesUpdateCheck(
 
           const hasReadLatest = mangaHistory.some((h) => h.chapterId === latestChapterId);
           return hasReadLatest ? null : fav.mangaId;
-        } catch {
+        } catch (err) {
+          if (!(err instanceof Error && err.name === 'AbortError')) {
+            console.error(`[useFavoritesUpdateCheck] Failed to check manga ${fav.mangaId}:`, err);
+          }
           return null;
         }
       });
