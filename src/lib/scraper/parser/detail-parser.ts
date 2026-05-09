@@ -3,6 +3,7 @@
  */
 
 import * as cheerio from 'cheerio';
+import LZString from 'lz-string';
 import type { MangaInfo, ChapterGroup, ChapterInfo } from '../types';
 
 /**
@@ -61,6 +62,19 @@ export function parseMangaDetail(html: string, mangaId: number): MangaInfo | nul
 
   // 描述
   const description = parseDescription($);
+
+  // 限制漫畫：章節 HTML 以 LZString 編碼存放在 __VIEWSTATE，
+  // 需解碼後注入 DOM（模仿網站 JS 行為）
+  const viewStateEl = $('#__VIEWSTATE');
+  if (viewStateEl.length > 0) {
+    const encoded = viewStateEl.val();
+    if (typeof encoded === 'string' && encoded) {
+      const decoded = LZString.decompressFromBase64(encoded);
+      if (decoded) {
+        $('#erroraudit_show').replaceWith(decoded);
+      }
+    }
+  }
 
   // 章節列表
   const chapters = parseChapterList($);

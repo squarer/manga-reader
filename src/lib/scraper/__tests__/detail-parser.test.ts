@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import LZString from 'lz-string';
 import { parseMangaDetail, naturalSort } from '../parser/detail-parser';
 
 describe('naturalSort', () => {
@@ -133,5 +134,36 @@ describe('parseMangaDetail', () => {
     );
     const result = parseMangaDetail(html, 1);
     expect(result!.genres).not.toContain('日本');
+  });
+
+  it('限制漫畫：__VIEWSTATE 解碼後章節正確解析', () => {
+    const chapterHtml = `<h4><span>單行本</span></h4><div class="chapter-list cf mt10" id="chapter-list-0"><ul style="display:block"><li><a href="/comic/999/3.html" title="第3卷"><span>第3卷</span></a></li><li><a href="/comic/999/2.html" title="第2卷"><span>第2卷</span></a></li><li><a href="/comic/999/1.html" title="第1卷"><span>第1卷</span></a></li></ul></div>`;
+    const encoded = LZString.compressToBase64(chapterHtml);
+
+    const html = `<html><body>
+      <div class="book-title"><h1>限制漫畫</h1></div>
+      <p class="hcover"><img src="//cf.mhgui.com/cpic/h/999.jpg"/></p>
+      <ul class="detail-list">
+        <li><a href="/author/test">作者</a></li>
+        <li>漫画状态：完结[2020-01-01]</li>
+      </ul>
+      <div class="score"><p class="score-avg"><em>7.0</em></p></div>
+      <div class="chapter cf mt16">
+        <div class="chapter-bar"><h3>限制漫畫 - 章節全集</h3></div>
+        <div class="warning-bar" id="erroraudit_show">
+          <a href="javascript:void(0);" id="checkAdult">請點擊繼續閱讀</a>
+        </div>
+        <input type="hidden" id="__VIEWSTATE" value="${encoded}" />
+      </div>
+    </body></html>`;
+
+    const result = parseMangaDetail(html, 999);
+    expect(result).not.toBeNull();
+    expect(result!.chapters.length).toBe(1);
+    expect(result!.chapters[0].title).toBe('單行本');
+    expect(result!.chapters[0].chapters).toHaveLength(3);
+    // 降序排列：第3卷 > 第2卷 > 第1卷
+    expect(result!.chapters[0].chapters[0].name).toBe('第3卷');
+    expect(result!.chapters[0].chapters[2].name).toBe('第1卷');
   });
 });
