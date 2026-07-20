@@ -73,7 +73,7 @@ function MangaImage({ url, pageIndex, priority = false }: MangaImageProps) {
       alt={`Page ${pageIndex + 1}`}
       width={1200}
       height={1800}
-      className="pointer-events-none h-auto w-full max-w-full select-none rounded-sm shadow-[rgba(0,0,0,0.05)_0px_4px_24px]"
+      className="pointer-events-none h-auto w-full max-w-full select-none rounded-sm shadow-[rgba(0,0,0,0.05)_0px_4px_24px] ring-1 ring-border"
       unoptimized
       priority={priority}
       draggable={false}
