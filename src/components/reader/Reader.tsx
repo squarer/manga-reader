@@ -100,8 +100,33 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
   const lastScrolledPage = useRef(-1);
   const isUserScrolling = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resizeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const prevImageWidth = useRef(imageWidth);
   const isResizing = useRef(false);
+  const onPageChangeRef = useRef(onPageChange);
+  const imagesLengthRef = useRef(data.images.length);
+
+  /**
+   * 邊界仲裁：統一 scroll handler 與 IO callback 的頁碼解析。
+   * 觸底 → 最後一頁；置頂 → 第一頁；否則回傳 candidate。
+   */
+  function resolvePageAtBoundary(candidateIndex: number): number {
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1) {
+      return imagesLengthRef.current - 1;
+    }
+    if (window.scrollY <= 1) {
+      return 0;
+    }
+    return candidateIndex;
+  }
+
+  useEffect(() => {
+    onPageChangeRef.current = onPageChange;
+  }, [onPageChange]);
+
+  useEffect(() => {
+    imagesLengthRef.current = data.images.length;
+  }, [data.images.length]);
 
   // 滾動到指定頁面（初始載入或使用者手動選擇）
   useEffect(() => {
@@ -133,13 +158,15 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
         lastScrolledPage.current = targetPage;
       }
       // 延遲重置 resizing 狀態，避免 IntersectionObserver 觸發頁碼變更
-      setTimeout(() => {
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(() => {
         isResizing.current = false;
+        resizeTimerRef.current = null;
       }, 100);
     });
   }, [imageWidth, targetPage]);
 
-  // 監聽使用者滾動
+  // 監聽使用者滾動 + 最後一頁底部邊界偵測
   useEffect(() => {
     function handleScroll() {
       isUserScrolling.current = true;
@@ -149,6 +176,14 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
       scrollTimeoutRef.current = setTimeout(() => {
         isUserScrolling.current = false;
       }, 150);
+
+      // 邊界仲裁：最後一頁矮或首頁矮時，IO 中心線可能永遠不觸發
+      if (isResizing.current) return;
+      const boundaryIndex = resolvePageAtBoundary(lastScrolledPage.current);
+      if (boundaryIndex !== lastScrolledPage.current) {
+        lastScrolledPage.current = boundaryIndex;
+        onPageChangeRef.current(boundaryIndex);
+      }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -172,13 +207,14 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
               (ref) => ref === entry.target
             );
             if (index !== -1) {
-              lastScrolledPage.current = index;
-              onPageChange(index);
+              const resolved = resolvePageAtBoundary(index);
+              lastScrolledPage.current = resolved;
+              onPageChangeRef.current(resolved);
             }
           }
         });
       },
-      { threshold: 0.5 }
+      { rootMargin: '-50% 0px -50% 0px', threshold: 0 }
     );
 
     imageRefs.current.forEach((ref) => {
@@ -186,7 +222,7 @@ function ScrollReader({ data, imageWidth, targetPage, onPageChange }: ScrollRead
     });
 
     return () => observer.disconnect();
-  }, [data.images.length, onPageChange]);
+  }, [data.images.length]);
 
   return (
     <div
@@ -322,6 +358,18 @@ function SinglePageReader({
 }
 
 /**
+ * 從 URL ?page= 參數解析初始頁碼（0-based，夾取 [0, total-1]）。
+ * 非數字或缺參數回 0。
+ */
+function parseInitialPage(total: number): number {
+  const pageParam = new URLSearchParams(window.location.search).get('page');
+  if (!pageParam) return 0;
+  const parsed = parseInt(pageParam, 10);
+  if (isNaN(parsed)) return 0;
+  return Math.min(Math.max(0, parsed - 1), total - 1);
+}
+
+/**
  * 漫畫閱讀器
  *
  * 支援滾動和單頁兩種閱讀模式，含工具列和快捷鍵
@@ -349,10 +397,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
 
     // 有 initialData 且 chapterId 吻合時，略過 fetch，直接處理頁碼與 history
     if (initialData && initialData.cid === chapterId) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const pageParam = urlParams.get('page');
-      const initialPage = pageParam ? Math.max(0, parseInt(pageParam, 10) - 1) : 0;
-      const validPage = Math.min(initialPage, initialData.total - 1);
+      const validPage = parseInitialPage(initialData.total);
       setCurrentPage(validPage);
 
       addHistory({
@@ -383,10 +428,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
           setData(json.data);
 
           // 從 URL 讀取初始頁碼
-          const urlParams = new URLSearchParams(window.location.search);
-          const pageParam = urlParams.get('page');
-          const initialPage = pageParam ? Math.max(0, parseInt(pageParam, 10) - 1) : 0;
-          const validPage = Math.min(initialPage, json.data.total - 1);
+          const validPage = parseInitialPage(json.data.total);
           setCurrentPage(validPage);
 
           addHistory({
