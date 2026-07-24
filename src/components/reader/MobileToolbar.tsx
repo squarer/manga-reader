@@ -25,7 +25,7 @@ import {
   ChevronRight,
   SkipBack,
   SkipForward,
-  List,
+  ListOrdered,
   BookOpen,
   Scroll,
 } from 'lucide-react';
@@ -124,7 +124,7 @@ export function MobileBottomToolbar({
               {/* 章節列表 */}
               <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                 <Link href={`/manga/${mangaId}`}>
-                  <List className="h-4 w-4" />
+                  <ListOrdered className="h-4 w-4" />
                 </Link>
               </Button>
 

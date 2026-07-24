@@ -42,7 +42,7 @@ import {
   SkipForward,
   ZoomOut,
   ZoomIn,
-  List,
+  ListOrdered,
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
@@ -75,9 +75,17 @@ export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
         </Link>
       </Button>
 
-      <div className="text-center drop-shadow-md">
-        <h1 className="text-sm font-serif font-medium">{data.bname}</h1>
-        <p className="text-xs text-foreground/70">{data.cname}</p>
+      <div
+        className={cn(
+          'flex flex-col items-center rounded-2xl px-4 py-1.5 text-center',
+          'border border-border/50',
+          'bg-background/80 backdrop-blur-xl',
+          'supports-[backdrop-filter]:bg-background/60',
+          'shadow-lg shadow-black/5'
+        )}
+      >
+        <h1 className="text-sm font-serif font-medium leading-tight">{data.bname}</h1>
+        <p className="text-xs leading-tight text-foreground/70">{data.cname}</p>
       </div>
 
       {/* 佔位保持三欄布局 */}
@@ -212,7 +220,7 @@ export function BottomToolbar({
                 <TooltipTrigger asChild>
                   <Button asChild variant="ghost" size="icon">
                     <Link href={`/manga/${mangaId}`}>
-                      <List className="h-5 w-5" />
+                      <ListOrdered className="h-5 w-5" />
                     </Link>
                   </Button>
                 </TooltipTrigger>
