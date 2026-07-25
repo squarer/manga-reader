@@ -28,6 +28,7 @@ import { DesktopSearch } from './DesktopSearch';
 import { MobileMenu } from './MobileMenu';
 import { useSource } from '@/components/SourceProvider';
 import { SourceToggle } from '@/components/SourceToggle';
+import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
 
 /**
  * Hover 展開按鈕共用元件
@@ -145,6 +146,9 @@ function NavbarContent() {
   // 進階篩選僅在單選 manhuagui 時可用
   const isSingleManhuagui = sources.length === 1 && sources[0] === 'manhuagui';
 
+  // 搜尋紀錄（單一 instance：桌機/手機共用此狀態，下傳 DesktopSearch 顯示）
+  const { history: searchHistory, addSearch, removeSearch, clearSearch } = useSearchHistory();
+
   /** 判斷導航項目是否為當前頁面 */
   const isActiveNavItem = (item: NavItem): boolean => {
     if (item.href === '/') {
@@ -156,12 +160,13 @@ function NavbarContent() {
   /** 處理搜尋 */
   const handleSearch = useCallback(
     (keyword: string) => {
+      addSearch(keyword);
       startTransition(() => {
         router.push(`/?keyword=${encodeURIComponent(keyword)}`);
       });
       setIsMobileMenuOpen(false);
     },
-    [router]
+    [router, addSearch]
   );
 
   /** 處理手機版搜尋提交 */
@@ -289,7 +294,13 @@ function NavbarContent() {
               )}
 
               {/* 桌面版搜尋框 */}
-              <DesktopSearch onSearch={handleSearch} keyword={keyword} />
+              <DesktopSearch
+                onSearch={handleSearch}
+                keyword={keyword}
+                history={searchHistory}
+                onRemoveHistory={removeSearch}
+                onClearHistory={clearSearch}
+              />
 
               {/* 設計主題切換 */}
               <DesignThemeToggle />
