@@ -76,10 +76,12 @@ export async function GET(request: NextRequest) {
   const status = validateParam(searchParams.get('status'), VALID_STATUSES);
   const sort = validateParam(searchParams.get('sort'), VALID_SORTS);
 
+  const source = searchParams.get('source');
+
   try {
     const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
-      return getProvider().getMangaList({
+      return getProvider(source).getMangaList({
         keyword: keyword || undefined,
         category: category || undefined,
         region: region || undefined,

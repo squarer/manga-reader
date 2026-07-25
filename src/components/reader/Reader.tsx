@@ -40,12 +40,12 @@ function LoadingState() {
 /**
  * 錯誤狀態
  */
-function ErrorState({ mangaId, error }: { mangaId: string; error: string }) {
+function ErrorState({ source, mangaId, error }: { source: string; mangaId: string; error: string }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <div className="text-xl text-destructive">{error}</div>
       <Button asChild variant="secondary">
-        <Link href={`/manga/${mangaId}`}>返回漫畫詳情</Link>
+        <Link href={`/manga/${source}/${mangaId}`}>返回漫畫詳情</Link>
       </Button>
     </div>
   );
@@ -374,7 +374,7 @@ function parseInitialPage(total: number): number {
  *
  * 支援滾動和單頁兩種閱讀模式，含工具列和快捷鍵
  */
-export default function Reader({ mangaId, chapterId, initialData }: ReaderProps) {
+export default function Reader({ source, mangaId, chapterId, initialData }: ReaderProps) {
   const [data, setData] = useState<ChapterData | null>(initialData ?? null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
@@ -401,9 +401,10 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
       setCurrentPage(validPage);
 
       addHistory({
+        source,
         mangaId: initialData.bid,
         mangaName: initialData.bname,
-        mangaCover: `/cpic/b/${initialData.bid}.jpg`,
+        mangaCover: initialData.mangaCover ?? `/cpic/b/${initialData.bid}.jpg`,
         chapterId: initialData.cid,
         chapterName: initialData.cname,
         page: validPage,
@@ -419,7 +420,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
       setError(null);
 
       try {
-        const res = await fetch(`/api/chapter/${mangaId}/${chapterId}`, {
+        const res = await fetch(`/api/chapter/${mangaId}/${chapterId}?source=${source}`, {
           signal: abortController.signal,
         });
         const json = await res.json();
@@ -432,9 +433,10 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
           setCurrentPage(validPage);
 
           addHistory({
+            source,
             mangaId: json.data.bid,
             mangaName: json.data.bname,
-            mangaCover: `/cpic/b/${json.data.bid}.jpg`,
+            mangaCover: json.data.mangaCover ?? `/cpic/b/${json.data.bid}.jpg`,
             chapterId: json.data.cid,
             chapterName: json.data.cname,
             page: validPage,
@@ -459,7 +461,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
     return () => {
       abortController.abort();
     };
-  }, [mangaId, chapterId, initialData, addHistory]);
+  }, [source, mangaId, chapterId, initialData, addHistory]);
 
   /**
    * 更新 URL 頁碼參數
@@ -494,26 +496,26 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
   /** 切換上一話（SPA 導航，儲存進度） */
   const goToPrevChapter = useCallback(() => {
     if (data?.prevCid) {
-      updateHistoryPage(mangaId, data.cid, currentPage);
+      updateHistoryPage(source, mangaId, data.cid, currentPage);
       setCurrentPage(0);
       if (settings.viewMode === ViewMode.Single) {
         window.scrollTo({ top: 0, behavior: 'instant' });
       }
-      router.push(`/read/${mangaId}/${data.prevCid}`);
+      router.push(`/read/${source}/${mangaId}/${data.prevCid}`);
     }
-  }, [data, mangaId, currentPage, settings.viewMode, updateHistoryPage, router]);
+  }, [data, source, mangaId, currentPage, settings.viewMode, updateHistoryPage, router]);
 
   /** 切換下一話（SPA 導航，儲存進度） */
   const goToNextChapter = useCallback(() => {
     if (data?.nextCid) {
-      updateHistoryPage(mangaId, data.cid, currentPage);
+      updateHistoryPage(source, mangaId, data.cid, currentPage);
       setCurrentPage(0);
       if (settings.viewMode === ViewMode.Single) {
         window.scrollTo({ top: 0, behavior: 'instant' });
       }
-      router.push(`/read/${mangaId}/${data.nextCid}`);
+      router.push(`/read/${source}/${mangaId}/${data.nextCid}`);
     }
-  }, [data, mangaId, currentPage, settings.viewMode, updateHistoryPage, router]);
+  }, [data, source, mangaId, currentPage, settings.viewMode, updateHistoryPage, router]);
 
   /**
    * 滾動模式頁面切換（由 IntersectionObserver 觸發）
@@ -617,16 +619,17 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
   useEffect(() => {
     if (!data) return;
 
-    const mangaId = data.bid;
-    const chapterId = data.cid;
+    const dataBid = data.bid;
+    const dataCid = data.cid;
+    const dataSource = data.source;
 
     function handleBeforeUnload() {
-      updateHistoryPage(mangaId, chapterId, currentPage);
+      updateHistoryPage(dataSource, dataBid, dataCid, currentPage);
     }
 
     function handleVisibilityChange() {
       if (document.visibilityState === 'hidden') {
-        updateHistoryPage(mangaId, chapterId, currentPage);
+        updateHistoryPage(dataSource, dataBid, dataCid, currentPage);
       }
     }
 
@@ -637,7 +640,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       // 組件卸載時也保存
-      updateHistoryPage(mangaId, chapterId, currentPage);
+      updateHistoryPage(dataSource, dataBid, dataCid, currentPage);
     };
   }, [data, currentPage, updateHistoryPage]);
 
@@ -646,13 +649,13 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
   }
 
   if (error || !data) {
-    return <ErrorState mangaId={mangaId} error={error || '載入失敗'} />;
+    return <ErrorState source={source} mangaId={mangaId} error={error || '載入失敗'} />;
   }
 
   return (
     <>
       {/* 頂部工具列 */}
-      <TopToolbar mangaId={mangaId} data={data} isVisible={isVisible} />
+      <TopToolbar source={source} mangaId={mangaId} data={data} isVisible={isVisible} />
 
       {/* 閱讀區域 */}
       {settings.viewMode === ViewMode.Scroll ? (
@@ -677,6 +680,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
       {/* 底部工具列 */}
       {isMobile ? (
         <MobileBottomToolbar
+          source={source}
           mangaId={mangaId}
           data={data}
           currentPage={currentPage}
@@ -687,6 +691,7 @@ export default function Reader({ mangaId, chapterId, initialData }: ReaderProps)
         />
       ) : (
         <BottomToolbar
+          source={source}
           mangaId={mangaId}
           data={data}
           currentPage={currentPage}

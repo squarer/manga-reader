@@ -118,7 +118,7 @@ const RankItemCard = memo(function RankItemCard({ item, animationDelay = 0 }: Ra
 
   return (
     <Link
-      href={`/manga/${item.id}`}
+      href={`/manga/${item.source}/${item.id}`}
       className="group block animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
       style={{ animationDelay: `${animationDelay}ms` }}
     >

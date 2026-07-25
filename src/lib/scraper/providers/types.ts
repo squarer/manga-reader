@@ -1,8 +1,9 @@
 import type {
-  MangaInfo, MangaListItem, RankItem, PaginationInfo, FilterOptions, RankTypeEnum,
+  MangaInfo, MangaListItem, RankItem, PaginationInfo, FilterOptions, RankTypeEnum, SourceId,
 } from '../types';
 
-export type SourceId = 'manhuagui' | 'dm5';
+// SourceId 定義已移至 ../types（核心 domain 型別）；此處 re-export 保持既有 import 路徑不壞
+export type { SourceId } from '../types';
 
 export interface ListResult<T> {
   items: T[];
@@ -19,6 +20,10 @@ export interface ChapterImages {
   prevCid?: string;
   nextCid?: string;
   total: number;
+  /** 資料來源 */
+  source: SourceId;
+  /** 封面圖 URL（用於 Reader 寫入閱讀歷史；各 provider 封面路徑不同） */
+  mangaCover?: string;
 }
 
 export interface MangaListParams extends FilterOptions {

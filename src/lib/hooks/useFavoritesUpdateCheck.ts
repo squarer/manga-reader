@@ -42,6 +42,10 @@ async function runWithConcurrency<T>(
  * - 比對邏輯：latest chapterId 是否曾出現在歷史紀錄中（非最近讀的那筆），
  *   避免倒回重讀舊章節時誤顯示 NEW
  */
+/**
+ * `source:mangaId` 複合鍵，避免不同來源 mangaId 碰撞。
+ * 消費端用 `${item.source}:${item.mangaId}` 查詢。
+ */
 export function useFavoritesUpdateCheck(
   favorites: FavoriteItem[],
   history: HistoryItem[],
@@ -59,11 +63,14 @@ export function useFavoritesUpdateCheck(
       const tasks = favorites.map((fav) => async () => {
         if (signal.aborted) return null;
 
-        const mangaHistory = history.filter((h) => h.mangaId === fav.mangaId);
+        // source + mangaId 雙鍵比對
+        const mangaHistory = history.filter(
+          (h) => h.source === fav.source && h.mangaId === fav.mangaId
+        );
         if (mangaHistory.length === 0) return null;
 
         try {
-          const res = await fetch(`/api/manga/${fav.mangaId}`, { signal });
+          const res = await fetch(`/api/manga/${fav.mangaId}?source=${fav.source}`, { signal });
           if (!res.ok) return null;
           const json = await res.json();
           if (!json.success) return null;
@@ -73,7 +80,7 @@ export function useFavoritesUpdateCheck(
           if (latestChapterId === null) return null;
 
           const hasReadLatest = mangaHistory.some((h) => h.chapterId === latestChapterId);
-          return hasReadLatest ? null : fav.mangaId;
+          return hasReadLatest ? null : `${fav.source}:${fav.mangaId}`;
         } catch {
           return null;
         }

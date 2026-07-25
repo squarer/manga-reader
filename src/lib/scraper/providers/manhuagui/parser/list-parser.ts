@@ -9,11 +9,11 @@ import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
  * 解析漫畫列表頁
  */
 export function parseMangaList(html: string): {
-  items: MangaListItem[];
+  items: Omit<MangaListItem, 'source'>[];
   pagination: PaginationInfo;
 } {
   const $ = cheerio.load(html);
-  const items: MangaListItem[] = [];
+  const items: Omit<MangaListItem, 'source'>[] = [];
 
   // 判斷是搜尋結果頁還是列表頁
   const isSearchResult = $('.book-result').length > 0;
@@ -35,7 +35,7 @@ export function parseMangaList(html: string): {
  */
 function parseSearchResultItems(
   $: ReturnType<typeof cheerio.load>,
-  items: MangaListItem[]
+  items: Omit<MangaListItem, 'source'>[]
 ): void {
   $('.book-result li.cf').each((_, el) => {
     const $el = $(el);
@@ -73,7 +73,7 @@ function parseSearchResultItems(
  */
 function parseListItems(
   $: ReturnType<typeof cheerio.load>,
-  items: MangaListItem[]
+  items: Omit<MangaListItem, 'source'>[]
 ): void {
   $('#contList li, .book-list li').each((_, el) => {
     const $el = $(el);

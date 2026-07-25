@@ -2,8 +2,11 @@
  * Reader 元件型別定義和常數
  */
 
+import type { SourceId } from '@/lib/scraper/types';
+
 /** Reader 元件 props */
 export interface ReaderProps {
+  source: SourceId;
   mangaId: string;
   chapterId: string;
   /** Server Component 預取資料，有值時略過 Client fetch */
@@ -20,6 +23,10 @@ export interface ChapterData {
   prevCid?: string;
   nextCid?: string;
   total: number;
+  /** 資料來源 */
+  source: SourceId;
+  /** 封面圖 URL（用於 Reader 寫入閱讀歷史） */
+  mangaCover?: string;
 }
 
 /** 閱讀模式 */

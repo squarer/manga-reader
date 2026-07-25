@@ -24,7 +24,7 @@ const MangaCard = memo(function MangaCard({ manga, animationDelay = 0 }: MangaCa
 
   return (
     <Link
-      href={`/manga/${manga.id}`}
+      href={`/manga/${manga.source}/${manga.id}`}
       className="group block outline-none"
       aria-label={`閱讀 ${manga.name}，最新章節：${manga.latestChapter}`}
     >

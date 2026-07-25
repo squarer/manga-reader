@@ -15,7 +15,7 @@ import { buildCoverUrl } from './constants';
  * @param html - HTML 內容
  * @param type - 排行榜類型（保留供未來日誌使用）
  */
-export function parseRankList(html: string, type?: RankTypeEnum): RankItem[] {
+export function parseRankList(html: string, type?: RankTypeEnum): Omit<RankItem, 'source'>[] {
   void type; // 保留參數供未來日誌使用
   const $ = cheerio.load(html);
 
@@ -35,8 +35,8 @@ export function parseRankList(html: string, type?: RankTypeEnum): RankItem[] {
 function parseRankTableItems(
   $: ReturnType<typeof cheerio.load>,
   $table: ReturnType<ReturnType<typeof cheerio.load>>
-): RankItem[] {
-  const items: RankItem[] = [];
+): Omit<RankItem, 'source'>[] {
+  const items: Omit<RankItem, 'source'>[] = [];
 
   // 遍歷表格行（排除表頭 th 行和分隔行 .rank-split）
   $table.find('tr').each((_, el) => {

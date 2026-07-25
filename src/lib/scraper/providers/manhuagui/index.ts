@@ -57,13 +57,19 @@ export const manhuaguiProvider: MangaProvider = {
       html = await fetchMangaList(category || 'japan', page);
     }
 
-    return parseMangaList(html);
+    const result = parseMangaList(html);
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, source: 'manhuagui' as const })),
+    };
   },
 
   async getMangaDetail(mangaId: string): Promise<MangaInfo | null> {
     const html = await fetchMangaDetail(Number(mangaId));
-    const manga = parseMangaDetail(html, mangaId);
-    if (!manga) return null;
+    const parsed = parseMangaDetail(html, mangaId);
+    if (!parsed) return null;
+
+    const manga: MangaInfo = { ...parsed, source: 'manhuagui' };
 
     // 如果 HTML 解析沒取得評分，嘗試從 vote API 計算
     if (!manga.score) {
@@ -145,6 +151,8 @@ export const manhuaguiProvider: MangaProvider = {
       prevCid: prevCid ?? undefined,
       nextCid: nextCid ?? undefined,
       total: images.length,
+      source: 'manhuagui',
+      mangaCover: `/cpic/b/${imageData.bid}.jpg`,
     };
   },
 
@@ -152,13 +160,17 @@ export const manhuaguiProvider: MangaProvider = {
     const html = await fetchRankList(type);
     const items = parseRankList(html, type);
     return {
-      items,
+      items: items.map((item) => ({ ...item, source: 'manhuagui' as const })),
       pagination: { current: 1, total: 1, totalItems: items.length },
     };
   },
 
   async getUpdateList(page: number): Promise<ListResult<MangaListItem>> {
     const html = await fetchUpdateList(page);
-    return parseUpdateList(html);
+    const result = parseUpdateList(html);
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, source: 'manhuagui' as const })),
+    };
   },
 };

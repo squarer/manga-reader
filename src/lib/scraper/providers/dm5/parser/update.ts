@@ -7,11 +7,11 @@ import * as cheerio from 'cheerio';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 
 export function parseUpdateList(html: string): {
-  items: MangaListItem[];
+  items: Omit<MangaListItem, 'source'>[];
   pagination: PaginationInfo;
 } {
   const $ = cheerio.load(html);
-  const items: MangaListItem[] = [];
+  const items: Omit<MangaListItem, 'source'>[] = [];
 
   $('.manga-info').each((_, el) => {
     const $info = $(el);

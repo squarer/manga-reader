@@ -23,8 +23,9 @@ export default function HistoryContent() {
   const deduped = useMemo(() => {
     const seen = new Set<string>();
     return history.filter((item) => {
-      if (seen.has(item.mangaId)) return false;
-      seen.add(item.mangaId);
+      const key = `${item.source}:${item.mangaId}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
   }, [history]);
@@ -62,7 +63,7 @@ export default function HistoryContent() {
             {deduped.map((item, index) => (
               <div key={`${item.mangaId}-${item.chapterId}`} className="group relative">
                 <Link
-                  href={`/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`}
+                  href={`/read/${item.source}/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`}
                 >
                   <TiltCard
                     animationDelay={index * STAGGER_DELAY}
@@ -99,7 +100,7 @@ export default function HistoryContent() {
                   )}
                   onClick={(e) => {
                     e.preventDefault();
-                    removeHistory(item.mangaId);
+                    removeHistory(item.source, item.mangaId);
                   }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />

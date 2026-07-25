@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import type { ChapterInfo } from '@/lib/scraper/types';
+import type { ChapterInfo, SourceId } from '@/lib/scraper/types';
 import type { HistoryItem } from '@/lib/hooks/useHistory';
 import { Heart, Play, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -45,6 +45,7 @@ function FavoriteButton({
 }
 
 interface MangaActionsProps {
+  source: SourceId;
   id: string;
   currentMangaHistory: HistoryItem | undefined;
   firstChapter: ChapterInfo | null;
@@ -58,6 +59,7 @@ interface MangaActionsProps {
  * 漫畫詳情頁操作按鈕（繼續閱讀、開始閱讀、收藏）
  */
 export default function MangaActions({
+  source,
   id,
   currentMangaHistory,
   firstChapter,
@@ -71,7 +73,7 @@ export default function MangaActions({
       {historyLoaded && currentMangaHistory ? (
         <Button asChild size="lg" className="gap-2">
           <Link
-            href={`/read/${id}/${currentMangaHistory.chapterId}${currentMangaHistory.page > 0 ? `?page=${currentMangaHistory.page + 1}` : ''}`}
+            href={`/read/${source}/${id}/${currentMangaHistory.chapterId}${currentMangaHistory.page > 0 ? `?page=${currentMangaHistory.page + 1}` : ''}`}
           >
             <BookOpen className="h-5 w-5" />
             繼續閱讀 {currentMangaHistory.chapterName}
@@ -79,7 +81,7 @@ export default function MangaActions({
         </Button>
       ) : firstChapter ? (
         <Button asChild size="lg" className="gap-2">
-          <Link href={`/read/${id}/${firstChapter.id}`}>
+          <Link href={`/read/${source}/${id}/${firstChapter.id}`}>
             <Play className="h-5 w-5" />
             開始閱讀
           </Link>

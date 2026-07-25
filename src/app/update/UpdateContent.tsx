@@ -102,7 +102,7 @@ function UpdateMangaCard({
   const coverUrl = getProxiedImageUrl(manga.cover);
 
   return (
-    <Link href={`/manga/${manga.id}`} className="group block">
+    <Link href={`/manga/${manga.source}/${manga.id}`} className="group block">
       <TiltCard animationDelay={animationDelay} className="aspect-[3/4] overflow-hidden rounded-lg">
         <div className="relative h-full w-full bg-muted">
           <Image

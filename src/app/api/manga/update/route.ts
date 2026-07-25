@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const pageParam = searchParams.get('page');
   const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const source = searchParams.get('source');
 
   // 驗證 page 參數必須是正整數
   if (isNaN(page) || page < 1 || !Number.isInteger(page)) {
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
   try {
     const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
-      return getProvider().getUpdateList(page);
+      return getProvider(source).getUpdateList(page);
     });
 
     return NextResponse.json(

@@ -11,6 +11,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const source = searchParams.get('source');
 
   if (!id || !id.trim()) {
     return NextResponse.json(
@@ -20,7 +22,7 @@ export async function GET(
   }
 
   try {
-    const manga = await getProvider().getMangaDetail(id);
+    const manga = await getProvider(source).getMangaDetail(id);
 
     if (!manga) {
       return NextResponse.json(

@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import type { ChapterGroup } from '@/lib/scraper/types';
+import type { ChapterGroup, SourceId } from '@/lib/scraper/types';
 import { ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,11 +20,13 @@ const TAB_COUNT = 5;
  */
 export default function ChapterGroupDisplay({
   group,
+  source,
   mangaId,
   readChapterIds,
   defaultOpen = true,
 }: {
   group: ChapterGroup;
+  source: SourceId;
   mangaId: string;
   readChapterIds: Set<string>;
   defaultOpen?: boolean;
@@ -100,7 +102,7 @@ export default function ChapterGroupDisplay({
                   size="sm"
                   className={cn('relative w-full', isRead && 'border-primary/30 text-muted-foreground')}
                 >
-                  <Link href={`/read/${mangaId}/${chapter.id}`}>
+                  <Link href={`/read/${source}/${mangaId}/${chapter.id}`}>
                     {isRead && (
                       <Check className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-primary p-0.5 text-primary-foreground" />
                     )}

@@ -65,12 +65,18 @@ export const dm5Provider: MangaProvider = {
     const html = keyword
       ? await fetchSearch(keyword, page)
       : await fetchMangaList(page);
-    return parseMangaList(html);
+    const result = parseMangaList(html);
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, source: 'dm5' as const })),
+    };
   },
 
   async getMangaDetail(slug: string): Promise<MangaInfo | null> {
     const html = await fetchMangaDetail(slug);
-    return parseMangaDetail(html, slug);
+    const parsed = parseMangaDetail(html, slug);
+    if (!parsed) return null;
+    return { ...parsed, source: 'dm5' };
   },
 
   async getChapterImages(slug: string, cid: string): Promise<ChapterImages | null> {
@@ -108,6 +114,9 @@ export const dm5Provider: MangaProvider = {
       prevCid,
       nextCid,
       total: images.length,
+      source: 'dm5',
+      // dm5 封面完整 URL 無法在此取得（只有 slug，需另查詳情）
+      // Reader 會從 api/manga/:id?source=dm5 的回傳 cover 取得封面，此處省略
     };
   },
 
@@ -116,7 +125,7 @@ export const dm5Provider: MangaProvider = {
     const html = await fetchRankList(t);
     const items = parseRankList(html);
     return {
-      items,
+      items: items.map((item) => ({ ...item, source: 'dm5' as const })),
       pagination: { current: 1, total: 1, totalItems: items.length },
     };
   },
@@ -125,6 +134,10 @@ export const dm5Provider: MangaProvider = {
   async getUpdateList(_page: number): Promise<ListResult<MangaListItem>> {
     // dm5 更新頁無分頁，page 參數保留介面相容性
     const html = await fetchUpdateList();
-    return parseUpdateList(html);
+    const result = parseUpdateList(html);
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, source: 'dm5' as const })),
+    };
   },
 };

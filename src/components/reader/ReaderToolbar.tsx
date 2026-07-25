@@ -50,6 +50,7 @@ import { ViewMode, type ChapterData, type ReaderSettings } from './types';
 
 /** TopToolbar props */
 interface TopToolbarProps {
+  source: string;
   mangaId: string;
   data: ChapterData;
   isVisible: boolean;
@@ -60,7 +61,7 @@ interface TopToolbarProps {
  *
  * 顯示漫畫名稱、章節名稱和設定按鈕
  */
-export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
+export function TopToolbar({ source, mangaId, data, isVisible }: TopToolbarProps) {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 flex select-none items-center justify-between bg-gradient-to-b from-background/90 to-transparent px-4 pb-3 pt-[4.5rem] transition-all duration-300 ${
@@ -70,7 +71,7 @@ export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
       }`}
     >
       <Button asChild variant="ghost" size="icon">
-        <Link href={`/manga/${mangaId}`}>
+        <Link href={`/manga/${source}/${mangaId}`}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
       </Button>
@@ -96,6 +97,7 @@ export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
 
 /** BottomToolbar props */
 interface BottomToolbarProps {
+  source: string;
   mangaId: string;
   data: ChapterData;
   currentPage: number;
@@ -116,6 +118,7 @@ interface BottomToolbarProps {
  * 顯示進度條、章節導航和閱讀模式切換
  */
 export function BottomToolbar({
+  source,
   mangaId,
   data,
   currentPage,
@@ -150,7 +153,7 @@ export function BottomToolbar({
   const goToNextChapter = () => {
     if (data.nextCid) {
       window.scrollTo({ top: 0, behavior: 'instant' });
-      router.push(`/read/${mangaId}/${data.nextCid}`);
+      router.push(`/read/${source}/${mangaId}/${data.nextCid}`);
     }
   };
 
@@ -219,7 +222,7 @@ export function BottomToolbar({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button asChild variant="ghost" size="icon">
-                    <Link href={`/manga/${mangaId}`}>
+                    <Link href={`/manga/${source}/${mangaId}`}>
                       <ListOrdered className="h-5 w-5" />
                     </Link>
                   </Button>
@@ -239,7 +242,7 @@ export function BottomToolbar({
                     disabled={!data.prevCid}
                   >
                     {data.prevCid ? (
-                      <Link href={`/read/${mangaId}/${data.prevCid}`}>
+                      <Link href={`/read/${source}/${mangaId}/${data.prevCid}`}>
                         <SkipBack className="mr-1 h-4 w-4" />
                         上一話
                       </Link>
@@ -325,7 +328,7 @@ export function BottomToolbar({
                     disabled={!data.nextCid}
                   >
                     {data.nextCid ? (
-                      <Link href={`/read/${mangaId}/${data.nextCid}`}>
+                      <Link href={`/read/${source}/${mangaId}/${data.nextCid}`}>
                         下一話
                         <SkipForward className="ml-1 h-4 w-4" />
                       </Link>

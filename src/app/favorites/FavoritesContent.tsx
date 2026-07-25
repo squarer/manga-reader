@@ -50,7 +50,7 @@ export default function FavoritesContent() {
           <div className={DENSE_GRID_CLASS}>
             {favorites.map((item, index) => (
               <div key={item.mangaId} className="group relative">
-                <Link href={`/manga/${item.mangaId}`}>
+                <Link href={`/manga/${item.source}/${item.mangaId}`}>
                   <TiltCard
                     animationDelay={index * STAGGER_DELAY}
                     className="aspect-[3/4] w-full overflow-hidden rounded-lg"
@@ -63,7 +63,7 @@ export default function FavoritesContent() {
                         className="object-cover transition-transform group-hover:scale-105"
                         unoptimized
                       />
-                      {newChapterIds.has(item.mangaId) && (
+                      {newChapterIds.has(`${item.source}:${item.mangaId}`) && (
                         <div className="absolute left-1 top-1 z-30 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                           NEW
                         </div>
@@ -85,7 +85,7 @@ export default function FavoritesContent() {
                   )}
                   onClick={(e) => {
                     e.preventDefault();
-                    removeFavorite(item.mangaId);
+                    removeFavorite(item.source, item.mangaId);
                   }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />

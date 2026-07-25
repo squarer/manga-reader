@@ -16,9 +16,9 @@ function extractBgImageUrl(style: string): string {
   return m[1].replace(/['"]/g, '').trim();
 }
 
-export function parseRankList(html: string): RankItem[] {
+export function parseRankList(html: string): Omit<RankItem, 'source'>[] {
   const $ = cheerio.load(html);
-  const items: RankItem[] = [];
+  const items: Omit<RankItem, 'source'>[] = [];
 
   // 排行榜項目在 ul.mh-list.top-cat > li > .mh-item.horizontal
   $('ul.top-cat li').each((idx, li) => {

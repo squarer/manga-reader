@@ -9,7 +9,7 @@ import type { MangaInfo, ChapterGroup, ChapterInfo } from '@/lib/scraper/types';
 /**
  * 解析漫畫詳情頁
  */
-export function parseMangaDetail(html: string, mangaId: string): MangaInfo | null {
+export function parseMangaDetail(html: string, mangaId: string): Omit<MangaInfo, 'source'> | null {
   const $ = cheerio.load(html);
 
   // 基本資訊 - 標題

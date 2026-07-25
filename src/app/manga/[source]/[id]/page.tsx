@@ -5,18 +5,17 @@ import type { MangaInfo } from '@/lib/scraper/types';
 import MangaDetailContent from './MangaDetailContent';
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ source: string; id: string }>;
 }
 
-/** 跨請求快取漫畫詳情（30 分鐘），避免每次 SSR 都重新爬取 */
+/**
+ * 跨請求快取漫畫詳情（30 分鐘）。
+ * cacheKey 含 source，避免跨來源快取污染。
+ * 爬取失敗直接拋出，讓 error.tsx boundary 接住。
+ */
 const getMangaData = unstable_cache(
-  async (mangaId: string): Promise<MangaInfo | null> => {
-    try {
-      return await getProvider().getMangaDetail(mangaId);
-    } catch (err) {
-      console.error('getMangaData failed:', err);
-      return null;
-    }
+  async (source: string, mangaId: string): Promise<MangaInfo | null> => {
+    return getProvider(source).getMangaDetail(mangaId);
   },
   ['manga-detail'],
   { revalidate: 1800 }
@@ -35,9 +34,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * Server 取得資料後透過 initialData 傳入 Client Component，避免 Client 端重複請求
  */
 export default async function MangaDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  const { source, id } = await params;
 
-  const initialData = id && id.trim() ? await getMangaData(id) : null;
+  const initialData = id && id.trim() ? await getMangaData(source, id) : null;
 
-  return <MangaDetailContent id={id} initialData={initialData} />;
+  return <MangaDetailContent source={source} id={id} initialData={initialData} />;
 }

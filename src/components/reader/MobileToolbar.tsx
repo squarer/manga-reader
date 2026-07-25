@@ -34,6 +34,7 @@ import { ViewMode, type ChapterData } from './types';
 
 /** MobileBottomToolbar props */
 interface MobileBottomToolbarProps {
+  source: string;
   mangaId: string;
   data: ChapterData;
   currentPage: number;
@@ -55,6 +56,7 @@ interface MobileBottomToolbarProps {
  * 精簡導航：章節列表、上/下一話、上/下一頁、頁碼
  */
 export function MobileBottomToolbar({
+  source,
   mangaId,
   data,
   currentPage,
@@ -78,7 +80,7 @@ export function MobileBottomToolbar({
   const goToNextChapter = () => {
     if (data.nextCid) {
       window.scrollTo({ top: 0, behavior: 'instant' });
-      router.push(`/read/${mangaId}/${data.nextCid}`);
+      router.push(`/read/${source}/${mangaId}/${data.nextCid}`);
     }
   };
 
@@ -123,7 +125,7 @@ export function MobileBottomToolbar({
             <div className="flex items-center justify-center gap-1">
               {/* 章節列表 */}
               <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                <Link href={`/manga/${mangaId}`}>
+                <Link href={`/manga/${source}/${mangaId}`}>
                   <ListOrdered className="h-4 w-4" />
                 </Link>
               </Button>
@@ -137,7 +139,7 @@ export function MobileBottomToolbar({
                 disabled={!data.prevCid}
               >
                 {data.prevCid ? (
-                  <Link href={`/read/${mangaId}/${data.prevCid}`}>
+                  <Link href={`/read/${source}/${mangaId}/${data.prevCid}`}>
                     <SkipBack className="h-4 w-4" />
                   </Link>
                 ) : (
@@ -187,7 +189,7 @@ export function MobileBottomToolbar({
                 disabled={!data.nextCid}
               >
                 {data.nextCid ? (
-                  <Link href={`/read/${mangaId}/${data.nextCid}`}>
+                  <Link href={`/read/${source}/${mangaId}/${data.nextCid}`}>
                     <SkipForward className="h-4 w-4" />
                   </Link>
                 ) : (

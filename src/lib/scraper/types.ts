@@ -1,3 +1,6 @@
+/** 漫畫資料來源識別碼 */
+export type SourceId = 'manhuagui' | 'dm5';
+
 // 漫畫基本資訊
 export interface MangaInfo {
   id: string;
@@ -11,6 +14,8 @@ export interface MangaInfo {
   chapters: ChapterGroup[];
   /** 評分 (10 分制) */
   score?: number;
+  /** 資料來源 */
+  source: SourceId;
 }
 
 // 章節分組 (單話、番外篇等)
@@ -50,6 +55,8 @@ export interface MangaListItem {
   latestChapter: string;
   updateTime: string;
   score?: number;
+  /** 資料來源 */
+  source: SourceId;
 }
 
 // 排行榜趨勢

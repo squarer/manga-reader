@@ -12,6 +12,8 @@ export async function GET(
   { params }: { params: Promise<{ bid: string; cid: string }> }
 ) {
   const { bid, cid } = await params;
+  const { searchParams } = new URL(request.url);
+  const source = searchParams.get('source');
 
   if (!bid || !bid.trim() || !cid || !cid.trim()) {
     return NextResponse.json(
@@ -21,7 +23,7 @@ export async function GET(
   }
 
   try {
-    const chapterImages = await getProvider().getChapterImages(bid, cid);
+    const chapterImages = await getProvider(source).getChapterImages(bid, cid);
 
     if (!chapterImages) {
       return NextResponse.json(

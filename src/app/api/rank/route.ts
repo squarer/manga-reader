@@ -13,6 +13,7 @@ import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const type = (searchParams.get('type') || 'day') as RankTypeEnum;
+  const source = searchParams.get('source');
 
   // 驗證 type 參數
   const validTypes = ['day', 'week', 'month', 'total'];
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   try {
     const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
-      return getProvider().getRankList(type);
+      return getProvider(source).getRankList(type);
     });
 
     return NextResponse.json(

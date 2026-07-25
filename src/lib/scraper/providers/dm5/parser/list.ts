@@ -14,7 +14,7 @@ import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 function parseMangaInfoEl(
   $: ReturnType<typeof cheerio.load>,
   el: cheerio.Element
-): MangaListItem | null {
+): Omit<MangaListItem, 'source'> | null {
   const $info = $(el);
   const uk = $info.attr('uk') ?? '';          // e.g. "manhua-bailianchengshen"
   const slug = uk.replace(/^manhua-/, '');    // e.g. "bailianchengshen"
@@ -76,11 +76,11 @@ function parsePagination(
 }
 
 export function parseMangaList(html: string): {
-  items: MangaListItem[];
+  items: Omit<MangaListItem, 'source'>[];
   pagination: PaginationInfo;
 } {
   const $ = cheerio.load(html);
-  const items: MangaListItem[] = [];
+  const items: Omit<MangaListItem, 'source'>[] = [];
 
   $('.manga-info').each((_, el) => {
     const item = parseMangaInfoEl($, el);

@@ -10,11 +10,11 @@ import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
  * 頁面結構：.latest-list > ul > li
  */
 export function parseUpdateList(html: string): {
-  items: MangaListItem[];
+  items: Omit<MangaListItem, 'source'>[];
   pagination: PaginationInfo;
 } {
   const $ = cheerio.load(html);
-  const items: MangaListItem[] = [];
+  const items: Omit<MangaListItem, 'source'>[] = [];
 
   // 更新頁面結構：.latest-list > ul > li
   $('.latest-list ul li').each((_, el) => {

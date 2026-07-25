@@ -6,7 +6,7 @@
 import * as cheerio from 'cheerio';
 import type { MangaInfo, ChapterGroup, ChapterInfo } from '@/lib/scraper/types';
 
-export function parseMangaDetail(html: string, slug: string): MangaInfo | null {
+export function parseMangaDetail(html: string, slug: string): Omit<MangaInfo, 'source'> | null {
   const $ = cheerio.load(html);
 
   // 標題：.banner_detail .info p.title（取直接文字，排除 span 子元素）

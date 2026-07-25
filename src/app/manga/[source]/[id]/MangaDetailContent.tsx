@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { MangaInfo } from '@/lib/scraper/types';
+import type { MangaInfo, SourceId } from '@/lib/scraper/types';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 import { useHistory } from '@/lib/hooks/useHistory';
 import { useFetch } from '@/lib/hooks/useFetch';
@@ -49,6 +49,7 @@ function LoadingSkeleton() {
 }
 
 interface MangaDetailContentProps {
+  source: string;
   id: string;
   /** Server Component 預取資料，有值時略過 Client fetch */
   initialData?: MangaInfo | null;
@@ -57,24 +58,34 @@ interface MangaDetailContentProps {
 /**
  * 漫畫詳情頁內容（Client Component）
  */
-export default function MangaDetailContent({ id, initialData }: MangaDetailContentProps) {
+export default function MangaDetailContent({ source, id, initialData }: MangaDetailContentProps) {
   const router = useRouter();
   const { data: manga, loading, error } = useFetch<MangaInfo>(
-    initialData ? null : `/api/manga/${id}`,
-    [id],
+    initialData ? null : `/api/manga/${id}?source=${source}`,
+    [id, source],
     { initialData }
   );
   const { isFavorite, toggleFavorite, isLoaded: favLoaded } = useFavorites();
   const { history, isLoaded: historyLoaded } = useHistory();
 
+  // provider 蓋章的 source 優先；fallback 用 route param（型別為 string，cast 為 SourceId）
+  const resolvedSource = (manga?.source ?? source) as SourceId;
+
   const readChapterIds = useMemo(() => {
     if (!historyLoaded || !manga) return new Set<string>();
-    return new Set(history.filter((h) => h.mangaId === manga.id).map((h) => h.chapterId));
-  }, [history, historyLoaded, manga]);
+    return new Set(
+      history
+        .filter((h) => h.source === resolvedSource && h.mangaId === manga.id)
+        .map((h) => h.chapterId)
+    );
+  }, [history, historyLoaded, manga, resolvedSource]);
 
   const currentMangaHistory = useMemo(
-    () => (historyLoaded && manga ? history.find((h) => h.mangaId === manga.id) : undefined),
-    [history, historyLoaded, manga]
+    () =>
+      historyLoaded && manga
+        ? history.find((h) => h.source === resolvedSource && h.mangaId === manga.id)
+        : undefined,
+    [history, historyLoaded, manga, resolvedSource]
   );
 
   const firstChapter = useMemo(() => {
@@ -139,14 +150,16 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
           <div className="flex-1 text-center md:text-left">
             <MangaInfoHeader manga={manga} />
             <MangaActions
+              source={resolvedSource}
               id={id}
               currentMangaHistory={currentMangaHistory}
               firstChapter={firstChapter}
               historyLoaded={historyLoaded}
               favLoaded={favLoaded}
-              isFavorited={isFavorite(manga.id)}
+              isFavorited={isFavorite(resolvedSource, manga.id)}
               onToggleFavorite={() =>
                 toggleFavorite({
+                  source: resolvedSource,
                   mangaId: manga.id,
                   mangaName: manga.name,
                   mangaCover: toCoverRelativePath(manga.cover),
@@ -166,6 +179,7 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
             <ChapterGroupDisplay
               key={groupIndex}
               group={group}
+              source={resolvedSource}
               mangaId={id}
               readChapterIds={readChapterIds}
               defaultOpen={groupIndex === 0}

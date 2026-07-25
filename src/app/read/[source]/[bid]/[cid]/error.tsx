@@ -13,7 +13,10 @@ interface ErrorProps {
 
 export default function ReaderError({ error, reset }: ErrorProps) {
   const pathname = usePathname();
-  const bid = pathname?.split('/')[2];
+  // pathname: /read/[source]/[bid]/[cid] → segments [0]='', [1]='read', [2]=source, [3]=bid
+  const segments = pathname?.split('/') ?? [];
+  const source = segments[2];
+  const bid = segments[3];
 
   useEffect(() => {
     console.error(error);
@@ -29,7 +32,7 @@ export default function ReaderError({ error, reset }: ErrorProps) {
           重試
         </Button>
         <Button variant="outline" asChild>
-          <Link href={bid ? `/manga/${bid}` : '/'}>返回漫畫</Link>
+          <Link href={bid ? `/manga/${source}/${bid}` : '/'}>返回漫畫</Link>
         </Button>
       </div>
     </div>

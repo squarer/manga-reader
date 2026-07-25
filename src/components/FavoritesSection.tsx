@@ -13,7 +13,7 @@ export default function FavoritesSection() {
     () =>
       favorites.slice(0, MAX_STACKED_CARDS).map((item) => ({
         id: item.mangaId,
-        href: `/manga/${item.mangaId}`,
+        href: `/manga/${item.source}/${item.mangaId}`,
         cover: getProxiedImageUrl(item.mangaCover),
         title: item.mangaName,
       })),

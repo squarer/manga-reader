@@ -13,13 +13,14 @@ export default function HistorySection() {
     // 每部漫畫只顯示最新一筆（history 已按 timestamp desc 排序）
     const seen = new Set<string>();
     const deduped = history.filter((item) => {
-      if (seen.has(item.mangaId)) return false;
-      seen.add(item.mangaId);
+      const key = `${item.source}:${item.mangaId}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
     return deduped.slice(0, MAX_STACKED_CARDS).map((item) => ({
       id: `${item.mangaId}-${item.chapterId}`,
-      href: `/read/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`,
+      href: `/read/${item.source}/${item.mangaId}/${item.chapterId}${item.page > 0 ? `?page=${item.page + 1}` : ''}`,
       cover: getProxiedImageUrl(item.mangaCover),
       title: item.mangaName,
       subtitle: item.chapterName,
