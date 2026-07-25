@@ -40,7 +40,7 @@ function LoadingState() {
 /**
  * 錯誤狀態
  */
-function ErrorState({ mangaId, error }: { mangaId: number; error: string }) {
+function ErrorState({ mangaId, error }: { mangaId: string; error: string }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <div className="text-xl text-destructive">{error}</div>

@@ -12,7 +12,7 @@ export default function FavoritesSection() {
   const items: StackedCardItem[] = useMemo(
     () =>
       favorites.slice(0, MAX_STACKED_CARDS).map((item) => ({
-        id: String(item.mangaId),
+        id: item.mangaId,
         href: `/manga/${item.mangaId}`,
         cover: getProxiedImageUrl(item.mangaCover),
         title: item.mangaName,

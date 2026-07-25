@@ -178,9 +178,12 @@ export async function fetchChapterPage(
 
 /**
  * 獲取圖片 (用於代理)
+ * @param imageUrl 圖片完整 URL
+ * @param referer 防盜鏈 Referer，由 provider.imageProxy.referer 傳入
  */
 export async function fetchImage(
-  imageUrl: string
+  imageUrl: string,
+  referer: string
 ): Promise<{ data: Buffer; contentType: string }> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30000);
@@ -189,7 +192,7 @@ export async function fetchImage(
     const res = await fetch(imageUrl, {
       headers: {
         'User-Agent': getRandomUserAgent(),
-        Referer: 'https://www.manhuagui.com/',
+        Referer: referer,
         Accept: 'image/webp,image/apng,image/*,*/*;q=0.8',
       },
       signal: controller.signal,
@@ -224,7 +227,7 @@ export function delay(ms: number): Promise<void> {
  * - filters: region_genre_year_letter_status（底線連接，空值省略）
  * - sort: update.html / view.html / rate.html（預設無需加）
  */
-function buildFilterPath(options: import('./types').FilterOptions): string {
+function buildFilterPath(options: import('@/lib/scraper/types').FilterOptions): string {
   const { region, genre, status, year, letter, sort, page } = options;
 
   // 組合篩選條件（底線連接，順序必須是 region_genre_year_letter_status）
@@ -261,7 +264,7 @@ function buildFilterPath(options: import('./types').FilterOptions): string {
  * 獲取帶篩選的漫畫列表
  */
 export async function fetchMangaListWithFilters(
-  options: import('./types').FilterOptions
+  options: import('@/lib/scraper/types').FilterOptions
 ): Promise<string> {
   const url = buildFilterPath(options);
   return fetchHtml(url);
@@ -276,7 +279,7 @@ export async function fetchMangaListWithFilters(
  * - 總榜：/rank/total.html
  */
 export async function fetchRankList(
-  type: import('./types').RankTypeEnum = 'day' as import('./types').RankTypeEnum
+  type: import('@/lib/scraper/types').RankTypeEnum = 'day' as import('@/lib/scraper/types').RankTypeEnum
 ): Promise<string> {
   const urlMap: Record<string, string> = {
     day: '/rank/',

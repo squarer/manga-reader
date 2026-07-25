@@ -4,12 +4,12 @@
 
 import * as cheerio from 'cheerio';
 import LZString from 'lz-string';
-import type { MangaInfo, ChapterGroup, ChapterInfo } from '../types';
+import type { MangaInfo, ChapterGroup, ChapterInfo } from '@/lib/scraper/types';
 
 /**
  * 解析漫畫詳情頁
  */
-export function parseMangaDetail(html: string, mangaId: number): MangaInfo | null {
+export function parseMangaDetail(html: string, mangaId: string): MangaInfo | null {
   const $ = cheerio.load(html);
 
   // 基本資訊 - 標題
@@ -176,7 +176,7 @@ function parseDescription($: ReturnType<typeof cheerio.load>): string {
  */
 function parseChapterList($: ReturnType<typeof cheerio.load>): ChapterGroup[] {
   const groups: ChapterGroup[] = [];
-  const seenChapterIds = new Set<number>();
+  const seenChapterIds = new Set<string>();
 
   // manhuagui 的章節分組在 .chapter 區塊內
   const chapterContainer = $('.chapter');
@@ -201,7 +201,7 @@ function parseChapterList($: ReturnType<typeof cheerio.load>): ChapterGroup[] {
             const cidMatch = href.match(/\/(\d+)\.html/);
 
             if (cidMatch) {
-              const chapterId = parseInt(cidMatch[1], 10);
+              const chapterId = cidMatch[1];
               // 避免重複
               if (!seenChapterIds.has(chapterId)) {
                 seenChapterIds.add(chapterId);
@@ -236,7 +236,7 @@ function parseChapterList($: ReturnType<typeof cheerio.load>): ChapterGroup[] {
       const cidMatch = href.match(/\/comic\/\d+\/(\d+)\.html/);
 
       if (cidMatch) {
-        const chapterId = parseInt(cidMatch[1], 10);
+        const chapterId = cidMatch[1];
         if (!seenChapterIds.has(chapterId)) {
           seenChapterIds.add(chapterId);
           allChapters.push({

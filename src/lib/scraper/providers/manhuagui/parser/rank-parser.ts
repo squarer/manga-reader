@@ -3,8 +3,8 @@
  */
 
 import * as cheerio from 'cheerio';
-import type { RankItem, RankTypeEnum } from '../types';
-import { RankTrend } from '../types';
+import type { RankItem, RankTypeEnum } from '@/lib/scraper/types';
+import { RankTrend } from '@/lib/scraper/types';
 import { buildCoverUrl } from './constants';
 
 /**
@@ -63,7 +63,7 @@ function parseRankTableItems(
     const idMatch = href.match(/\/comic\/(\d+)/);
     if (!idMatch) return;
 
-    const id = parseInt(idMatch[1], 10);
+    const id = idMatch[1];
     const name = $titleLink.text().trim();
 
     // 提取作者（可能有多個作者，用逗號分隔）

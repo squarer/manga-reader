@@ -5,7 +5,7 @@ import { toCoverRelativePath } from '@/lib/image-utils';
 import { useLocalStorage } from './useLocalStorage';
 
 export interface FavoriteItem {
-  mangaId: number;
+  mangaId: string;
   mangaName: string;
   mangaCover: string;
   addedAt: number;
@@ -13,14 +13,23 @@ export interface FavoriteItem {
 
 const STORAGE_KEY = 'manga-reader-favorites';
 
+/**
+ * 收藏管理 hook。
+ * 讀取時將舊版 number mangaId 正規化為 string，確保新舊 localStorage 資料相容。
+ */
 export function useFavorites() {
   const [favorites, setFavorites, isLoaded] = useLocalStorage<FavoriteItem[]>(STORAGE_KEY, [], {
     transform: (items) =>
-      items.map((item) => ({ ...item, mangaCover: toCoverRelativePath(item.mangaCover) })),
+      items.map((item) => ({
+        ...item,
+        // 舊資料 mangaId 可能為 number，強制轉 string 保持一致
+        mangaId: String(item.mangaId),
+        mangaCover: toCoverRelativePath(item.mangaCover),
+      })),
   });
 
   const isFavorite = useCallback(
-    (mangaId: number) => favorites.some((f) => f.mangaId === mangaId),
+    (mangaId: string) => favorites.some((f) => f.mangaId === mangaId),
     [favorites]
   );
 
@@ -35,7 +44,7 @@ export function useFavorites() {
   }, [setFavorites]);
 
   const removeFavorite = useCallback(
-    (mangaId: number) => {
+    (mangaId: string) => {
       setFavorites((prev) => prev.filter((f) => f.mangaId !== mangaId));
     },
     [setFavorites]

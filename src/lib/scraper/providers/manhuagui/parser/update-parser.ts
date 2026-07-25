@@ -3,7 +3,7 @@
  */
 
 import * as cheerio from 'cheerio';
-import type { MangaListItem, PaginationInfo } from '../types';
+import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 
 /**
  * 解析最新更新頁面
@@ -40,7 +40,7 @@ export function parseUpdateList(html: string): {
     const score = scoreText ? parseFloat(scoreText) : undefined;
 
     items.push({
-      id: parseInt(idMatch[1], 10),
+      id: idMatch[1],
       name,
       cover,
       latestChapter,

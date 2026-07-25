@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import LZString from 'lz-string';
-import { parseMangaDetail, naturalSort } from '../parser/detail-parser';
+import { parseMangaDetail, naturalSort } from '../providers/manhuagui/parser/detail-parser';
 
 describe('naturalSort', () => {
   it('純數字字串排序：["10","9","1"] → ["1","9","10"]', () => {
@@ -69,44 +69,44 @@ function makeHtml({
 
 describe('parseMangaDetail', () => {
   it('解析標題、封面、作者，回傳正確 MangaInfo', () => {
-    const result = parseMangaDetail(makeHtml(), 12345);
+    const result = parseMangaDetail(makeHtml(), '12345');
     expect(result).not.toBeNull();
     expect(result!.name).toBe('測試漫畫');
     expect(result!.author).toBe('作者名');
-    expect(result!.id).toBe(12345);
+    expect(result!.id).toBe('12345');
   });
 
   it('無標題的 HTML 回傳 null', () => {
-    expect(parseMangaDetail('<html><body></body></html>', 1)).toBeNull();
+    expect(parseMangaDetail('<html><body></body></html>', '1')).toBeNull();
   });
 
   it('解析連載狀態 "连载" → "連載中"', () => {
-    const result = parseMangaDetail(makeHtml({ status: '连载' }), 1);
+    const result = parseMangaDetail(makeHtml({ status: '连载' }), '1');
     expect(result!.status).toBe('連載中');
   });
 
   it('解析完結狀態 "完结" → "已完結"', () => {
-    const result = parseMangaDetail(makeHtml({ status: '完结' }), 1);
+    const result = parseMangaDetail(makeHtml({ status: '完结' }), '1');
     expect(result!.status).toBe('已完結');
   });
 
   it('解析更新日期', () => {
-    const result = parseMangaDetail(makeHtml({ date: '2024-06-01' }), 1);
+    const result = parseMangaDetail(makeHtml({ date: '2024-06-01' }), '1');
     expect(result!.lastUpdate).toBe('2024-06-01');
   });
 
   it('封面 // 開頭自動補 https:', () => {
-    const result = parseMangaDetail(makeHtml({ cover: '//cf.mhgui.com/cpic/h/1.jpg' }), 1);
+    const result = parseMangaDetail(makeHtml({ cover: '//cf.mhgui.com/cpic/h/1.jpg' }), '1');
     expect(result!.cover).toBe('https://cf.mhgui.com/cpic/h/1.jpg');
   });
 
   it('評分格式 <em>8.5</em> 正確解析為 number', () => {
-    const result = parseMangaDetail(makeHtml({ score: '8.5' }), 1);
+    const result = parseMangaDetail(makeHtml({ score: '8.5' }), '1');
     expect(result!.score).toBe(8.5);
   });
 
   it('非數字評分時 score 為 undefined', () => {
-    const result = parseMangaDetail(makeHtml({ score: 'N/A' }), 1);
+    const result = parseMangaDetail(makeHtml({ score: 'N/A' }), '1');
     expect(result!.score).toBeUndefined();
   });
 
@@ -119,7 +119,7 @@ describe('parseMangaDetail', () => {
           { id: 1002, name: '第2話' },
         ],
       }),
-      12345
+      '12345'
     );
     expect(result!.chapters.length).toBeGreaterThan(0);
     const names = result!.chapters[0].chapters.map((ch) => ch.name);
@@ -132,7 +132,7 @@ describe('parseMangaDetail', () => {
       '</ul>',
       '<li><a href="/list/japan/">日本</a></li></ul>'
     );
-    const result = parseMangaDetail(html, 1);
+    const result = parseMangaDetail(html, '1');
     expect(result!.genres).not.toContain('日本');
   });
 
@@ -157,7 +157,7 @@ describe('parseMangaDetail', () => {
       </div>
     </body></html>`;
 
-    const result = parseMangaDetail(html, 999);
+    const result = parseMangaDetail(html, '999');
     expect(result).not.toBeNull();
     expect(result!.chapters.length).toBe(1);
     expect(result!.chapters[0].title).toBe('單行本');

@@ -68,7 +68,7 @@ export default function MangaDetailContent({ id, initialData }: MangaDetailConte
   const { history, isLoaded: historyLoaded } = useHistory();
 
   const readChapterIds = useMemo(() => {
-    if (!historyLoaded || !manga) return new Set<number>();
+    if (!historyLoaded || !manga) return new Set<string>();
     return new Set(history.filter((h) => h.mangaId === manga.id).map((h) => h.chapterId));
   }, [history, historyLoaded, manga]);
 

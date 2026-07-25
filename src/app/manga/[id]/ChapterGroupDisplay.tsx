@@ -26,7 +26,7 @@ export default function ChapterGroupDisplay({
 }: {
   group: ChapterGroup;
   mangaId: string;
-  readChapterIds: Set<number>;
+  readChapterIds: Set<string>;
   defaultOpen?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);

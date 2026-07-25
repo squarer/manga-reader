@@ -3,7 +3,7 @@
  */
 
 import * as cheerio from 'cheerio';
-import type { MangaListItem, PaginationInfo } from '../types';
+import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 
 /**
  * 解析漫畫列表頁
@@ -58,7 +58,7 @@ function parseSearchResultItems(
     const score = scoreText ? parseFloat(scoreText) : undefined;
 
     items.push({
-      id: parseInt(idMatch[1], 10),
+      id: idMatch[1],
       name,
       cover,
       latestChapter,
@@ -108,7 +108,7 @@ function parseListItems(
     const score = scoreText ? parseFloat(scoreText) : undefined;
 
     items.push({
-      id: parseInt(idMatch[1], 10),
+      id: idMatch[1],
       name,
       cover,
       latestChapter,

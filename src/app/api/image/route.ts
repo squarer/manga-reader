@@ -1,9 +1,11 @@
 /**
  * 圖片代理 API
  * 繞過防盜鏈獲取漫畫圖片
+ * 允許網域與 Referer 由各 provider 的 imageProxy 設定提供，單一來源。
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { allProviders } from '@/lib/scraper/providers';
 import { fetchImage } from '@/lib/scraper';
 
 export async function GET(request: NextRequest) {
@@ -18,15 +20,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // 驗證 URL 是否來自允許的域名
-    const allowedDomains = [
-      'i.hamreus.com',
-      'us.hamreus.com',
-      'eu.hamreus.com',
-      'cf.mhgui.com',
-      'cf2.mhgui.com',
-    ];
-
     const urlObj = new URL(url);
 
     // SSRF 防護：僅允許 HTTPS protocol
@@ -37,18 +30,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const isAllowed = allowedDomains.some(
-      (domain) =>
-        urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain)
+    // 從 provider registry 找出命中的 provider（決定 Referer）
+    const providers = allProviders();
+    const matchedProvider = providers.find((p) =>
+      p.imageProxy.allowedDomains.some(
+        (domain) =>
+          urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain)
+      )
     );
-    if (!isAllowed) {
+
+    if (!matchedProvider) {
       return NextResponse.json(
         { error: 'Domain not allowed' },
         { status: 403 }
       );
     }
 
-    const { data, contentType } = await fetchImage(url);
+    const { data, contentType } = await fetchImage(url, matchedProvider.imageProxy.referer);
 
     return new NextResponse(new Uint8Array(data), {
       status: 200,

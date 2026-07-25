@@ -50,7 +50,7 @@ import { ViewMode, type ChapterData, type ReaderSettings } from './types';
 
 /** TopToolbar props */
 interface TopToolbarProps {
-  mangaId: number;
+  mangaId: string;
   data: ChapterData;
   isVisible: boolean;
 }
@@ -96,7 +96,7 @@ export function TopToolbar({ mangaId, data, isVisible }: TopToolbarProps) {
 
 /** BottomToolbar props */
 interface BottomToolbarProps {
-  mangaId: number;
+  mangaId: string;
   data: ChapterData;
   currentPage: number;
   onPageChange: (page: number) => void;

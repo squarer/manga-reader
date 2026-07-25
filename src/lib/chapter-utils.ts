@@ -3,9 +3,9 @@
  * 章節列表順序：最新 → 最舊（index 0 = 最新章節）
  */
 export function computePrevNextCid(
-  chapters: { id: number }[],
-  currentCid: number
-): { prevCid: number | null; nextCid: number | null } {
+  chapters: { id: string }[],
+  currentCid: string
+): { prevCid: string | null; nextCid: string | null } {
   const index = chapters.findIndex((ch) => ch.id === currentCid);
 
   if (index === -1) {

@@ -34,7 +34,7 @@ import { ViewMode, type ChapterData } from './types';
 
 /** MobileBottomToolbar props */
 interface MobileBottomToolbarProps {
-  mangaId: number;
+  mangaId: string;
   data: ChapterData;
   currentPage: number;
   onPageChange: (page: number) => void;

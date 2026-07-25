@@ -17,16 +17,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  fetchMangaList,
-  fetchMangaListWithFilters,
-  parseMangaList,
-  searchManga,
   RegionType,
   GenreType,
   SortType,
   MangaStatus,
 } from '@/lib/scraper';
-import type { FilterOptions } from '@/lib/scraper';
+import { getProvider } from '@/lib/scraper/providers';
 import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 
 /** 有效的地區值 */
@@ -43,10 +39,6 @@ const VALID_SORTS = Object.values(SortType).filter((v) => v !== '');
 
 /**
  * 驗證參數是否為有效值
- *
- * @param value - 參數值
- * @param validValues - 有效值陣列
- * @returns 有效則回傳原值，無效則回傳 null
  */
 function validateParam<T extends string>(
   value: string | null,
@@ -87,29 +79,17 @@ export async function GET(request: NextRequest) {
   try {
     const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
-      let html: string;
-
-      if (keyword) {
-        // 搜尋模式
-        html = await searchManga(keyword, page);
-      } else if (region || genre || year || letter || status || sort) {
-        // 進階篩選模式
-        const options: FilterOptions = {
-          region: region || undefined,
-          genre: genre || undefined,
-          year: year || undefined,
-          letter: letter?.toLowerCase() || undefined,
-          status: status || undefined,
-          sort: sort || undefined,
-          page,
-        };
-        html = await fetchMangaListWithFilters(options);
-      } else {
-        // 舊版分類列表模式（向後相容）
-        html = await fetchMangaList(category || 'japan', page);
-      }
-
-      return parseMangaList(html);
+      return getProvider().getMangaList({
+        keyword: keyword || undefined,
+        category: category || undefined,
+        region: region || undefined,
+        genre: genre || undefined,
+        year: year || undefined,
+        letter: letter?.toLowerCase() || undefined,
+        status: status || undefined,
+        sort: sort || undefined,
+        page,
+      });
     });
 
     return NextResponse.json(

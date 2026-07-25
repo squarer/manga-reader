@@ -1,13 +1,6 @@
 import { unstable_cache } from 'next/cache';
 import type { Metadata } from 'next';
-import {
-  fetchChapterPage,
-  fetchMangaDetail,
-  decryptChapterPage,
-  parseMangaDetail,
-  buildImageUrl,
-} from '@/lib/scraper';
-import { computePrevNextCid } from '@/lib/chapter-utils';
+import { getProvider } from '@/lib/scraper/providers';
 import type { ChapterData } from '@/components/reader/types';
 import ReaderContent from './ReaderContent';
 
@@ -17,42 +10,20 @@ interface PageProps {
 
 /** 跨請求快取章節資料（60 分鐘，對齊 CDN CHAPTER cache policy） */
 const getChapterData = unstable_cache(
-  async (mangaId: number, chapterId: number): Promise<ChapterData | null> => {
+  async (bid: string, cid: string): Promise<ChapterData | null> => {
     try {
-      const [chapterHtml, mangaHtml] = await Promise.all([
-        fetchChapterPage(mangaId, chapterId),
-        fetchMangaDetail(mangaId),
-      ]);
-
-      const imageData = decryptChapterPage(chapterHtml);
-      if (!imageData) return null;
-
-      const images = imageData.files.map((filename) =>
-        buildImageUrl(imageData.path, filename, imageData.sl)
-      );
-
-      let prevCid: number | null = imageData.prevcid ?? null;
-      let nextCid: number | null = imageData.nextcid ?? null;
-
-      if (prevCid === null || nextCid === null) {
-        const mangaInfo = parseMangaDetail(mangaHtml, mangaId);
-        if (mangaInfo) {
-          const allChapters = mangaInfo.chapters.flatMap((g) => g.chapters);
-          const computed = computePrevNextCid(allChapters, chapterId);
-          if (prevCid === null) prevCid = computed.prevCid;
-          if (nextCid === null) nextCid = computed.nextCid;
-        }
-      }
+      const chapterImages = await getProvider().getChapterImages(bid, cid);
+      if (!chapterImages) return null;
 
       return {
-        bid: imageData.bid,
-        cid: imageData.cid,
-        bname: imageData.bname,
-        cname: imageData.cname,
-        images,
-        prevCid: prevCid ?? undefined,
-        nextCid: nextCid ?? undefined,
-        total: images.length,
+        bid: chapterImages.bid,
+        cid: chapterImages.cid,
+        bname: chapterImages.bname,
+        cname: chapterImages.cname,
+        images: chapterImages.images,
+        prevCid: chapterImages.prevCid,
+        nextCid: chapterImages.nextCid,
+        total: chapterImages.total,
       };
     } catch (err) {
       console.error('getChapterData failed:', err);
@@ -77,11 +48,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  */
 export default async function ReadPage({ params }: PageProps) {
   const { bid, cid } = await params;
-  const mangaId = parseInt(bid, 10);
-  const chapterId = parseInt(cid, 10);
 
   const initialData =
-    isNaN(mangaId) || isNaN(chapterId) ? null : await getChapterData(mangaId, chapterId);
+    bid && bid.trim() && cid && cid.trim()
+      ? await getChapterData(bid, cid)
+      : null;
 
   return <ReaderContent bid={bid} cid={cid} initialData={initialData} />;
 }

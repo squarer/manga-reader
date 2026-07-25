@@ -21,7 +21,7 @@ export default function HistoryContent() {
 
   // 每部漫畫只顯示最新一筆（history 已按 timestamp desc 排序）
   const deduped = useMemo(() => {
-    const seen = new Set<number>();
+    const seen = new Set<string>();
     return history.filter((item) => {
       if (seen.has(item.mangaId)) return false;
       seen.add(item.mangaId);

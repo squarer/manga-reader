@@ -46,8 +46,8 @@ export function useFavoritesUpdateCheck(
   favorites: FavoriteItem[],
   history: HistoryItem[],
   enabled: boolean
-): { newChapterIds: Set<number> } {
-  const [newChapterIds, setNewChapterIds] = useState<Set<number>>(new Set());
+): { newChapterIds: Set<string> } {
+  const [newChapterIds, setNewChapterIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!enabled || favorites.length === 0) return;
@@ -68,7 +68,7 @@ export function useFavoritesUpdateCheck(
           const json = await res.json();
           if (!json.success) return null;
 
-          const latestChapterId: number | null =
+          const latestChapterId: string | null =
             json.data?.chapters?.[0]?.chapters?.[0]?.id ?? null;
           if (latestChapterId === null) return null;
 
@@ -82,7 +82,7 @@ export function useFavoritesUpdateCheck(
       const results = await runWithConcurrency(tasks, CONCURRENCY, signal);
 
       if (!signal.aborted) {
-        setNewChapterIds(new Set(results.filter((id): id is number => id !== null)));
+        setNewChapterIds(new Set(results.filter((id): id is string => id !== null)));
       }
     }
 

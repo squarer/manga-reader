@@ -17,6 +17,6 @@ export function buildUrl(path: string): string {
 /**
  * 構建封面 URL
  */
-export function buildCoverUrl(mangaId: number): string {
+export function buildCoverUrl(mangaId: string | number): string {
   return `${CDN_URL}/cpic/h/${mangaId}.jpg`;
 }

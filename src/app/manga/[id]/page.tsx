@@ -1,6 +1,6 @@
 import { unstable_cache } from 'next/cache';
 import type { Metadata } from 'next';
-import { fetchMangaDetail, parseMangaDetail } from '@/lib/scraper';
+import { getProvider } from '@/lib/scraper/providers';
 import type { MangaInfo } from '@/lib/scraper/types';
 import MangaDetailContent from './MangaDetailContent';
 
@@ -10,10 +10,9 @@ interface PageProps {
 
 /** 跨請求快取漫畫詳情（30 分鐘），避免每次 SSR 都重新爬取 */
 const getMangaData = unstable_cache(
-  async (mangaId: number): Promise<MangaInfo | null> => {
+  async (mangaId: string): Promise<MangaInfo | null> => {
     try {
-      const html = await fetchMangaDetail(mangaId);
-      return parseMangaDetail(html, mangaId);
+      return await getProvider().getMangaDetail(mangaId);
     } catch (err) {
       console.error('getMangaData failed:', err);
       return null;
@@ -37,9 +36,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  */
 export default async function MangaDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const mangaId = parseInt(id, 10);
 
-  const initialData = isNaN(mangaId) ? null : await getMangaData(mangaId);
+  const initialData = id && id.trim() ? await getMangaData(id) : null;
 
   return <MangaDetailContent id={id} initialData={initialData} />;
 }

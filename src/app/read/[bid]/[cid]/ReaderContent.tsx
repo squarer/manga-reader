@@ -15,10 +15,7 @@ interface ReaderContentProps {
  * 閱讀器內容（Client Component）
  */
 export default function ReaderContent({ bid, cid, initialData }: ReaderContentProps) {
-  const mangaId = parseInt(bid, 10);
-  const chapterId = parseInt(cid, 10);
-
-  if (isNaN(mangaId) || isNaN(chapterId)) {
+  if (!bid || !bid.trim() || !cid || !cid.trim()) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-xl text-destructive">Invalid ID</div>
@@ -26,5 +23,5 @@ export default function ReaderContent({ bid, cid, initialData }: ReaderContentPr
     );
   }
 
-  return <Reader mangaId={mangaId} chapterId={chapterId} initialData={initialData} />;
+  return <Reader mangaId={bid} chapterId={cid} initialData={initialData} />;
 }

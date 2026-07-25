@@ -4,21 +4,21 @@
 
 /** Reader 元件 props */
 export interface ReaderProps {
-  mangaId: number;
-  chapterId: number;
+  mangaId: string;
+  chapterId: string;
   /** Server Component 預取資料，有值時略過 Client fetch */
   initialData?: ChapterData | null;
 }
 
 /** 章節資料 */
 export interface ChapterData {
-  bid: number;
-  cid: number;
+  bid: string;
+  cid: string;
   bname: string;
   cname: string;
   images: string[];
-  prevCid?: number;
-  nextCid?: number;
+  prevCid?: string;
+  nextCid?: string;
   total: number;
 }
 

@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchUpdateList, parseUpdateList } from '@/lib/scraper';
+import { getProvider } from '@/lib/scraper/providers';
 import { withCache, CacheHeaders, normalizeUrlCacheKey } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
@@ -26,8 +26,7 @@ export async function GET(request: NextRequest) {
   try {
     const cacheKey = normalizeUrlCacheKey(request.url);
     const result = await withCache(cacheKey, async () => {
-      const html = await fetchUpdateList(page);
-      return parseUpdateList(html);
+      return getProvider().getUpdateList(page);
     });
 
     return NextResponse.json(

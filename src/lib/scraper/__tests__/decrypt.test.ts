@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { unpack, extractPackedScript, parseImageData, buildImageUrl } from '../decrypt';
+import { unpack } from '../unpack';
+import { extractPackedScript, parseImageData, buildImageUrl } from '../providers/manhuagui/decrypt';
 
 // 最小可手工驗算的 packed 格式
 // payload: "0 1"（兩個標識符待替換）

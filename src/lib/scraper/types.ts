@@ -1,6 +1,6 @@
 // 漫畫基本資訊
 export interface MangaInfo {
-  id: number;
+  id: string;
   name: string;
   cover: string;
   author: string;
@@ -21,7 +21,7 @@ export interface ChapterGroup {
 
 // 章節資訊
 export interface ChapterInfo {
-  id: number;
+  id: string;
   name: string;
   url: string;
 }
@@ -44,7 +44,7 @@ export interface ImageData {
 
 // 漫畫列表項目
 export interface MangaListItem {
-  id: number;
+  id: string;
   name: string;
   cover: string;
   latestChapter: string;
