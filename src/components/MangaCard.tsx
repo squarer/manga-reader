@@ -7,19 +7,25 @@ import { Star, Clock } from 'lucide-react';
 import TiltCard from '@/components/TiltCard';
 import type { MangaListItem } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
+import { SOURCE_LABELS } from '@/components/SourceProvider';
 
 interface MangaCardProps {
   /** 漫畫資料 */
   manga: MangaListItem;
   /** 動畫延遲（毫秒），用於交錯進場 */
   animationDelay?: number;
+  /**
+   * 是否顯示來源徽章（預設 false）
+   * 聚合搜尋結果傳 true，單一來源瀏覽不傳（徽章冗餘）
+   */
+  showSourceBadge?: boolean;
 }
 
 /**
  * 漫畫卡片元件
  * 精緻暗色風格，支援 3D 傾斜效果、微光邊框和滑入動畫
  */
-const MangaCard = memo(function MangaCard({ manga, animationDelay = 0 }: MangaCardProps) {
+const MangaCard = memo(function MangaCard({ manga, animationDelay = 0, showSourceBadge = false }: MangaCardProps) {
   const coverUrl = getProxiedImageUrl(manga.cover);
 
   return (
@@ -43,6 +49,15 @@ const MangaCard = memo(function MangaCard({ manga, animationDelay = 0 }: MangaCa
               loading="lazy"
               unoptimized
             />
+
+            {/* 來源徽章（聚合搜尋模式） */}
+            {showSourceBadge && (
+              <div className="absolute left-2 top-2 z-30 rounded-full bg-black/70 px-2 py-0.5 backdrop-blur-sm">
+                <span className="text-[10px] font-medium text-white/90">
+                  {SOURCE_LABELS[manga.source]}
+                </span>
+              </div>
+            )}
 
             {/* 評分標籤 */}
             {manga.score && (

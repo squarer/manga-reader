@@ -13,6 +13,7 @@ const TiltCard = dynamic(() => import('@/components/TiltCard'), { ssr: false });
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
 import { STAGGER_DELAY } from '@/lib/constants';
+import { useSource } from '@/components/SourceProvider';
 
 /** 日期分組類型 */
 enum DateGroup {
@@ -225,11 +226,12 @@ export default function UpdateContent() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const { source } = useSource();
 
   const loaderRef = useRef<HTMLDivElement>(null);
 
   /**
-   * 載入漫畫資料
+   * 載入漫畫資料（依選定來源）
    */
   const fetchMangas = useCallback(
     async (pageNum: number, append = false, signal?: AbortSignal) => {
@@ -241,7 +243,7 @@ export default function UpdateContent() {
       setError(null);
 
       try {
-        const res = await fetch(`/api/manga/update?page=${pageNum}`, { signal });
+        const res = await fetch(`/api/manga/update?page=${pageNum}&source=${source}`, { signal });
         const json = await res.json();
 
         if (json.success) {
@@ -265,12 +267,14 @@ export default function UpdateContent() {
         }
       }
     },
-    []
+    [source]
   );
 
-  // 初始載入（使用 AbortController 防止 Strict Mode 重複請求）
+  // source 變更或初始載入：重置並重新 fetch
   useEffect(() => {
     const abortController = new AbortController();
+    setPage(1);
+    setMangas([]);
     fetchMangas(1, false, abortController.signal);
 
     return () => {

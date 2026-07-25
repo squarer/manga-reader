@@ -2,12 +2,13 @@
 
 /**
  * 手機版選單元件
- * 導航項目已在 navbar 本體顯示，此處僅提供搜尋功能
+ * 導航項目已在 navbar 本體顯示，此處提供搜尋功能與來源切換
  */
 
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { SourceToggle } from '@/components/SourceToggle';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -36,6 +37,11 @@ export function MobileMenu({
           : 'max-h-0 border-0 p-0'
       )}
     >
+      {/* 來源切換 */}
+      <div className="mb-3 flex justify-center">
+        <SourceToggle />
+      </div>
+
       {/* 手機版搜尋框 */}
       <form
         onSubmit={(e) => {

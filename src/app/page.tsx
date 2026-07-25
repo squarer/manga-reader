@@ -9,10 +9,12 @@ import HistorySection from '@/components/HistorySection';
 import FavoritesSection from '@/components/FavoritesSection';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, Info } from 'lucide-react';
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 import { STAGGER_DELAY } from '@/lib/constants';
 import { parseFiltersFromParams, STATUS_MAP, SORT_MAP } from '@/lib/filter-utils';
+import { useSource } from '@/components/SourceProvider';
+import { DEFAULT_FILTER_STATE } from '@/lib/filter-types';
 
 function MangaGridSkeleton() {
   return (
@@ -36,22 +38,51 @@ function HomeContent() {
   const router = useRouter();
   const keywordFromUrl = searchParams.get('keyword') || '';
 
+  const { source } = useSource();
+
   const [mangas, setMangas] = useState<MangaListItem[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
+  // 聚合搜尋時，記錄哪一站有錯
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // 從 URL 解析 filter 狀態
+  // 從 URL 解析 filter 狀態（dm5 時忽略 filter 參數）
   const filters = useMemo(
-    () => parseFiltersFromParams(searchParams),
-    [searchParams]
+    () => (source === 'dm5' ? DEFAULT_FILTER_STATE : parseFiltersFromParams(searchParams)),
+    [searchParams, source]
   );
 
   /**
+   * 建構單一來源的 API 搜尋/篩選 URL params
+   */
+  function buildParams(pageNum: number, keyword?: string, currentFilters?: FilterState): URLSearchParams {
+    const params = new URLSearchParams({ page: pageNum.toString() });
+
+    if (keyword) {
+      params.set('keyword', keyword);
+    } else if (source !== 'dm5') {
+      // dm5 不傳進階篩選
+      const f = currentFilters || filters;
+      if (f.region) params.set('region', f.region);
+      if (f.genre) params.set('genre', f.genre);
+      if (f.year) params.set('year', f.year === '更早' ? '2019' : f.year);
+      if (f.status !== 'all' && STATUS_MAP[f.status]) params.set('status', STATUS_MAP[f.status]);
+      params.set('sort', SORT_MAP[f.sort] || 'update');
+    }
+
+    return params;
+  }
+
+  /**
    * 載入漫畫資料
+   * - 搜尋模式：平行查兩站、合併、容錯
+   * - 瀏覽模式：只查選定來源
+   *
+   * 注意：聚合搜尋僅取兩站各第一頁合併，分頁在聚合模式下隱藏（複雜度高、MVP 限制）
    */
   const fetchMangas = async (
     pageNum: number,
@@ -65,55 +96,54 @@ function HomeContent() {
     } else {
       setLoading(true);
     }
+    setSearchError(null);
 
     try {
-      const params = new URLSearchParams({
-        page: pageNum.toString(),
-      });
-
       if (keyword) {
-        // 搜尋模式
-        params.set('keyword', keyword);
+        // 搜尋模式：平行查兩站
+        const [r1, r2] = await Promise.allSettled([
+          fetch(`/api/manga?${new URLSearchParams({ keyword, page: '1', source: 'manhuagui' })}`, { signal }).then((r) => r.json()),
+          fetch(`/api/manga?${new URLSearchParams({ keyword, page: '1', source: 'dm5' })}`, { signal }).then((r) => r.json()),
+        ]);
+
+        const items: MangaListItem[] = [];
+        const failures: string[] = [];
+
+        if (r1.status === 'fulfilled' && r1.value.success) {
+          items.push(...(r1.value.data.items as MangaListItem[]));
+        } else {
+          failures.push('漫画柜');
+        }
+
+        if (r2.status === 'fulfilled' && r2.value.success) {
+          items.push(...(r2.value.data.items as MangaListItem[]));
+        } else {
+          failures.push('动漫屋');
+        }
+
+        if (failures.length > 0 && failures.length < 2) {
+          setSearchError(`${failures.join('、')} 查詢失敗，僅顯示其他來源結果`);
+        }
+
+        setMangas(items);
+        // 聚合搜尋不支援跨站分頁，pagination 設為 null 隱藏分頁觸發器
+        setPagination(null);
       } else {
-        // 篩選模式
-        const f = currentFilters || filters;
+        // 瀏覽模式：只查選定來源
+        const params = buildParams(pageNum, undefined, currentFilters);
+        params.set('source', source);
 
-        // 地區
-        if (f.region) {
-          params.set('region', f.region);
+        const res = await fetch(`/api/manga?${params}`, { signal });
+        const json = await res.json();
+
+        if (json.success) {
+          setMangas((prev) => (append ? [...prev, ...json.data.items] : json.data.items));
+          setPagination(json.data.pagination);
         }
-
-        // 劇情分類（單選）
-        if (f.genre) {
-          params.set('genre', f.genre);
-        }
-
-        // 年份
-        if (f.year) {
-          params.set('year', f.year === '更早' ? '2019' : f.year);
-        }
-
-        // 進度
-        if (f.status !== 'all' && STATUS_MAP[f.status]) {
-          params.set('status', STATUS_MAP[f.status]);
-        }
-
-        // 排序
-        params.set('sort', SORT_MAP[f.sort] || 'update');
-      }
-
-      const res = await fetch(`/api/manga?${params}`, { signal });
-      const json = await res.json();
-
-      if (json.success) {
-        setMangas((prev) =>
-          append ? [...prev, ...json.data.items] : json.data.items
-        );
-        setPagination(json.data.pagination);
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        return; // 請求被取消，不處理
+        return;
       }
       console.error('Failed to fetch mangas:', error);
     } finally {
@@ -124,7 +154,8 @@ function HomeContent() {
     }
   };
 
-  // 初始載入或切換篩選/搜尋時（使用 AbortController 防止 Strict Mode 重複請求）
+  // 初始載入或切換篩選/搜尋/來源時重新 fetch
+  // 切換來源時清空篩選（dm5 不傳 manhuagui filter），由 filters memo 已處理
   useEffect(() => {
     const abortController = new AbortController();
     setPage(1);
@@ -134,12 +165,12 @@ function HomeContent() {
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, keywordFromUrl]);
+  }, [filters, keywordFromUrl, source]);
 
-  // IntersectionObserver 無限滾動
+  // IntersectionObserver 無限滾動（聚合搜尋不啟用，pagination 為 null）
   useEffect(() => {
     if (!loaderRef.current || loading || loadingMore) return;
-    if (pagination && page >= pagination.total) return;
+    if (!pagination || page >= pagination.total) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -155,23 +186,22 @@ function HomeContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pagination, loading, loadingMore]);
 
-  /**
-   * 載入更多
-   */
+  /** 載入更多（僅單一來源瀏覽模式） */
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
     fetchMangas(nextPage, true, keywordFromUrl, filters);
   };
 
-  /**
-   * 清除搜尋
-   */
+  /** 清除搜尋 */
   const clearSearch = () => {
     startTransition(() => {
       router.push('/');
     });
   };
+
+  // 是否顯示來源徽章（聚合搜尋模式）
+  const showSourceBadge = !!keywordFromUrl;
 
   return (
     <>
@@ -184,13 +214,29 @@ function HomeContent() {
             <span className="text-muted-foreground">
               搜尋：
               <span className="font-medium text-foreground">{keywordFromUrl}</span>
-              {pagination && (
-                <span className="ml-2">（{pagination.totalItems} 部結果）</span>
+              {mangas.length > 0 && (
+                <span className="ml-2">（兩站共 {mangas.length} 部結果）</span>
               )}
             </span>
             <Button variant="ghost" size="sm" onClick={clearSearch} className="ml-auto">
               清除
             </Button>
+          </div>
+        )}
+
+        {/* 聚合搜尋某站失敗提示 */}
+        {searchError && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-2 text-sm text-yellow-600 dark:text-yellow-400">
+            <Info className="h-4 w-4 shrink-0" />
+            {searchError}
+          </div>
+        )}
+
+        {/* dm5 篩選停用說明（非搜尋模式） */}
+        {source === 'dm5' && !keywordFromUrl && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-border/50 bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+            <Info className="h-4 w-4 shrink-0" />
+            动漫屋目前僅支援預設瀏覽與搜尋
           </div>
         )}
 
@@ -208,7 +254,7 @@ function HomeContent() {
           {!keywordFromUrl && (
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-serif font-medium">
-                {hasActiveFilters(filters) ? '篩選結果' : '所有漫畫'}
+                {hasActiveFilters(filters) && source !== 'dm5' ? '篩選結果' : '所有漫畫'}
               </h2>
               {pagination && (
                 <span className="text-sm text-muted-foreground">
@@ -227,7 +273,7 @@ function HomeContent() {
                 <p className="text-lg text-muted-foreground">沒有找到符合條件的漫畫</p>
                 {keywordFromUrl ? (
                   <Button onClick={clearSearch} variant="outline">清除搜尋</Button>
-                ) : hasActiveFilters(filters) ? (
+                ) : hasActiveFilters(filters) && source !== 'dm5' ? (
                   <Button onClick={() => { startTransition(() => { router.push('/'); }); }} variant="outline">清除篩選</Button>
                 ) : null}
               </div>
@@ -237,27 +283,30 @@ function HomeContent() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                   {mangas.map((manga, index) => (
                     <MangaCard
-                      key={manga.id}
+                      key={`${manga.source}-${manga.id}`}
                       manga={manga}
                       animationDelay={Math.min(index, 12) * STAGGER_DELAY}
+                      showSourceBadge={showSourceBadge}
                     />
                   ))}
                 </div>
 
-                {/* Infinite scroll loader */}
-                <div ref={loaderRef} className="flex h-20 items-center justify-center">
-                  {loadingMore && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>載入更多...</span>
-                    </div>
-                  )}
-                  {pagination && page >= pagination.total && mangas.length > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      已顯示全部 {pagination.totalItems} 部漫畫
-                    </p>
-                  )}
-                </div>
+                {/* 無限滾動 loader（聚合搜尋不分頁，不顯示） */}
+                {!keywordFromUrl && (
+                  <div ref={loaderRef} className="flex h-20 items-center justify-center">
+                    {loadingMore && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>載入更多...</span>
+                      </div>
+                    )}
+                    {pagination && page >= pagination.total && mangas.length > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        已顯示全部 {pagination.totalItems} 部漫畫
+                      </p>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -269,7 +318,7 @@ function HomeContent() {
 
 /**
  * 首頁
- * 漫畫列表、搜尋、分類篩選
+ * 漫畫列表、搜尋（跨站聚合）、分類篩選（manhuagui only）
  */
 export default function Home() {
   return (

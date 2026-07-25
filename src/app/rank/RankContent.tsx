@@ -12,6 +12,7 @@ import { RankTrend } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
 import { useFetch } from '@/lib/hooks/useFetch';
 import { EmptyState } from '@/components/EmptyState';
+import { useSource } from '@/components/SourceProvider';
 
 /** 榜單類型 */
 enum RankType {
@@ -193,15 +194,16 @@ const RankItemCard = memo(function RankItemCard({ item, animationDelay = 0 }: Ra
  */
 export default function RankContent() {
   const [rankType, setRankType] = useState<RankType>(RankType.DAY);
+  const { source } = useSource();
 
   // Tab 滑動指示器
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
-  // 載入排行榜數據
+  // 載入排行榜數據（依選定來源）
   const { data, loading } = useFetch<{ items: RankItem[] }>(
-    `/api/rank?type=${rankType}`,
-    [rankType]
+    `/api/rank?type=${rankType}&source=${source}`,
+    [rankType, source]
   );
 
   const rankList = data?.items ?? [];

@@ -26,6 +26,8 @@ import { NAV_ITEMS, NAV_ACTIVE_CLASS, type NavItem } from './types';
 import { parseFiltersFromParams, filtersToParams } from './utils';
 import { DesktopSearch } from './DesktopSearch';
 import { MobileMenu } from './MobileMenu';
+import { useSource } from '@/components/SourceProvider';
+import { SourceToggle } from '@/components/SourceToggle';
 
 /**
  * Hover 展開按鈕共用元件
@@ -139,6 +141,8 @@ function NavbarContent() {
   const isHomePage = pathname === '/';
   const isSearchMode = !!searchParams.get('keyword');
 
+  const { source } = useSource();
+
   /** 判斷導航項目是否為當前頁面 */
   const isActiveNavItem = (item: NavItem): boolean => {
     if (item.href === '/') {
@@ -244,8 +248,16 @@ function NavbarContent() {
               {/* 分隔線 */}
               <div className="hidden sm:block h-6 w-px bg-border/50" />
 
-              {/* 篩選按鈕（僅首頁非搜尋模式顯示） */}
-              {isHomePage && !isSearchMode && (
+              {/* 來源切換（桌機版） */}
+              <div className="hidden sm:flex items-center px-1">
+                <SourceToggle />
+              </div>
+
+              {/* 分隔線 */}
+              <div className="hidden sm:block h-6 w-px bg-border/50" />
+
+              {/* 篩選按鈕（僅首頁非搜尋模式且非 dm5 時顯示） */}
+              {isHomePage && !isSearchMode && source !== 'dm5' && (
                 <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                   <PopoverTrigger asChild>
                     <Button

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SourceProvider } from "@/components/SourceProvider";
 import { Navbar } from "@/components/Navbar";
 import { SnowEffectLoader } from "@/components/SnowEffectLoader";
 import "./globals.css";
@@ -35,9 +36,11 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <SnowEffectLoader />
-          <Navbar />
-          <main className="min-h-screen bg-background text-foreground pt-20">{children}</main>
+          <SourceProvider>
+            <SnowEffectLoader />
+            <Navbar />
+            <main className="min-h-screen bg-background text-foreground pt-20">{children}</main>
+          </SourceProvider>
         </ThemeProvider>
       </body>
     </html>
