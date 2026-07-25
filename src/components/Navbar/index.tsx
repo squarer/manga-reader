@@ -141,7 +141,9 @@ function NavbarContent() {
   const isHomePage = pathname === '/';
   const isSearchMode = !!searchParams.get('keyword');
 
-  const { source } = useSource();
+  const { sources } = useSource();
+  // 進階篩選僅在單選 manhuagui 時可用
+  const isSingleManhuagui = sources.length === 1 && sources[0] === 'manhuagui';
 
   /** 判斷導航項目是否為當前頁面 */
   const isActiveNavItem = (item: NavItem): boolean => {
@@ -256,8 +258,8 @@ function NavbarContent() {
               {/* 分隔線 */}
               <div className="hidden sm:block h-6 w-px bg-border/50" />
 
-              {/* 篩選按鈕（僅首頁非搜尋模式且非 dm5 時顯示） */}
-              {isHomePage && !isSearchMode && source !== 'dm5' && (
+              {/* 篩選按鈕（僅首頁非搜尋模式且單選 manhuagui 時顯示） */}
+              {isHomePage && !isSearchMode && isSingleManhuagui && (
                 <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                   <PopoverTrigger asChild>
                     <Button

@@ -52,8 +52,8 @@ const MangaCard = memo(function MangaCard({ manga, animationDelay = 0, showSourc
 
             {/* 來源徽章（聚合搜尋模式） */}
             {showSourceBadge && (
-              <div className="absolute left-2 top-2 z-30 rounded-full bg-black/70 px-2 py-0.5 backdrop-blur-sm">
-                <span className="text-[10px] font-medium text-white/90">
+              <div className="absolute left-2 top-2 z-30 flex items-center rounded-full bg-black/70 px-2 py-1 backdrop-blur-sm">
+                <span className="text-[10px] font-medium leading-none text-white/90">
                   {SOURCE_LABELS[manga.source]}
                 </span>
               </div>

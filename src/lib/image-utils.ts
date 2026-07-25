@@ -35,7 +35,7 @@ export function toCoverRelativePath(url: string): string {
  */
 export function getProxiedImageUrl(originalUrl: string): string {
   if (!originalUrl) {
-    return '/placeholder.jpg';
+    return '/placeholder.svg';
   }
   return `/api/image?url=${encodeURIComponent(normalizeCoverUrl(originalUrl))}`;
 }

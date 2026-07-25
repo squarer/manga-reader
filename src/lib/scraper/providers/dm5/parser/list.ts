@@ -38,6 +38,32 @@ function parseMangaInfoEl(
   };
 }
 
+/**
+ * 搜尋頁頂部「精確匹配」banner（.banner_detail_form）。
+ * 結構與 .mh-item 清單不同（cover img + p.title a + 开始阅读 btn），
+ * 需獨立解析並置頂，否則完全符合的主作（第一筆）會遺漏。僅搜尋頁存在；列表頁無此節點。
+ */
+function parseSearchBanner(
+  $: ReturnType<typeof cheerio.load>
+): Omit<MangaListItem, 'source'> | null {
+  const $banner = $('.banner_detail_form').first();
+  if (!$banner.length) return null;
+
+  const $link = $banner.find('.info p.title a').first();
+  const slug = ($link.attr('href') ?? '').replace(/^\/?manhua-/, '').replace(/\/$/, '');
+  if (!slug) return null;
+
+  const name = ($link.attr('title') || $link.text()).trim();
+  if (!name) return null;
+
+  const cover = $banner.find('.cover img').attr('src') ?? '';
+  // 章節資訊僅「开始阅读」btn title 帶「<name> 第X卷/话」，去掉 name 前綴取章節
+  const btnTitle = $banner.find('a.btn-2').attr('title')?.trim() ?? '';
+  const latestChapter = btnTitle.startsWith(name) ? btnTitle.slice(name.length).trim() : '';
+
+  return { id: slug, name, cover, latestChapter, updateTime: '', score: undefined };
+}
+
 /** 解析分頁
  * 列表頁：.page-pagination a[data-index].active 為當前頁；所有 data-index 取最大為 total
  * 搜尋頁：.page-pagination a.active text 為當前頁；href ?page=N 取最大為 total
@@ -87,6 +113,12 @@ export function parseMangaList(html: string): {
     if (item) items.push(item);
   });
 
-  const pagination = parsePagination($, items.length);
-  return { items, pagination };
+  // 搜尋頁精確匹配 banner 置頂；依 slug 去重避免與清單重複
+  const banner = parseSearchBanner($);
+  const merged = banner
+    ? [banner, ...items.filter((it) => it.id !== banner.id)]
+    : items;
+
+  const pagination = parsePagination($, merged.length);
+  return { items: merged, pagination };
 }

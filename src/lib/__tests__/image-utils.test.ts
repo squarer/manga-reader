@@ -3,7 +3,7 @@ import { getProxiedImageUrl, toCoverRelativePath } from '../image-utils';
 
 describe('getProxiedImageUrl', () => {
   it('Given 空字串，when 呼叫，then 回傳 placeholder', () => {
-    expect(getProxiedImageUrl('')).toBe('/placeholder.jpg');
+    expect(getProxiedImageUrl('')).toBe('/placeholder.svg');
   });
 
   it('Given 相對路徑，when 呼叫，then 補上主要 CDN origin 後送進 proxy', () => {

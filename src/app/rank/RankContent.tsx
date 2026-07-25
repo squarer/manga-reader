@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useLayoutEffect, memo } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, memo } from 'react';
 import Image from 'next/image';
 import { ArrowUp, ArrowDown, Minus, Eye, Trophy, Crown, Medal } from 'lucide-react';
 import Link from 'next/link';
@@ -10,9 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { RankItem } from '@/lib/scraper/types';
 import { RankTrend } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
-import { useFetch } from '@/lib/hooks/useFetch';
 import { EmptyState } from '@/components/EmptyState';
 import { useSource } from '@/components/SourceProvider';
+import { interleave } from '@/lib/utils';
 
 /** 榜單類型 */
 enum RankType {
@@ -194,19 +194,47 @@ const RankItemCard = memo(function RankItemCard({ item, animationDelay = 0 }: Ra
  */
 export default function RankContent() {
   const [rankType, setRankType] = useState<RankType>(RankType.DAY);
-  const { source } = useSource();
+  const { sources } = useSource();
+  const sourcesKey = sources.join(',');
+  const isMultiSource = sources.length > 1;
+
+  const [rankList, setRankList] = useState<RankItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Tab 滑動指示器
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
-  // 載入排行榜數據（依選定來源）
-  const { data, loading } = useFetch<{ items: RankItem[] }>(
-    `/api/rank?type=${rankType}&source=${source}`,
-    [rankType, source]
-  );
+  // 載入排行榜數據：單站直取；多站各取後交錯合併（無跨站分頁）
+  useEffect(() => {
+    const abortController = new AbortController();
+    setLoading(true);
 
-  const rankList = data?.items ?? [];
+    (async () => {
+      try {
+        const results = await Promise.allSettled(
+          sources.map((src) =>
+            fetch(`/api/rank?type=${rankType}&source=${src}`, { signal: abortController.signal }).then((r) => r.json())
+          )
+        );
+        const lists: RankItem[][] = [];
+        results.forEach((res) => {
+          if (res.status === 'fulfilled' && res.value.success) {
+            lists.push(res.value.data.items as RankItem[]);
+          }
+        });
+        setRankList(interleave(lists));
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return;
+        console.error('Failed to fetch rank:', error);
+      } finally {
+        if (!abortController.signal.aborted) setLoading(false);
+      }
+    })();
+
+    return () => abortController.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rankType, sourcesKey]);
 
   // 更新滑動指示器位置
   useLayoutEffect(() => {
@@ -287,8 +315,8 @@ export default function RankContent() {
           ) : (
             <div className="space-y-2">
               {rankList.map((item, index) => (
-                <React.Fragment key={item.id}>
-                  {item.rank === 4 && (
+                <React.Fragment key={`${item.source}-${item.id}`}>
+                  {item.rank === 4 && !isMultiSource && (
                     <div className="my-4 border-t border-border/50" />
                   )}
                   <RankItemCard

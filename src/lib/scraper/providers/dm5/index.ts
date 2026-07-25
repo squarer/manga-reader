@@ -80,7 +80,23 @@ export const dm5Provider: MangaProvider = {
   },
 
   async getChapterImages(slug: string, cid: string): Promise<ChapterImages | null> {
-    const result = await getChapterImages(cid);
+    // 圖片與詳情並行抓：dm5 章節頁本身不含本作封面，且封面 URL（帶時戳/分片）
+    // 無法由 slug 推導，只能從詳情取。兩者皆對 dm5.cn 多次往返，並行使
+    // wall-clock ≈ max 而非 sum（詳情多半在滑窗抓圖期間即完成）。
+    // 詳情同時作 prev/next 的 fallback 來源。
+    // 注意：詳情失敗以 null 容錯降級（封面留空走 placeholder、prev/next 退回章節頁值），
+    // 不再讓封面/導航的取得失敗連帶使整章載入失敗。
+    const [result, mangaInfo] = await Promise.all([
+      getChapterImages(cid),
+      fetchMangaDetail(slug)
+        .then((html) => parseMangaDetail(html, slug))
+        // 封面/導航屬非關鍵增強：抓取失敗記錄後降級（不吞錯，仍留下軌跡），
+        // 但不讓它連帶中斷主內容（章節圖片）的載入。
+        .catch((err) => {
+          console.error(`[dm5] 詳情抓取失敗（封面/導航降級） slug=${slug}:`, err);
+          return null;
+        }),
+    ]);
     if (!result) return null;
 
     const { vars, images } = result;
@@ -89,15 +105,11 @@ export const dm5Provider: MangaProvider = {
     let prevCid: string | undefined = vars.prevCid;
     let nextCid: string | undefined = vars.nextCid;
 
-    if (prevCid === undefined && nextCid === undefined) {
-      const detailHtml = await fetchMangaDetail(slug);
-      const mangaInfo = parseMangaDetail(detailHtml, slug);
-      if (mangaInfo) {
-        const allChapters = mangaInfo.chapters.flatMap((g) => g.chapters);
-        const computed = computePrevNextCid(allChapters, cid);
-        prevCid = computed.prevCid ?? undefined;
-        nextCid = computed.nextCid ?? undefined;
-      }
+    if (prevCid === undefined && nextCid === undefined && mangaInfo) {
+      const allChapters = mangaInfo.chapters.flatMap((g) => g.chapters);
+      const computed = computePrevNextCid(allChapters, cid);
+      prevCid = computed.prevCid ?? undefined;
+      nextCid = computed.nextCid ?? undefined;
     }
 
     // bname/cname：從 vars.title 解析（格式: "漫畫名 第N回"）
@@ -115,8 +127,8 @@ export const dm5Provider: MangaProvider = {
       nextCid,
       total: images.length,
       source: 'dm5',
-      // dm5 封面完整 URL 無法在此取得（只有 slug，需另查詳情）
-      // Reader 會從 api/manga/:id?source=dm5 的回傳 cover 取得封面，此處省略
+      // 封面完整 URL 從詳情取得（cdndm5.com），供 Reader 寫入閱讀歷史縮圖
+      mangaCover: mangaInfo?.cover || undefined,
     };
   },
 

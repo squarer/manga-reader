@@ -22,21 +22,37 @@ const STORAGE_KEY = 'manga-reader-history';
 const MAX_HISTORY = 50;
 
 /**
+ * 讀取時的歷史資料 migration（純函式，供測試）：
+ * - 舊版 number mangaId / chapterId 正規化為 string
+ * - 無 source 欄位 → 補 'manhuagui'
+ * - 非 manhuagui 項目卻存了 manhuagui 專屬封面路徑（/cpic/…）→ 清空走 placeholder
+ *   （舊 bug 產物；該路徑會被 normalizeCoverUrl 接上 cf.mhgui.com → 破圖）
+ */
+export function migrateHistoryItems(items: HistoryItem[]): HistoryItem[] {
+  return items.map((item) => {
+    // source 須先解析，供下方封面判斷
+    const source = (item.source ?? 'manhuagui') as SourceId;
+    let mangaCover = toCoverRelativePath(item.mangaCover);
+    if (source !== 'manhuagui' && mangaCover.startsWith('/cpic/')) {
+      mangaCover = '';
+    }
+    return {
+      ...item,
+      mangaId: String(item.mangaId),
+      chapterId: String(item.chapterId),
+      mangaCover,
+      source,
+    };
+  });
+}
+
+/**
  * 閱讀歷史管理 hook。
  * 讀取時將舊版 number mangaId / chapterId 正規化為 string，並 migration 補 source 欄位。
  */
 export function useHistory() {
   const [history, setHistory, isLoaded] = useLocalStorage<HistoryItem[]>(STORAGE_KEY, [], {
-    transform: (items) =>
-      items.map((item) => ({
-        ...item,
-        // 舊資料 mangaId / chapterId 可能為 number，強制轉 string 保持一致
-        mangaId: String(item.mangaId),
-        chapterId: String(item.chapterId),
-        mangaCover: toCoverRelativePath(item.mangaCover),
-        // migration：舊資料無 source → 視為 manhuagui
-        source: (item.source ?? 'manhuagui') as SourceId,
-      })),
+    transform: migrateHistoryItems,
   });
 
   const addHistory = useCallback(

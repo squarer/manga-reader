@@ -142,7 +142,7 @@ function DesktopStackedCards({ items }: { items: StackedCardItem[] }) {
               <CardImage item={item} showShadow={isHovered} />
               {/* Hover 時顯示標題（書下方） */}
               <div
-                className="mt-1 h-7 w-24 transition-opacity duration-300"
+                className="mt-1 h-10 w-24 transition-opacity duration-300"
                 style={{ opacity: isHovered ? 1 : 0 }}
               >
                 <p className="truncate text-xs text-foreground">{item.title}</p>

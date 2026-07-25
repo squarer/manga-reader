@@ -13,7 +13,8 @@ const TiltCard = dynamic(() => import('@/components/TiltCard'), { ssr: false });
 import type { MangaListItem, PaginationInfo } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
 import { STAGGER_DELAY } from '@/lib/constants';
-import { useSource } from '@/components/SourceProvider';
+import { useSource, SOURCE_LABELS } from '@/components/SourceProvider';
+import { interleave } from '@/lib/utils';
 
 /** 日期分組類型 */
 enum DateGroup {
@@ -226,12 +227,16 @@ export default function UpdateContent() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const { source } = useSource();
+  const { sources } = useSource();
+  const sourcesKey = sources.join(',');
+  const isMultiSource = sources.length > 1;
 
   const loaderRef = useRef<HTMLDivElement>(null);
 
   /**
-   * 載入漫畫資料（依選定來源）
+   * 載入漫畫資料：
+   * - 單一來源：帶 page，完整分頁（現狀）
+   * - 多來源：各站 page1、交錯合併、無跨站分頁
    */
   const fetchMangas = useCallback(
     async (pageNum: number, append = false, signal?: AbortSignal) => {
@@ -243,17 +248,42 @@ export default function UpdateContent() {
       setError(null);
 
       try {
-        const res = await fetch(`/api/manga/update?page=${pageNum}&source=${source}`, { signal });
-        const json = await res.json();
+        if (sources.length === 1) {
+          const res = await fetch(`/api/manga/update?page=${pageNum}&source=${sources[0]}`, { signal });
+          const json = await res.json();
 
-        if (json.success) {
-          setMangas((prev) =>
-            append ? [...prev, ...json.data.items] : json.data.items
-          );
-          setPagination(json.data.pagination);
-        } else {
-          setError(json.error || '載入失敗');
+          if (json.success) {
+            setMangas((prev) =>
+              append ? [...prev, ...json.data.items] : json.data.items
+            );
+            setPagination(json.data.pagination);
+          } else {
+            setError(json.error || '載入失敗');
+          }
+          return;
         }
+
+        // 多來源：各站 page1 交錯，無分頁
+        const results = await Promise.allSettled(
+          sources.map((src) =>
+            fetch(`/api/manga/update?page=1&source=${src}`, { signal }).then((r) => r.json())
+          )
+        );
+        const lists: MangaListItem[][] = [];
+        const failures: string[] = [];
+        results.forEach((res, i) => {
+          if (res.status === 'fulfilled' && res.value.success) {
+            lists.push(res.value.data.items as MangaListItem[]);
+          } else {
+            failures.push(SOURCE_LABELS[sources[i]]);
+          }
+        });
+
+        if (failures.length > 0 && failures.length >= sources.length) {
+          setError('載入失敗');
+        }
+        setMangas(interleave(lists));
+        setPagination(null);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
           return; // 請求被取消，不處理
@@ -267,10 +297,11 @@ export default function UpdateContent() {
         }
       }
     },
-    [source]
+    [sources]
   );
 
   // source 變更或初始載入：重置並重新 fetch
+  // 依賴 sourcesKey（非 fetchMangas/sources 陣列）避免 identity 變動觸發重複 fetch
   useEffect(() => {
     const abortController = new AbortController();
     setPage(1);
@@ -280,10 +311,12 @@ export default function UpdateContent() {
     return () => {
       abortController.abort();
     };
-  }, [fetchMangas]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourcesKey]);
 
-  // 無限滾動 Intersection Observer
+  // 無限滾動 Intersection Observer（多來源交錯無跨站分頁，不啟用）
   useEffect(() => {
+    if (isMultiSource) return;
     if (!loaderRef.current || loading || loadingMore) return;
     if (pagination && page >= pagination.total) return;
 
@@ -301,7 +334,7 @@ export default function UpdateContent() {
     observer.observe(loaderRef.current);
 
     return () => observer.disconnect();
-  }, [page, pagination, loading, loadingMore, fetchMangas]);
+  }, [page, pagination, loading, loadingMore, fetchMangas, isMultiSource]);
 
   // 按日期分組
   const groupedMangas = groupMangasByDate(mangas);
@@ -347,7 +380,8 @@ export default function UpdateContent() {
                 return section;
               })}
 
-              {/* 無限滾動觸發器 */}
+              {/* 無限滾動觸發器（多來源交錯無分頁，不顯示） */}
+              {!isMultiSource && (
               <div ref={loaderRef} className="flex h-20 items-center justify-center">
                 {loadingMore && (
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -359,6 +393,7 @@ export default function UpdateContent() {
                   <p className="text-sm text-muted-foreground">已載入全部更新</p>
                 )}
               </div>
+              )}
             </>
           )}
         </div>

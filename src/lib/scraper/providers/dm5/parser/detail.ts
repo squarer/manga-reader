@@ -114,17 +114,18 @@ function parseChapterGroups($: ReturnType<typeof cheerio.load>): ChapterGroup[] 
       if (seenIds.has(cid)) return;
       seenIds.add(cid);
 
-      // title 屬性最乾淨；若空則取 a 的直接文字 node（排除 span 頁數）
-      const titleAttr = $(aEl).attr('title')?.trim() ?? '';
-      const chapterName = titleAttr ||
-        $(aEl)
-          .contents()
-          .filter((_, n) => n.type === 'text')
-          .map((_, n) => $(n).text())
-          .get()
-          .join('')
-          .replace(/[（(]\d+P[）)]/gi, '')
-          .trim();
+      // 章節名取連結直接文字（排除 span 頁數）；正規化多餘空白。
+      // title 屬性是版本標籤（「完全版」/未渲染模板「{老版本}」），非章節名，僅在文字為空時退而求其次。
+      const textName = $(aEl)
+        .contents()
+        .filter((_, n) => n.type === 'text')
+        .map((_, n) => $(n).text())
+        .get()
+        .join('')
+        .replace(/[（(]\s*\d+\s*P[）)]/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const chapterName = textName || ($(aEl).attr('title')?.trim() ?? '');
 
       chapters.push({ id: cid, name: chapterName, url: href });
     });

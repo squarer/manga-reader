@@ -2,48 +2,72 @@
 
 /**
  * 全站來源狀態 Context
- * 持有 source: SourceId + setSource，持久化到 localStorage
+ * 持有 sources: SourceId[]（恆非空、去重、manhuagui-first）+ toggleSource，持久化到 localStorage
  * 單一來源確保首頁/排行/更新一起 re-render
  */
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useCallback } from 'react';
 import type { SourceId } from '@/lib/scraper/types';
 import { DEFAULT_SOURCE } from '@/lib/scraper/providers';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
 const STORAGE_KEY = 'manga-reader-source';
 
+/** 顯示與排序用的來源固定順序（manhuagui-first） */
+export const SOURCE_IDS: SourceId[] = ['manhuagui', 'dm5'];
+
 interface SourceContextValue {
-  source: SourceId;
-  setSource: (source: SourceId) => void;
+  /** 選定來源集合，恆非空、去重、順序固定 manhuagui-first */
+  sources: SourceId[];
+  /** 切換單一來源；已選則移除（唯一一個時 no-op），未選則加入 */
+  toggleSource: (id: SourceId) => void;
   isLoaded: boolean;
 }
 
 const SourceContext = createContext<SourceContextValue>({
-  source: DEFAULT_SOURCE,
-  setSource: () => {},
+  sources: [DEFAULT_SOURCE],
+  toggleSource: () => {},
   isLoaded: false,
 });
 
-/** 驗證存取的 source 是合法 SourceId，否則回退預設值 */
-function validateSource(parsed: SourceId): SourceId {
-  if (parsed === 'manhuagui' || parsed === 'dm5') return parsed;
-  return DEFAULT_SOURCE;
+/**
+ * 正規化持久化來源集合，並相容舊格式：
+ * - 舊值為單一字串（如 "manhuagui"）→ 包成單元素陣列
+ * - 已是陣列 → 過濾出合法 SourceId
+ * - 結果為空/非法 → 回退 [DEFAULT_SOURCE]
+ * 依 SOURCE_IDS 過濾同時完成去重與 manhuagui-first 排序。
+ */
+function normalizeSources(parsed: SourceId[]): SourceId[] {
+  const raw: unknown = parsed;
+  const arr: unknown[] = typeof raw === 'string' ? [raw] : Array.isArray(raw) ? raw : [];
+  const valid = SOURCE_IDS.filter((id) => arr.includes(id));
+  return valid.length > 0 ? valid : [DEFAULT_SOURCE];
 }
 
 export function SourceProvider({ children }: { children: React.ReactNode }) {
-  const [source, setSourceRaw, isLoaded] = useLocalStorage<SourceId>(
+  const [sources, setSources, isLoaded] = useLocalStorage<SourceId[]>(
     STORAGE_KEY,
-    DEFAULT_SOURCE,
-    { transform: validateSource }
+    [DEFAULT_SOURCE],
+    { transform: normalizeSources }
   );
 
-  const setSource = (next: SourceId) => {
-    setSourceRaw(next);
-  };
+  const toggleSource = useCallback(
+    (id: SourceId) => {
+      setSources((prev) => {
+        if (prev.includes(id)) {
+          // 不能取消最後一個
+          if (prev.length === 1) return prev;
+          return prev.filter((s) => s !== id);
+        }
+        // 加入並維持 manhuagui-first 排序
+        return SOURCE_IDS.filter((s) => s === id || prev.includes(s));
+      });
+    },
+    [setSources]
+  );
 
   return (
-    <SourceContext.Provider value={{ source, setSource, isLoaded }}>
+    <SourceContext.Provider value={{ sources, toggleSource, isLoaded }}>
       {children}
     </SourceContext.Provider>
   );
