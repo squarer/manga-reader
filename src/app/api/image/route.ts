@@ -46,7 +46,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data, contentType } = await fetchImage(url, matchedProvider.imageProxy.referer);
+    const { refererBuilder, referer } = matchedProvider.imageProxy;
+    const resolvedReferer = refererBuilder ? refererBuilder(url) : referer;
+
+    const { data, contentType } = await fetchImage(url, resolvedReferer);
 
     return new NextResponse(new Uint8Array(data), {
       status: 200,

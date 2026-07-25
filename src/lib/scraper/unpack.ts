@@ -6,18 +6,24 @@
 import LZString from 'lz-string';
 
 /**
- * 解壓縮 LZString 編碼的關鍵字
+ * 解壓縮 LZString 編碼的關鍵字。
+ * 傳入 expectedCount 以驗證 LZ 解壓結果確實產生正確數量的關鍵字；
+ * 若 LZ 結果 count 不符（如 dm5 純文字關鍵字被誤判為 LZ），直接 split('|')。
  */
-function decompressKeywords(encoded: string): string[] {
-  // 如果是單個 Base64 編碼的壓縮字串
+function decompressKeywords(encoded: string, expectedCount: number): string[] {
+  // 嘗試 LZString 解壓（manhuagui 使用 LZ 壓縮格式）
   if (!encoded.includes('|') || encoded.length > 100) {
     try {
       const decompressed = LZString.decompressFromBase64(encoded);
       if (decompressed) {
-        return decompressed.split('|');
+        const parts = decompressed.split('|');
+        // 解壓結果必須符合預期數量才採用，否則視為誤判（dm5 等純文字格式）
+        if (parts.length === expectedCount) {
+          return parts;
+        }
       }
     } catch {
-      // 如果解壓失敗，嘗試直接分割
+      // 解壓失敗，直接分割
     }
   }
   return encoded.split('|');
@@ -62,8 +68,8 @@ export function unpack(packed: string): string {
   const radix = parseInt(radixStr, 10);
   const count = parseInt(countStr, 10);
 
-  // 解壓縮關鍵字（可能是 LZString 壓縮的）
-  const keywords = decompressKeywords(keywordsStr);
+  // 解壓縮關鍵字（可能是 LZString 壓縮的），傳入 count 確保解壓結果數量正確
+  const keywords = decompressKeywords(keywordsStr, count);
 
   // 構建解碼映射表
   const dictionary: Record<string, string> = {};

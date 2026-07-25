@@ -5,12 +5,14 @@
 
 import type { MangaProvider, SourceId } from './types';
 import { manhuaguiProvider } from './manhuagui';
+import { dm5Provider } from './dm5';
 
 /** 預設來源（未指定時使用） */
 export const DEFAULT_SOURCE: SourceId = 'manhuagui';
 
 const PROVIDERS: Record<SourceId, MangaProvider> = {
   manhuagui: manhuaguiProvider,
+  dm5: dm5Provider,
 };
 
 /**
