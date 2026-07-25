@@ -7,7 +7,8 @@ import { Star, Clock } from 'lucide-react';
 import TiltCard from '@/components/TiltCard';
 import type { MangaListItem } from '@/lib/scraper/types';
 import { getProxiedImageUrl } from '@/lib/image-utils';
-import { SOURCE_LABELS } from '@/components/SourceProvider';
+import { SOURCE_LABELS, SOURCE_COLORS } from '@/components/SourceProvider';
+import { cn } from '@/lib/utils';
 
 interface MangaCardProps {
   /** 漫畫資料 */
@@ -52,8 +53,13 @@ const MangaCard = memo(function MangaCard({ manga, animationDelay = 0, showSourc
 
             {/* 來源徽章（聚合搜尋模式） */}
             {showSourceBadge && (
-              <div className="absolute left-2 top-2 z-30 flex items-center rounded-full bg-black/70 px-2 py-1 backdrop-blur-sm">
-                <span className="text-[10px] font-medium leading-none text-white/90">
+              <div
+                className={cn(
+                  'absolute left-2 top-2 z-30 flex items-center rounded-full bg-white/85 px-2 py-1 shadow-sm ring-1 backdrop-blur-sm',
+                  SOURCE_COLORS[manga.source]
+                )}
+              >
+                <span className="text-[10px] font-medium leading-none">
                   {SOURCE_LABELS[manga.source]}
                 </span>
               </div>

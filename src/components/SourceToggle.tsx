@@ -6,7 +6,7 @@
  * 兩站可獨立勾選，至少保留一站（唯一選中者點擊 no-op）
  */
 
-import { useSource, SOURCE_LABELS, SOURCE_IDS } from '@/components/SourceProvider';
+import { useSource, SOURCE_LABELS, SOURCE_IDS, SOURCE_COLORS } from '@/components/SourceProvider';
 import { cn } from '@/lib/utils';
 
 export function SourceToggle() {
@@ -26,7 +26,7 @@ export function SourceToggle() {
             className={cn(
               'rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200 whitespace-nowrap',
               selected
-                ? 'bg-background text-foreground shadow-sm ring-1 ring-border/50'
+                ? cn(SOURCE_COLORS[s], 'bg-background shadow-sm ring-1')
                 : 'text-muted-foreground hover:text-foreground',
               isOnlySelected && 'cursor-default'
             )}

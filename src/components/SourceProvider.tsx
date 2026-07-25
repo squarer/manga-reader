@@ -83,3 +83,15 @@ export const SOURCE_LABELS: Record<SourceId, string> = {
   manhuagui: '漫画柜',
   dm5: '动漫屋',
 };
+
+/**
+ * 來源品牌色（取各站 logo 主色）：manhuagui logo 藍、dm5 logo 紅。
+ * outline 樣式：柔和色用於 ring（畫在盒子外緣）與文字（低對比），背景由各消費端自帶。
+ * 用 ring 而非 border，框線落在最外圈、不內推。
+ * 供漫畫卡片來源徽章與功能列來源按鈕選中態共用（SSOT）。
+ * 需為完整 Tailwind class 字串（不可動態拼接，否則被 purge）。
+ */
+export const SOURCE_COLORS: Record<SourceId, string> = {
+  manhuagui: 'ring-blue-400 text-blue-600',
+  dm5: 'ring-red-400 text-red-600',
+};
